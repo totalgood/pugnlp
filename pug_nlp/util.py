@@ -18,7 +18,7 @@
 * ordinal_float, datetime_from_ordinal_float -- conversion between datetimes and float days
 * days_since    -- subract two date or datetime objects and return difference in days (float)
 '''
-from __future__ import division, print_function, absolute_import  # , unicode_literals
+from __future__ import division, print_function, absolute_import, unicode_literals
 # from future import standard_library
 # standard_library.install_aliases()  # noqa
 from builtins import next
@@ -1596,8 +1596,8 @@ def make_series(x, *args, **kwargs):
 def encode(obj):
     r"""Encode all unicode/str objects in a dataframe in the encoding indicated (as a fun attribute)
     similar to to_ascii, but doesn't return a None, even when it fails.
-    >>> encode('Is 2013 a year or a code point in the NeoMatch strings "\u2013"?')
-    b'Is 2013 a year or a code point in the NeoMatch strings "\xe2\x80\x93"?'
+    >>> print(str(encode('Is 2013 a year or a code point in the NeoMatch strings "\u2013"?')))
+    Is 2013 a year or a code point for "–"?
     """
     try:
         return obj.encode(encode.encoding)
@@ -1606,10 +1606,10 @@ def encode(obj):
     except UnicodeDecodeError:
         logger.warning('Problem with byte sequence of type {}.'.format(type(obj)))
         # TODO: Check PG for the proper encoding and fix Django ORM settings so that unicode can be UTF-8 encoded!
-        return ''.join([c for c in obj if c < MAX_CHR])
+        return str('').join([c for c in obj if c < MAX_CHR])
     # TODO: encode sequences of strings and dataframes of strings
     return obj
-encode.encoding = 'utf-8'
+encode.encoding = 'utf8'
 
 
 def try_int(x):
@@ -1635,7 +1635,7 @@ def clean_series(series, *args, **kwargs):
     >>> clean_series(pd.Series([datetime.datetime(1, 1, 1), 9, '1942', datetime.datetime(1970, 10, 23)]))
     0    1677-09-22 00:12:44+00:00
     1                            9
-    2                     ...1942...
+    2                         1942
     3    1970-10-23 00:00:00+00:00
     dtype: object
     >>> clean_series(pd.Series([datetime.datetime(1, 1, 1), datetime.datetime(3000, 10, 23)]))

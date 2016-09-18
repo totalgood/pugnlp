@@ -17,8 +17,8 @@ jupyter==1.0.0
 #$ sudo apt-get install libpng12-dev libfreetype6-dev
 #$ sudo apt-get install tcl-dev tk-dev python-tk python3-tk
 # find and edit the matplotlibrc file to select backend that works for your env (tkagg?)
-matplotlib==1.5.1
-seaborn==0.7.0
+matplotlib==1.5.3
+seaborn==0.7.1
 
 # # setuptools>=21.0.0
 # chardet>=2.3.0
