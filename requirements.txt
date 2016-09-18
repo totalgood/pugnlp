@@ -25,7 +25,7 @@ seaborn==0.7.0
 
 # comes with seaborn?
 #$ sudo apt-get install gfortran libopenblas-dev liblapack-dev python-scipy python-matplotlib python-numpy
-scipy==0.17.1
+scipy==0.18.0
 
 # # #$ sudo yum install libjpeg-devel openjpeg-devel
 # Pillow==3.0.0
