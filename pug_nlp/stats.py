@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Stats functions and classes useful in DOX, like `Confusion` and `cosine_distance`"""
-from __future__ import print_function, division
+from __future__ import print_function, division, absolute_import
+from future.utils import viewitems
 # from past.builtins import basestring
 
 import json
@@ -14,12 +15,12 @@ from scipy.optimize import minimize
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from pug.nlp.constant import NUMERIC_TYPES
+from pug_nlp.constant import NUMERIC_TYPES
 # watch out for circular import
-from pug.nlp.segmentation import stringify
-from pug.nlp.util import make_dataframe, listify
-from pug.nlp.util import PrettyDict
-from pug.nlp.constant import INF
+from pug_nlp.segmentation import stringify
+from pug_nlp.util import make_dataframe, listify
+from pug_nlp.util import PrettyDict
+from pug_nlp.constant import INF
 
 # from scipy import stats as scipy_stats
 # import pymc
@@ -423,7 +424,7 @@ class Confusion(pd.DataFrame):
         parent_type = super(Confusion, self)
         parent_type.__init__(other)
         try:
-            for k, v in other.__dict__.iteritems():
+            for k, v in viewitems(other.__dict__):
                 if hasattr(parent_type, k) and hasattr(self, k) and getattr(parent_type, k) == getattr(self, k):
                     continue
                 setattr(self, k, deepcopy(v))
@@ -634,12 +635,12 @@ class Confusion(pd.DataFrame):
                        ])
         if not scalar:
             return d
-        return PrettyDict([(k, v[self._pos_label]) for k, v in d.iteritems()])
+        return PrettyDict([(k, v[self._pos_label]) for k, v in viewitems(d)])
     stats_dict = property(get_stats_dict)
 
     def get_stats(self):
         df = pd.DataFrame()
-        for k, v in self.get_stats_dict(scalar=False).iteritems():
+        for k, v in viewitems(self.get_stats_dict(scalar=False)):
             if isinstance(v, Mapping):
                 df[k] = pd.Series(v)
         return df
@@ -657,16 +658,16 @@ class Confusion(pd.DataFrame):
         return(s)
 
 
-# TODO: reuse inverse dict function and fuzzy_get from pug.nlp
+# TODO: reuse inverse dict function and fuzzy_get from pug_nlp
 POS_LABELS = {'0': '1', 'False': 'True', 'F': 'T', 'No': 'Yes', 'N': 'P',
               'None': 'Positive', 'Neg': 'Pos', 'Negative': 'Positive', "A": "B"}
-POS_LABELS_INVERSE = dict((v, k) for k, v in POS_LABELS.iteritems())
-POS_LABELS_LOWER = dict((k.lower(), v.lower()) for k, v in POS_LABELS.iteritems())
-POS_LABELS_LOWER_INVERSE = dict((v.lower(), k.lower()) for k, v in POS_LABELS.iteritems())
-POS_LABELS_LOWER_INVERSE = dict((k.lower(), v.lower()) for k, v in POS_LABELS.iteritems())
-POS_LABELS_LOWER_FIRST = dict((k.lower()[0], v.lower()[0]) for k, v in POS_LABELS.iteritems())
-POS_LABELS_LOWER_INVERSE_FIRST = dict((v.lower()[0], k.lower()[0]) for k, v in POS_LABELS.iteritems())
-# POS_LABELS_ALL = OrderedDict(list(POS_LABELS.iteritems()) + list(POS_LABELS_LOWER.iteritems())
+POS_LABELS_INVERSE = dict((v, k) for k, v in viewitems(POS_LABELS))
+POS_LABELS_LOWER = dict((k.lower(), v.lower()) for k, v in viewitems(POS_LABELS))
+POS_LABELS_LOWER_INVERSE = dict((v.lower(), k.lower()) for k, v in viewitems(POS_LABELS))
+POS_LABELS_LOWER_INVERSE = dict((k.lower(), v.lower()) for k, v in viewitems(POS_LABELS))
+POS_LABELS_LOWER_FIRST = dict((k.lower()[0], v.lower()[0]) for k, v in viewitems(POS_LABELS))
+POS_LABELS_LOWER_INVERSE_FIRST = dict((v.lower()[0], k.lower()[0]) for k, v in viewitems(POS_LABELS))
+# POS_LABELS_ALL = OrderedDict(list(viewitems(POS_LABELS)) + list(POS_LABELS_LOWER.iteritems())
 
 
 def infer_pos_label(neg_label=None):
