@@ -1,4 +1,4 @@
-"""Run doctests in pug.nlp.constant"""
+"""Run doctests in pug_nlp.constant"""
 
 import doctest
 
