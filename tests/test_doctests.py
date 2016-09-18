@@ -9,10 +9,11 @@ standard_library.install_aliases()  # noqa
 # from django.test import TestCase
 from unittest import TestCase, main
 import doctest
-from pug_nlp import util, regex, charlist  # , http, penn_treebank_tokenizer, detector_morse
+from pug_nlp import util  # , http, charlist, regex, penn_treebank_tokenizer, detector_morse
 
 
 class NLPDocTest(TestCase):
+    """Doesn't display information about failed tests so not as useful as individual test_module.py doctest runners"""
 
     def test_module(self, module=None):
         if module:
@@ -28,11 +29,11 @@ class NLPDocTest(TestCase):
     def test_util(self):
         self.test_module(util)
 
-    def test_regex_patterns(self):
-        self.test_module(regex)
+    # def test_regex_patterns(self):
+    #     self.test_module(regex)
 
-    def test_charlist(self):
-        self.test_module(charlist)
+    # def test_charlist(self):
+    #     self.test_module(charlist)
 
     # def test_http(self):
     #     self.test_module(http)

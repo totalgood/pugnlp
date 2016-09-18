@@ -6,11 +6,11 @@ from builtins import str  # , zip  # noqa
 from past.builtins import basestring  # noqa
 try:  # python 3.5+
     from io import StringIO
-    from ConfigParser import ConfigParser
-    # from itertools import izip as zip
-except:
-    from StringIO import StringIO
     from configparser import ConfigParser
+    # from itertools import izip as zip
+except ImportError:
+    from StringIO import StringIO
+    from ConfigParser import ConfigParser
 
 import os
 import datetime
