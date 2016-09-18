@@ -2,10 +2,7 @@
 # -*- coding: utf-8 -*-
 """Constants and discovered values, like path to current installation of pug-nlp."""
 from __future__ import division, print_function, absolute_import, unicode_literals
-from builtins import (
-         int, list, range, str,
-         chr,
-         zip)
+from builtins import int, list, range, str, chr, zip
 # from builtins import (
 #          bytes, dict, int, list, object, range, str,
 #          ascii, chr, hex, input, next, oct, open,
