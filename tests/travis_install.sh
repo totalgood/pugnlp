@@ -23,6 +23,7 @@ if [[ "$DISTRIB" == "conda" ]]; then
     export PATH=$HOME/miniconda/bin:$PATH
     conda update --yes conda
     conda config --set always_yes yes --set changeps1 no
+    conda info -a
 
     # Configure the conda environment and put it in the path using the
     # provided versions
