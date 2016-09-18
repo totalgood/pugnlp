@@ -1596,7 +1596,9 @@ def make_series(x, *args, **kwargs):
 def encode(obj):
     r"""Encode all unicode/str objects in a dataframe in the encoding indicated (as a fun attribute)
     similar to to_ascii, but doesn't return a None, even when it fails.
-    >>> print(str(encode('Is 2013 a year or a code point in the NeoMatch strings "\u2013"?')))
+    >>> encode(u'Is 2013 a year or a code point for "\u2013"?')
+    b'Is 2013 a year or a code point for "\xe2\x80\x93"?'
+    >>> print(u'Is 2013 a year or a code point for "\u2013"?')
     Is 2013 a year or a code point for "–"?
     """
     try:
