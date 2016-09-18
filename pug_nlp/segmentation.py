@@ -1,6 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""Sentence and token/word segmentation utilities like Tokenizer"""
+from __future__ import division, print_function, absolute_import  # , unicode_literals
+# from future import standard_library
+# standard_library.install_aliases()  # noqa
+from builtins import zip
+from builtins import chr, str
+from builtins import range
+from builtins import object
+from past.builtins import basestring
+
 import os
 import re
-import string
 from itertools import chain
 
 from .detector_morse import Detector
@@ -8,10 +19,12 @@ from .detector_morse import slurp
 # from .penn_treebank_tokenizer import word_tokenize
 import nlup
 
-from pug.nlp.constant import DATA_PATH
-from pug.nlp.util import generate_files
+from .constant import DATA_PATH
+from .futil import generate_files
+from . import charlist
+
 # regex namespace only conflicts with regex kwarg in Tokenizer constructur
-from pug.nlp.regex import CRE_TOKEN, RE_NONWORD
+from pug_nlp.regex import CRE_TOKEN, RE_NONWORD
 
 
 def list_ngrams(token_list, n=1, join=' '):
@@ -30,7 +43,7 @@ def list_ngrams(token_list, n=1, join=' '):
     [('goodbye', 'cruel'), ('cruel', 'world')]
     """
     join = ' ' if join is True else join
-    if isinstance(join, basestring):
+    if isinstance(join, str):
         return [join.join(ng) for ng in list_ngrams(token_list, n=n, join=False)]
     return zip(*[token_list[i:] for i in range(n)])
 
@@ -74,7 +87,7 @@ def generate_sentences(text='', train_path=None, case_sensitive=True, epochs=20,
 generate_sentences.detector = nlup.decorators.IO(Detector.load)(os.path.join(DATA_PATH, 'wsj_detector_morse_model.json.gz'))
 
 
-def str_strip(s, strip_chars=string.punctuation + ' \t\n\r'):
+def str_strip(s, strip_chars=charlist.punctuation + ' \t\n\r'):
     return s.strip(strip_chars)
 
 
@@ -296,7 +309,7 @@ class PassageIter(object):
     """
 
     def __init__(self, path='', ext='', level=None, dirs=False, files=True,
-                 sentence_segmenter=generate_sentences, word_segmenter=string.split, verbosity=0):
+                 sentence_segmenter=generate_sentences, word_segmenter=str.split, verbosity=0):
         self.file_generator = generate_files(path=path, ext='', level=None, dirs=False, files=True, verbosity=0)
 
     def __iter__(self):

@@ -1,9 +1,9 @@
-"""Run doctests in pug.nlp.segmentation."""
+"""Run doctests in pug_nlp.segmentation."""
 from __future__ import print_function, absolute_import
 
 import doctest
 
-import pug.nlp.segmentation
+import pug_nlp.segmentation
 
 from unittest import TestCase
 
@@ -15,6 +15,6 @@ class DoNothingTest(TestCase):
 
 
 def load_tests(loader, tests, ignore):
-    """Run doctests for the pug.nlp.segmentation module"""
-    tests.addTests(doctest.DocTestSuite(pug.nlp.segmentation, optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
+    """Run doctests for the pug_nlp.segmentation module"""
+    tests.addTests(doctest.DocTestSuite(pug_nlp.segmentation, optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
     return tests

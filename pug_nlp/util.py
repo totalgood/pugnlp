@@ -17,7 +17,6 @@
 * make_time, make_date, quantize_datetime -- ignore portions of a datetime struct
 * ordinal_float, datetime_from_ordinal_float -- conversion between datetimes and float days
 * days_since    -- subract two date or datetime objects and return difference in days (float)
-
 '''
 from __future__ import division, print_function, absolute_import  # , unicode_literals
 # from future import standard_library

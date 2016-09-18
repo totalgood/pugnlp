@@ -36,7 +36,7 @@ fuzzywuzzy==0.10.0
 python-slugify==1.2.0
 
 # a perceptron for Kyle Gorman's sentence segmenter DetectorMorse?
-# nlup==0.5
+nlup==0.5
 
 # # Optional
 # # text complexity/readability scores
