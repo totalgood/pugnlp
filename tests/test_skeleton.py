@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-from pug_nlp.skeleton import fib
+from pugnlp.skeleton import fib
 
 __author__ = "Hobson Lane"
 __copyright__ = "Hobson Lane"

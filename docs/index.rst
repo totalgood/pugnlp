@@ -1,8 +1,8 @@
 =======
-pug_nlp
+pugnlp
 =======
 
-This is the documentation of **pug_nlp**.
+This is the documentation of **pugnlp**.
 
 .. note::
 

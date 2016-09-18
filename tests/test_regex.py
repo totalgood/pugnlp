@@ -1,9 +1,9 @@
-"""Run doctests in pug_nlp.regex."""
+"""Run doctests in pugnlp.regex."""
 from __future__ import print_function, absolute_import, division, unicode_literals
 
 import doctest
 
-import pug_nlp.regex
+import pugnlp.regex
 
 from unittest import TestCase
 
@@ -15,6 +15,6 @@ class DoNothingTest(TestCase):
 
 
 def load_tests(loader, tests, ignore):
-    """Run doctests for the pug_nlp.regex module"""
-    tests.addTests(doctest.DocTestSuite(pug_nlp.regex, optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
+    """Run doctests for the pugnlp.regex module"""
+    tests.addTests(doctest.DocTestSuite(pugnlp.regex, optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
     return tests

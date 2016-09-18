@@ -71,14 +71,14 @@ from .tutil import clip_datetime
 from fuzzywuzzy import process as fuzzy
 from slugify import slugify
 
-from pug_nlp import charlist
+from pugnlp import charlist
 
 from .constant import PUNC
 from .constant import FLOAT_TYPES, MAX_CHR
 from .constant import ROUNDABLE_NUMERIC_TYPES, COUNT_NAMES, SCALAR_TYPES, NUMBERS_AND_DATETIMES
 from .constant import DATETIME_TYPES, DEFAULT_TZ
 
-from pug_nlp import regex as rex
+from pugnlp import regex as rex
 from .tutil import make_tz_aware
 
 
@@ -2887,7 +2887,7 @@ class PrettyDict(OrderedDict):
 
     DatetimeEncoder behaves differently on travis (Time Zone?)
     # FIXME: check the values and fix the discrepancy in default timezone for travis and local
-    >>> from pug_nlp.tutil import make_tz_aware
+    >>> from pugnlp.tutil import make_tz_aware
     >>> PrettyDict([('scif', make_tz_aware(datetime.datetime(3015, 10, 21))),
     ...             ('btfd', pd.tslib.Timestamp(make_tz_aware(datetime.datetime(2015, 10, 21))))])
     {

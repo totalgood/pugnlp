@@ -15,12 +15,12 @@ from scipy.optimize import minimize
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from pug_nlp.constant import NUMERIC_TYPES
+from pugnlp.constant import NUMERIC_TYPES
 # watch out for circular import
-from pug_nlp.segmentation import stringify
-from pug_nlp.util import make_dataframe, listify
-from pug_nlp.util import PrettyDict
-from pug_nlp.constant import INF
+from pugnlp.segmentation import stringify
+from pugnlp.util import make_dataframe, listify
+from pugnlp.util import PrettyDict
+from pugnlp.constant import INF
 
 # from scipy import stats as scipy_stats
 # import pymc
@@ -658,7 +658,7 @@ class Confusion(pd.DataFrame):
         return(s)
 
 
-# TODO: reuse inverse dict function and fuzzy_get from pug_nlp
+# TODO: reuse inverse dict function and fuzzy_get from pugnlp
 POS_LABELS = {'0': '1', 'False': 'True', 'F': 'T', 'No': 'Yes', 'N': 'P',
               'None': 'Positive', 'Neg': 'Pos', 'Negative': 'Positive', "A": "B"}
 POS_LABELS_INVERSE = dict((v, k) for k, v in viewitems(POS_LABELS))

@@ -1,9 +1,9 @@
-"""Run doctests in pug_nlp.charlist."""
+"""Run doctests in pugnlp.charlist."""
 from __future__ import print_function, absolute_import, division, unicode_literals
 
 import doctest
 
-import pug_nlp.charlist
+import pugnlp.charlist
 
 from unittest import TestCase
 
@@ -15,6 +15,6 @@ class DoNothingTest(TestCase):
 
 
 def load_tests(loader, tests, ignore):
-    """Run doctests for the pug_nlp.charlist module"""
-    tests.addTests(doctest.DocTestSuite(pug_nlp.charlist, optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
+    """Run doctests for the pugnlp.charlist module"""
+    tests.addTests(doctest.DocTestSuite(pugnlp.charlist, optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
     return tests

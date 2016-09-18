@@ -135,7 +135,7 @@ from builtins import range, str, chr
 import re
 import string
 
-from pug_nlp import constant
+from pugnlp import constant
 
 # try to make constant string variables all uppercase and regex patterns lowercase
 ASCII_CHARACTERS = ''.join([chr(i) for i in range(128)])

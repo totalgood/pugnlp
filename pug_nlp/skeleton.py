@@ -6,7 +6,7 @@ console script. To run this script uncomment the following line in the
 entry_points section in setup.cfg:
 
     console_scripts =
-     fibonacci = pug_nlp.skeleton:run
+     fibonacci = pugnlp.skeleton:run
 
 Then run `python setup.py install` which will install the command `fibonacci`
 inside your current environment.
@@ -21,7 +21,7 @@ import argparse
 import sys
 import logging
 
-from pug_nlp import __version__
+from pugnlp import __version__
 
 __author__ = "Hobson Lane"
 __copyright__ = "Hobson Lane"
@@ -56,7 +56,7 @@ def parse_args(args):
     parser.add_argument(
         '--version',
         action='version',
-        version='pug_nlp {ver}'.format(ver=__version__))
+        version='pugnlp {ver}'.format(ver=__version__))
     parser.add_argument(
         dest="n",
         help="n-th Fibonacci number",

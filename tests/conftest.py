@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-    Dummy conftest.py for pug_nlp.
+    Dummy conftest.py for pugnlp.
 
     If you don't know what this is for, just leave it empty.
     Read more about conftest.py under:

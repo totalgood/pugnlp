@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Uses the python unittest module to test this app with `python -m unittest pug_nlp`.
+Uses the python unittest module to test this app with `python -m unittest pugnlp`.
 """
 from __future__ import division, print_function, absolute_import, unicode_literals
 
@@ -9,7 +9,7 @@ standard_library.install_aliases()  # noqa
 # from django.test import TestCase
 from unittest import TestCase, main
 import doctest
-from pug_nlp import util  # , http, charlist, regex, penn_treebank_tokenizer, detector_morse
+from pugnlp import util  # , http, charlist, regex, penn_treebank_tokenizer, detector_morse
 
 
 class NLPDocTest(TestCase):

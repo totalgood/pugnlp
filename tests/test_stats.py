@@ -1,9 +1,9 @@
-"""Run doctests in pug_nlp.stats."""
+"""Run doctests in pugnlp.stats."""
 from __future__ import print_function, absolute_import
 
 import doctest
 
-import pug_nlp.stats
+import pugnlp.stats
 
 from unittest import TestCase
 
@@ -15,6 +15,6 @@ class DoNothingTest(TestCase):
 
 
 def load_tests(loader, tests, ignore):
-    """Run doctests for the pug_nlp.stats module"""
-    tests.addTests(doctest.DocTestSuite(pug_nlp.stats, optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
+    """Run doctests for the pugnlp.stats module"""
+    tests.addTests(doctest.DocTestSuite(pugnlp.stats, optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
     return tests
