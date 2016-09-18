@@ -27,6 +27,7 @@ if [[ "$DISTRIB" == "conda" ]]; then
     # provided versions
     conda create -n testenv --yes python=$PYTHON_VERSION pip
     source activate testenv
+    conda install scipy
 
 elif [[ "$DISTRIB" == "ubuntu" ]]; then
     sudo apt-get install python-numpy python-scipy python-matplotlib

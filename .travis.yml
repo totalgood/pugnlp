@@ -10,7 +10,7 @@ env:
   matrix:
     - DISTRIB="ubuntu" PYTHON_VERSION="2.7" COVERAGE="true"
     - DISTRIB="conda" PYTHON_VERSION="2.7" COVERAGE="false"
-    - DISTRIB="conda" PYTHON_VERSION="3.4" COVERAGE="false"
+#    - DISTRIB="conda" PYTHON_VERSION="3.4" COVERAGE="false"
     - DISTRIB="conda" PYTHON_VERSION="3.5" COVERAGE="false"
 addons:
   apt:
@@ -21,8 +21,8 @@ install:
   - source tests/travis_install.sh
   - pip install -r requirements.txt
 before_script:
-  - git config --global user.email "you@example.com"
-  - git config --global user.name "Your Name"
+  - git config --global user.email "travis@totalgood.com"
+  - git config --global user.name "pug_nlp Travis Tests"
 script:
   - python setup.py test
 after_success:
