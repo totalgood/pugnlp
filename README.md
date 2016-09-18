@@ -6,7 +6,7 @@ Like pug-nlp(https://github.com/totalgood/pug-nlp), but simpler and updated (pyt
 
 [![Latest Version](https://img.shields.io/pypi/v/pug_nlp.svg)](https://pypi.python.org/pypi/pug_nlp/)
 [![Latest Release](https://badge.fury.io/py/pug_nlp.svg)](https://pypi.python.org/pypi/pug_nlp/)
-[![Requirements Status](https://requires.io/github/totalgood/pug_nlp/requirements.svg?branch=master)](https://requires.io/github/totalgood/pug_nlp/requirements.txt/?branch=master)
+[![Requirements Status](https://requires.io/github/totalgood/pug_nlp/requirements.svg?branch=master)](https://requires.io/github/totalgood/pug_nlp/requirements/?branch=master)
 [![Build Status](https://travis-ci.org/totalgood/pug-nlp.svg?branch=master "Travis Build & Test Status")](https://travis-ci.org/totalgood/pug_nlp)
 [![Documentation Status](https://readthedocs.org/projects/chatterbot/badge/?version=stable)](http://chatterbot.readthedocs.io/en/stable/?badge=stable)
 [![Coverage Status](https://img.shields.io/coveralls/totalgood/pug_nlp.svg)](https://coveralls.io/r/totalgood/pug_nlp)
