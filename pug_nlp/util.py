@@ -214,8 +214,9 @@ def sort_strings(strings, sort_order=None, reverse=False, case_sensitive=False, 
 def clean_field_dict(field_dict, cleaner=str.strip, time_zone=None):
     r"""Normalize field values by stripping whitespace from strings, localizing datetimes to a timezone, etc
 
-    >>> sorted(clean_field_dict({'_state': object(), 'x': 1, 'y': "\t  Wash Me! \n" }).items())
-    [('x', 1), ('y', 'Wash Me!')]
+    >>> (sorted(clean_field_dict({'_state': object(), 'x': 1, 'y': "\t  Wash Me! \n" }).items()) ==
+    ... [('x', 1), ('y', 'Wash Me!')])
+    True
     """
     d = {}
     if time_zone is None:
@@ -1611,13 +1612,30 @@ def encode(obj):
 encode.encoding = 'utf-8'
 
 
+def try_int(x):
+    try:
+        return int(x)
+    except:
+        return x
+
+
+def try_float_int(x):
+    try:
+        x = float(x)
+    except:
+        return x
+    if round(x) == x:
+        return int(round(x))
+    return x
+
+
 def clean_series(series, *args, **kwargs):
     """Ensure all datetimes are valid Timestamp objects and dtype is np.datetime64[ns]
     >>> from datetime import timedelta
     >>> clean_series(pd.Series([datetime.datetime(1, 1, 1), 9, '1942', datetime.datetime(1970, 10, 23)]))
     0    1677-09-22 00:12:44+00:00
     1                            9
-    2                      b'1942'
+    2                     ...1942...
     3    1970-10-23 00:00:00+00:00
     dtype: object
     >>> clean_series(pd.Series([datetime.datetime(1, 1, 1), datetime.datetime(3000, 10, 23)]))
@@ -1631,6 +1649,7 @@ def clean_series(series, *args, **kwargs):
         series = series.apply(clip_datetime)
     if any_generated((isinstance(v, basestring) for v in series)):
         series = series.apply(encode)
+    series = series.apply(try_float_int)
     return series
 
 
