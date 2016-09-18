@@ -1,4 +1,46 @@
-# Add your requirements here like:
-# numpy
-# scipy>=0.9
+coverage==4.2
+# editdistance==0.3.1
+nltk==3.2.1
+pandas==0.18.1
+future==0.15.2
+
+# ipython[all]
+ipython==4.2.0
+ipython-genutils==0.1.0
+jupyter-client==4.2.2
+jupyter-core==4.1.0
+ipykernel==4.3.1
+ipyparallel==5.0.1
+nbconvert==4.2.0
+nbformat==4.0.1
+
+#$ sudo apt-get install libpng12-dev libfreetype6-dev
+#$ sudo apt-get install tcl-dev tk-dev python-tk python3-tk
+# find and edit the matplotlibrc file to select backend that works for your env (tkagg?)
+matplotlib==1.5.1
+seaborn==0.7.0
+
+# # setuptools>=21.0.0
+# chardet>=2.3.0
+
+# comes with seaborn
+# scipy==0.16.0 or 0.17.1
+
+# # #$ sudo yum install libjpeg-devel openjpeg-devel
+# Pillow==3.0.0
+# xlrd==0.9.4
+# fuzzywuzzy==0.10.0
+
+# python-Levenshtein==0.12.0
+# progressbar2==3.6.2
+# python-slugify==1.2.0
+
+# a perceptron for Kyle Gorman's sentence segmenter DetectorMorse?
+# nlup==0.5
+
+# # Optional
+# # text complexity/readability scores
+# textstat==0.2
+# gensim==0.12.4
+
 
