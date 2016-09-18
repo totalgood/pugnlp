@@ -29,8 +29,7 @@ if [[ "$DISTRIB" == "conda" ]]; then
     source activate testenv
 
 elif [[ "$DISTRIB" == "ubuntu" ]]; then
-    echo 'not installing anything'
-    # Use standard ubuntu packages in their default version
+    sudo apt-get install python-numpy python-scipy python-matplotlib
 fi
 
 if [[ "$COVERAGE" == "true" ]]; then
