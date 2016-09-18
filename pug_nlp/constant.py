@@ -87,7 +87,7 @@ np = pd.np
 BASE_PATH = os.path.dirname(__file__)
 DATA_PATH = os.path.join(BASE_PATH, 'data')
 
-tld_iana = pd.read_csv(os.path.join(DATA_PATH, 'tlds-from-iana.csv', encoding='utf8'))
+tld_iana = pd.read_csv(os.path.join(DATA_PATH, 'tlds-from-iana.csv'), encoding='utf8')
 tld_iana = OrderedDict(sorted(zip((tld.strip().lstrip('.') for tld in tld_iana.domain),
                                   [(sponsor.strip(), -1) for sponsor in tld_iana.sponsor]),
                               key=lambda x: len(x[0]),

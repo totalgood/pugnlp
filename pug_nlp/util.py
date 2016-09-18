@@ -36,7 +36,7 @@ try:  # python 3.5+
     # from ConfigParser import ConfigParser
 
 except:
-    from io import StringIO
+    from StringIO import StringIO
     # from configparser import ConfigParser
 
 import os
@@ -56,13 +56,18 @@ import math
 import copy
 import codecs
 import json
-from threading import _get_ident
+try:
+    # python2
+    from threading import _get_ident as get_ident
+except:
+    # python3
+    from threading import get_ident
 from time import mktime
 from traceback import format_exc
 
 import pandas as pd
 from .tutil import clip_datetime
-import progressbar
+# import progressbar
 from fuzzywuzzy import process as fuzzy
 from slugify import slugify
 
@@ -1414,9 +1419,9 @@ def read_csv(csv_file, ext='.csv', format=None, delete_empty_keys=False,
 
     if verbosity > 1:
         print('There appear to be {} bytes remaining in the file buffer. Resetting (seek) to starting position in file.'.format(file_len))
-    if verbosity > 0:
-        pbar = progressbar.ProgressBar(maxval=file_len)
-        pbar.start()
+    # if verbosity > 0:
+    #     pbar = progressbar.ProgressBar(maxval=file_len)
+    #     pbar.start()
     while csvr and rownum < rowlimit and not eof:
         if pbar:
             pbar.update(fpin.tell() - start_seek_pos)
@@ -2885,7 +2890,7 @@ class PrettyDict(OrderedDict):
 
     def __repr__(self, _repr_running={}):
         'hod.__repr__() <==> repr(hod)'
-        call_key = id(self), _get_ident()
+        call_key = id(self), get_ident()
         if call_key in _repr_running:
             return '...'
         _repr_running[call_key] = 1

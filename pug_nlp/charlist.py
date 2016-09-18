@@ -32,7 +32,7 @@ import string
 printable = string.printable
 uppercase = ascii_uppercase = string.ascii_uppercase
 lowercase = ascii_lowercase = string.ascii_lowercase
-letters = string.letters
+letters = ascii_letters = string.ascii_letters
 digits = string.digits
 punctuation = string.punctuation
 whitespace = string.whitespace
