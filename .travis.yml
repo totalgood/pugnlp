@@ -25,7 +25,8 @@ before_script:
   - git config --global user.email "travis@totalgood.com"
   - git config --global user.name "pug_nlp Travis Tests"
 script:
-  - python setup.py test
+  - if [[ "$COVERAGE" == "true" ]]; then coverage run setup.py test; else python setup.py test; fi
+  - if [[ "$COVERAGE" == "true" ]]; then coverage report; fi
 after_success:
   - if [[ "$COVERAGE" == "true" ]]; then coveralls || echo "failed"; fi
 cache:
