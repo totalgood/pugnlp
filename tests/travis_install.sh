@@ -22,6 +22,7 @@ if [[ "$DISTRIB" == "conda" ]]; then
     chmod +x miniconda.sh && ./miniconda.sh -b -p $HOME/miniconda
     export PATH=$HOME/miniconda/bin:$PATH
     conda update --yes conda
+    conda config --set always_yes yes --set changeps1 no
 
     # Configure the conda environment and put it in the path using the
     # provided versions
@@ -30,7 +31,7 @@ if [[ "$DISTRIB" == "conda" ]]; then
     conda install scipy
 
 elif [[ "$DISTRIB" == "ubuntu" ]]; then
-    sudo apt-get install -Y gfortran libopenblas-dev liblapack-dev python-numpy python-scipy python-matplotlib
+    sudo apt-get install -y gfortran libopenblas-dev liblapack-dev python-numpy python-scipy python-matplotlib
 fi
 
 if [[ "$COVERAGE" == "true" ]]; then
