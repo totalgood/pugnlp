@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Constants and discovered values, like path to current installation of pug-nlp."""
-from __future__ import division, print_function, absolute_import
+from __future__ import division, print_function, absolute_import, unicode_literals
 from builtins import (
          int, list, range, str,
          chr,
@@ -30,16 +30,16 @@ except:
     TIME_ZONE = timezone('UTC')
 DEFAULT_TZ = timezone('UTC')
 
-ROUNDABLE_NUMERIC_TYPES = (float, long, int, Decimal, bool)
-FLOATABLE_NUMERIC_TYPES = (float, long, int, Decimal, bool)
-BASIC_NUMERIC_TYPES = (float, long, int)
-NUMERIC_TYPES = (float, long, int, Decimal, complex, str)  # datetime.datetime, datetime.date
-NUMBERS_AND_DATETIMES = (float, long, int, Decimal, complex, str)
-SCALAR_TYPES = (float, long, int, Decimal, bool, complex, basestring, str, unicode)  # datetime.datetime, datetime.date
+ROUNDABLE_NUMERIC_TYPES = (float, int, Decimal, bool)
+FLOATABLE_NUMERIC_TYPES = (float, int, Decimal, bool)
+BASIC_NUMERIC_TYPES = (float, int)
+NUMERIC_TYPES = (float, int, Decimal, complex, str)  # datetime.datetime, datetime.date
+NUMBERS_AND_DATETIMES = (float, int, Decimal, complex, str)
+SCALAR_TYPES = (float, int, Decimal, bool, complex, str)  # datetime.datetime, datetime.date
 # numpy types are derived from these so no need to include numpy.float64, numpy.int64 etc
 DICTABLE_TYPES = (Mapping, tuple, list)  # convertable to a dictionary (inherits Mapping or is a list of key/value pairs)
 VECTOR_TYPES = (list, tuple)
-PUNC = unicode(string.punctuation)
+PUNC = str(string.punctuation)
 
 # synonyms for "count"
 COUNT_NAMES = ['count', 'cnt', 'number', 'num', '#', 'frequency', 'probability', 'prob', 'occurences']
@@ -132,7 +132,7 @@ uri_schemes_popular = ['chrome-extension', 'example', 'content', 'bitcoin',
 # these may not all be the sames isinstance types, depending on the env
 FLOAT_TYPES = (float, np.float16, np.float32, np.float64, np.float128)
 FLOAT_DTYPES = tuple(set(np.dtype(typ) for typ in FLOAT_TYPES))
-INT_TYPES = (int, long, np.int0, np.int8, np.int16, np.int32, np.int64)
+INT_TYPES = (int, np.int0, np.int8, np.int16, np.int32, np.int64)
 INT_DTYPES = tuple(set(np.dtype(typ) for typ in INT_TYPES))
 NUMERIC_TYPES = tuple(set(list(FLOAT_TYPES) + list(INT_TYPES)))
 NUMERIC_DTYPES = tuple(set(np.dtype(typ) for typ in NUMERIC_TYPES))
