@@ -30,6 +30,7 @@ if [[ "$DISTRIB" == "conda" ]]; then
     conda install scipy
 
 elif [[ "$DISTRIB" == "ubuntu" ]]; then
+    sudo apt-get install gfortran libopenblas-dev liblapack-dev
     sudo apt-get install python-numpy python-scipy python-matplotlib
 fi
 
