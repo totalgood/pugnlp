@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 r"""file utils"""
 from __future__ import division, print_function, absolute_import
-from builtins import str  # , zip  # noqa
+# from builtins import str  # , zip  # noqa
 from past.builtins import basestring  # noqa
 try:  # python 3.5+
     from io import StringIO
@@ -176,7 +176,7 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
 
     Args:
       path (str):  Root/base path to search.
-      ext (str):   File name extension. Only file paths that ".endswith()" this string will be returned
+      ext (str or list of str):  File name extension(s). Only file paths that ".endswith()" this string will be returned
       level (int, optional): Depth of file tree to halt recursion at.
         None = full recursion to as deep as it goes
         0 = nonrecursive, just provide a list of files at the root level of the tree
@@ -218,20 +218,21 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
       True
     """
     path = path or './'
-    ext = str(ext).lower()
+    ext = ext if isinstance(ext, (list, tuple)) else [ext]
+    ext = set(x.lower() for x in ext)
 
     for dir_path, dir_names, filenames in walk_level(path, level=level):
         if verbosity > 0:
             print('Checking path "{}"'.format(dir_path))
         if files:
             for fn in filenames:  # itertools.chain(filenames, dir_names)
-                if ext and not fn.lower().endswith(ext):
+                if ext and not any((fn.lower().endswith(x) for x in ext)):
                     continue
                 yield path_status(dir_path, fn, verbosity=verbosity)
         if dirs:
             # TODO: warn user if ext and dirs both set
             for fn in dir_names:
-                if ext and not fn.lower().endswith(ext):
+                if ext and not any((fn.lower().endswith(x) for x in ext)):
                     continue
                 yield path_status(dir_path, fn, verbosity=verbosity)
 

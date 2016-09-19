@@ -70,7 +70,7 @@ def list_ngram_range(token_list, *args, **kwargs):
     return list(chain(*(list_ngrams(token_list, i + 1, join=join) for i in range(0, n))))
 
 
-def generate_sentences(text='', train_path=None, case_sensitive=True, epochs=20, classifier=nlup.BinaryAveragedPerceptron, **kwargs):
+def generate_sentences(text='', train_path=None, case_sensitive=True, epochs=20):  # , classifier=None, **kwargs):
     """Generate sentences from a sequence of characters (text)
 
     Thin wrapper for Kyle Gorman's "DetectorMorse" module
@@ -78,13 +78,15 @@ def generate_sentences(text='', train_path=None, case_sensitive=True, epochs=20,
     Arguments:
       case_sensitive (int): whether to consider case to make decisions about sentence boundaries
       epochs (int): number of epochs (iterations for classifier training)
+      classifier (ClassifierClass): default: nlup.BinaryAveragedPerceptron
 
     """
+    # classifier = nlup.BinaryAveragedPerceptron if classifier is None else classifier
     if train_path:
         generate_sentences.detector = Detector(slurp(train_path), epochs=epochs, nocase=not case_sensitive)
     # generate_sentences.detector = SentenceDetector(text=text, nocase=not case_sensitive, epochs=epochs, classifier=classifier)
     return iter(generate_sentences.detector.segments(text))
-generate_sentences.detector = nlup.decorators.IO(Detector.load)(os.path.join(DATA_PATH, 'wsj_detector_morse_model.json.gz'))
+generate_sentences.detector = nlup.decorators.IO(Detector.load)(os.path.join(DATA_PATH, 'wsj_nlup_detector_morse_model.json.gz'))
 
 
 def str_strip(s, strip_chars=charlist.punctuation + ' \t\n\r'):
@@ -316,3 +318,15 @@ class PassageIter(object):
         for fname in os.listdir(self.file_generator):
             for line in open(os.path.join(self.dirname, fname)):
                 yield line.split()
+
+
+def generate_sentences_from_files(path='.', ext=['.txt', '.md', '.rst'],
+                                  train_path=None, case_sensitive=True, epochs=20):
+    for info in generate_files(path=path, ext=ext):
+        sentences = []
+        with open(info['path']) as fin:
+            text = fin.read()
+            sentences += list(generate_sentences(text=text,
+                                                 train_path=train_path,
+                                                 case_sensitive=case_sensitive,
+                                                 epochs=epochs))

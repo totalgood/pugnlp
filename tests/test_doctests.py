@@ -3,12 +3,14 @@
 Uses the python unittest module to test this app with `python -m unittest pugnlp`.
 """
 from __future__ import division, print_function, absolute_import, unicode_literals
+# from future import standard_library
+# standard_library.install_aliases()  # noqa
 
-from future import standard_library
-standard_library.install_aliases()  # noqa
+import sys
 # from django.test import TestCase
 from unittest import TestCase, main
 import doctest
+import pugnlp as nlp
 # from pugnlp import util  # , http, charlist, regex, penn_treebank_tokenizer, detector_morse
 
 
@@ -46,6 +48,17 @@ class DocTest(TestCase):
 
     # def test_detector_morse(self):
     #     self.test_module(detector_morse)
+
+
+def load_tests(loader, tests, ignore):
+    """Run doctests for the clayton.nlp module"""
+
+    # doctess only verified on Python >= 3.5
+    if (sys.version_info >= (3, 5)):
+        for name in nlp.__all__:
+            tests.addTests(doctest.DocTestSuite(getattr(nlp, name),
+                           optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
+    return tests
 
 
 if __name__ == '__main__':
