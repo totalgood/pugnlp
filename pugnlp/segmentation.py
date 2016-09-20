@@ -13,6 +13,9 @@ from past.builtins import basestring
 import os
 import re
 from itertools import chain
+import copy
+
+from dateutil.parser import parse as parse_dt
 
 from .detector_morse import Detector
 from .detector_morse import slurp
@@ -320,13 +323,74 @@ class PassageIter(object):
                 yield line.split()
 
 
-def generate_sentences_from_files(path='.', ext=['.txt', '.md', '.rst'],
-                                  train_path=None, case_sensitive=True, epochs=20):
+def generate_ngrams(obj_list, n0, n1=None):
+    """Generate sequences of objects with n0 to n1 elements in each sequence generated
+
+    >>> list(generate_ngrams('ABC', 1, 2))
+    [['A'], ['B'], ['C'], ['A', 'B'], ['B', 'C']]
+    """
+    obj_list = list(obj_list)
+    if n1 is None:
+        return zip(*[obj_list[i:] for i in range(n0)])
+    return chain(*[tuple(generate_ngrams(obj_list, n)) for n in range(n0, n1 + 1)])
+
+
+def find_dates(s):
+    """Try to find dates in the provided string, returning all of them in a list
+
+    TODO: currently very crude and doesn't segment dates from nondates at all.
+
+    >>> s = 'nothing to see here, move right along 4 April'
+    >>> dates = find_dates(s)
+    >>> len(dates)
+    3
+    >>> dates == find_dates(s.replace(' ', '_'))
+    True
+    >>> dates[-1]
+    datetime.datetime(20..., 4, 4, 0, 0)
+    >>> find_dates("19701225")
+    [datetime.datetime(1970, 12, 25, 0, 0)]
+    >>> find_dates("1970_12_25")[-1]
+    datetime.datetime(1970, 12, 25, 0, 0)
+    """
+    dates = []
+    s = s.replace('_', ' ')
+    for ngram in generate_ngrams(s.split(), 1, 3):
+        news = ' '.join(ngram)
+        try:
+            dates += [parse_dt(news)]
+        except:
+            pass
+    return dates
+
+
+def generate_sentences_from_files(path='.', ext=['.txt', '.md', '.rst'], with_meta=True,
+                                  **segmenter_kwargs):
+    """Find all the files in the indicated path with the extension(s) requested and yield thier sentences
+
+    >>> generate_sentences_from_files(__file__)
+    >>> find_dates("19701225")
+    datetime.datetime(1970, 12, 25, 0, 0)
+    """
     for info in generate_files(path=path, ext=ext):
-        sentences = []
+        sent_num = 0
+        char_num = 0
+        line_num = 0
         with open(info['path']) as fin:
-            text = fin.read()
-            sentences += list(generate_sentences(text=text,
-                                                 train_path=train_path,
-                                                 case_sensitive=case_sensitive,
-                                                 epochs=epochs))
+            try:
+                text = fin.read()
+            except UnicodeDecodeError:
+                print('SKIPPING: {}'.format(fin.name))
+                continue
+            sent_gen = generate_sentences(text=text, **segmenter_kwargs)
+            for sent_num, sent in sent_gen:
+                if with_meta:
+                    info['sentence'] = sent
+                    info['sent_num'] = sent_num
+                    info['char_num'] = char_num
+                    info['line_num'] = line_num
+                    line_num += sent.count('\n' if '\n' in sent else '\r')
+                    char_num += len(sent)
+                    yield copy.deepcopy(info)
+                else:
+                    yield sent

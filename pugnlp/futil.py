@@ -56,17 +56,26 @@ def walk_level(path, level=1):
         raise RuntimeError("Can't find a valid folder or file for path {0}".format(repr(path)))
 
 
-def path_status(path, filename='', status=None, verbosity=0):
+def path_status(path, filename='', status=None, deep=False, verbosity=0):
     """ Retrieve the access, modify, and create timetags for a path along with its size
 
     Arguments:
         path (str): full path to the file or directory to be statused
         status (dict): optional existing status to be updated/overwritten with new status values
+        try_open (bool): whether to try to open the file to get its encoding and openability
 
     Returns:
         dict: {'size': bytes (int), 'accessed': (datetime), 'modified': (datetime), 'created': (datetime)}
+
+    >>> stat = path_status(__file__)
+    >>> stat['path'] == __file__
+    True
+    >>> 256000 > stat['size'] > 14373
+    True
+    >>> stat['type']
+    'file'
     """
-    status = status or {}
+    status = {} if status is None else status
     if not filename:
         dir_path, filename = os.path.split()  # this will split off a dir and as `filename` if path doesn't end in a /
     else:
@@ -80,9 +89,10 @@ def path_status(path, filename='', status=None, verbosity=0):
     status['type'] = []
     try:
         status['size'] = os.path.getsize(full_path)
+        status['size'] = os.path.getsize(full_path)
         status['accessed'] = datetime.datetime.fromtimestamp(os.path.getatime(full_path))
         status['modified'] = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
-        status['created'] = datetime.datetime.fromtimestamp(os.path.getctime(full_path))
+        status['changed'] = datetime.datetime.fromtimestamp(os.path.getctime(full_path))
         status['mode'] = os.stat(full_path).st_mode   # first 3 digits are User, Group, Other permissions: 1=execute,2=write,4=read
         if os.path.ismount(full_path):
             status['type'] += ['mount-point']
@@ -210,6 +220,8 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
       And it should be at the top of the list.
       >>> sorted(d['name'] for d in generate_files(os.path.dirname(__file__), ext='.py', level=0))[0]
       '__init__.py'
+      >>> list(generate_files(__file__))[0]['name'] == os.path.basename(__file__)
+      True
       >>> sorted(list(generate_files())[0].keys())
       ['accessed', 'created', 'dir', 'mode', 'modified', 'name', 'path', 'size', 'type']
       >>> all(d['type'] in ('file','dir','symlink->file','symlink->dir','mount-point->file','mount-point->dir','block-device','symlink->broken',
@@ -217,10 +229,13 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
       ... for d in generate_files(level=1, files=True, dirs=True))
       True
     """
-    path = path or './'
+    path = path or '.'
     ext = ext if isinstance(ext, (list, tuple)) else [ext]
     ext = set(x.lower() for x in ext)
 
+    if os.path.isfile(path) and any(path.lower().endswith(x) for x in ext):
+        for fn in [path]:
+            yield path_status(os.path.dirname(path), os.path.basename(path), verbosity=verbosity)
     for dir_path, dir_names, filenames in walk_level(path, level=level):
         if verbosity > 0:
             print('Checking path "{}"'.format(dir_path))
