@@ -53,11 +53,14 @@ class DocTest(TestCase):
 def load_tests(loader, tests, ignore):
     """Run doctests for the clayton.nlp module"""
 
-    # doctess only verified on Python >= 3.5
+    # doctests only verified on Python >= 3.5
     if (sys.version_info >= (3, 5)):
+        print('Running doctests for version {}'.format(sys.version_info))
         for name in nlp.__all__:
             tests.addTests(doctest.DocTestSuite(getattr(nlp, name),
                            optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
+    else:
+        print('NOT running doctests for version {}'.format(sys.version_info))
     return tests
 
 
