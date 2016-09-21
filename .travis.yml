@@ -8,11 +8,11 @@ virtualenv:
   system_site_packages: true
 env:
   matrix:
-    # - DISTRIB="ubuntu" PYTHON_VERSION="2.7" COVERAGE="true"
-    # - DISTRIB="conda" PYTHON_VERSION="2.7" COVERAGE="false"
-    # - DISTRIB="conda" PYTHON_VERSION="3.4" COVERAGE="false"
-    - DISTRIB="conda" PYTHON_VERSION="3.5" COVERAGE="true"
-    - DISTRIB="ubuntu" PYTHON_VERSION="3.5" COVERAGE="true"
+    - DISTRIB="ubuntu" PYTHON_VERSION="2.7" COVERAGE="true" COVERALLS="false"
+    - DISTRIB="conda" PYTHON_VERSION="2.7" COVERAGE="false" COVERALLS="false"
+    # - DISTRIB="conda" PYTHON_VERSION="3.4" COVERAGE="false" COVERALLS="false"
+    - DISTRIB="conda" PYTHON_VERSION="3.5" COVERAGE="true" COVERALLS="false"
+    - DISTRIB="ubuntu" PYTHON_VERSION="3.5" COVERAGE="true" COVERALLS="true"
 addons:
   apt:
     packages:
@@ -28,6 +28,6 @@ script:
   - if [[ "$COVERAGE" == "true" ]]; then coverage run setup.py test; else python setup.py test; fi
   - if [[ "$COVERAGE" == "true" ]]; then coverage report; fi
 after_success:
-  - if [[ "$COVERAGE" == "true" ]]; then coveralls || echo "failed"; fi
+  - if [[ "$COVERALLS" == "true" ]]; then coveralls || echo "failed"; fi
 cache:
   - apt
