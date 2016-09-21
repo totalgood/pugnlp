@@ -28,26 +28,8 @@ class DocTest(TestCase):
                 self.fail(msg)
             # return failure_count, test_count
 
-    def test_truth(self):
-        self.assertTrue(True)
-
-    # def test_util(self):
-    #     self.module_doctester(util)
-
-    # def test_regex_patterns(self):
-    #     self.test_module(regex)
-
-    # def test_charlist(self):
-    #     self.test_module(charlist)
-
-    # def test_http(self):
-    #     self.test_module(http)
-
-    # def test_penn_treebank_tokenizer(self):
-    #     self.test_module(penn_treebank_tokenizer)
-
-    # def test_detector_morse(self):
-    #     self.test_module(detector_morse)
+    def test_importability(self):
+        self.assertTrue(nlp)
 
 
 def load_tests(loader, tests, ignore):
