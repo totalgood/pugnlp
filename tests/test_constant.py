@@ -6,8 +6,8 @@ import pugnlp.constant
 from unittest import TestCase
 
 
-class T(TestCase):
-    """Do-Nothing Test to ensure unittest doesnt ignore this file"""
+class Test(TestCase):
+    """Basic unit test for the pugnlp.constant module"""
 
     def setUp(self):
         pass

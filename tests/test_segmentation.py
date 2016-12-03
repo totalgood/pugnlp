@@ -8,13 +8,14 @@ import pugnlp.segmentation
 from unittest import TestCase
 
 
-class DoNothingTest(TestCase):
-    """A useless TestCase to encourage Django unittests to find this module and run `load_tests()`."""
-    def test_example(self):
-        self.assertTrue(True)
+class BasicTest(TestCase):
+    """Basic unit test for the pugnlp.segmentation module"""
+
+    def test_importability(self):
+        self.assertTrue(pugnlp.segmentation)
 
 
 def load_tests(loader, tests, ignore):
-    """Run doctests for the pugnlp.segmentation module"""
+    """Run doctests for the pugnlp.stats module"""
     tests.addTests(doctest.DocTestSuite(pugnlp.segmentation, optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
     return tests

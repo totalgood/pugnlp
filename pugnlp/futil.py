@@ -20,6 +20,13 @@ from collections import Mapping
 import errno
 
 
+def expand_path(path, follow_links=False):
+    path = os.path.expandvars(os.path.expanduser(path))
+    if follow_links:
+        return os.path.realpath(path)
+    return os.path.abspath(path)
+
+
 def walk_level(path, level=1):
     """Like os.walk, but takes `level` kwarg that indicates how deep the recursion will go.
 
@@ -43,7 +50,7 @@ def walk_level(path, level=1):
     """
     if level is None:
         level = float('inf')
-    path = path.rstrip(os.path.sep)
+    path = expand_path(path)
     if os.path.isdir(path):
         root_level = path.count(os.path.sep)
         for root, dirs, files in os.walk(path):
@@ -76,8 +83,10 @@ def path_status(path, filename='', status=None, deep=False, verbosity=0):
     'file'
     """
     status = {} if status is None else status
+
+    path = expand_path(path)
     if not filename:
-        dir_path, filename = os.path.split()  # this will split off a dir and as `filename` if path doesn't end in a /
+        dir_path, filename = os.path.split(path)  # this will split off a dir and as `filename` if path doesn't end in a /
     else:
         dir_path = path
     full_path = os.path.join(dir_path, filename)
@@ -170,6 +179,7 @@ def find_files(path='', ext='', level=None, typ=list, dirs=False, files=True, ve
       ... os.path.dirname(__file__), ext='.py', level=0, typ=dict)
       True
     """
+    path = expand_path(path)
     gen = generate_files(path, ext=ext, level=level, dirs=dirs, files=files, verbosity=verbosity)
     if isinstance(typ(), Mapping):
         return typ((ff['path'], ff) for ff in gen)
@@ -229,7 +239,7 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
       ... for d in generate_files(level=1, files=True, dirs=True))
       True
     """
-    path = path or '.'
+    path = expand_path(path or '.')
     ext = ext if isinstance(ext, (list, tuple)) else [ext]
     ext = set(x.lower() for x in ext)
 
@@ -276,6 +286,7 @@ def mkdir_p(path):
     References:
       http://stackoverflow.com/a/600612/623735
     """
+    path = expand_path(path)
     try:
         os.makedirs(path)
     except OSError as exception:
@@ -311,6 +322,7 @@ def sudo_iter_file_lines(file_path):
     class FileLineIterable:
 
         def __init__(self, file_path=file_path):
+            file_path = expand_path(file_path)
             self.file_path = file_path
             self.cat_cmd = 'sudo cat {}'.format(self.file_path)
             self.process = subprocess.Popen(self.cat_cmd, stdout=subprocess.PIPE, shell=True)
@@ -328,6 +340,7 @@ def sudo_iter_file_lines(file_path):
 
 
 def ssid_password(source='/etc/NetworkConnections/system-connections', ext=''):
+    source = expand_path(source)
     if isinstance(source, ConfigParser):
         ssid = source.get('wifi', 'ssid') if source.has_option('wifi', 'ssid') else None
         psk = source.get('wifi-security', 'psk') if source.has_option('wifi-security', 'psk') else None
