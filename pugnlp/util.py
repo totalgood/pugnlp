@@ -78,7 +78,7 @@ from .constant import FLOAT_TYPES, MAX_CHR
 from .constant import ROUNDABLE_NUMERIC_TYPES, COUNT_NAMES, SCALAR_TYPES, NUMBERS_AND_DATETIMES
 from .constant import DATETIME_TYPES, DEFAULT_TZ
 
-from pugnlp import regex as rex
+from pugnlp import regexes as rex
 from .tutil import make_tz_aware
 
 
@@ -1595,6 +1595,7 @@ def make_series(x, *args, **kwargs):
 
 def encode(obj):
     r"""Encode all unicode/str objects in a dataframe in the encoding indicated (as a fun attribute)
+
     similar to to_ascii, but doesn't return a None, even when it fails.
     >>> encode(u'Is 2013 a year or a code point for "\u2013"?')
     b'Is 2013 a year or a code point for "\xe2\x80\x93"?'

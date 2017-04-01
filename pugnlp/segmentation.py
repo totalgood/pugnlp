@@ -27,7 +27,7 @@ from .futil import generate_files
 from . import charlist
 
 # regex namespace only conflicts with regex kwarg in Tokenizer constructur
-from pugnlp.regex import CRE_TOKEN, RE_NONWORD
+from pugnlp.regexes import CRE_TOKEN, RE_NONWORD
 
 
 def list_ngrams(token_list, n=1, join=' '):

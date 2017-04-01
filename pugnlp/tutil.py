@@ -30,7 +30,7 @@ import pytz
 
 from .constant import DEFAULT_TZ
 from .constant import MAX_DATETIME, MIN_DATETIME, MAX_TIMESTAMP, MIN_TIMESTAMP, NAT
-import pugnlp.regex as rex
+import pugnlp.regexes as rex
 
 
 # pytz.timezone offsets for str abbreviation.
