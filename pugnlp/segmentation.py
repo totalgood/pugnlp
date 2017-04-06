@@ -20,12 +20,11 @@ from .detector_morse import slurp
 # from .penn_treebank_tokenizer import word_tokenize
 import nlup
 
-from .constant import DATA_PATH
+from .constants import DATA_PATH
 from .futil import generate_files
 from .util import stringify, passthrough
 
-# regex namespace only conflicts with regex kwarg in Tokenizer constructur
-from pugnlp.regex import CRE_TOKEN, RE_NONWORD
+from pugnlp.regexes import CRE_TOKEN, RE_NONWORD
 
 
 def list_ngrams(token_list, n=1, join=' '):

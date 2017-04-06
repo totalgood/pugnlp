@@ -142,9 +142,9 @@ from builtins import range, str, chr
 import re
 import string
 
-from pugnlp import constant
+from pugnlp import constants
 
-# try to make constant string variables all uppercase and regex patterns lowercase
+# try to make constants string variables all uppercase and regex patterns lowercase
 ASCII_CHARACTERS = ''.join([chr(i) for i in range(128)])
 
 list_bullet = re.compile(r'^\s*[! \t@#%.?(*+=-_]*[0-9.]*[#-_.)]*\s+')
@@ -152,8 +152,8 @@ nondigit = re.compile(r"[^0-9]")
 nonphrase = re.compile(r"[^-\w\s/&']")
 parenthetical_time = re.compile(r'([^(]*)\(\s*(\d+)\s*(?:min)?\s*\)([^(]*)', re.IGNORECASE)
 
-fqdn         = r'(\b[a-zA-Z0-9-.]+\b([.]' + r'|'.join(constant.tld_iana) + r'\b)\b)'  # noqa
-fqdn_popular = r'(\b[a-zA-Z0-9-.]+\b([.]' + r'|'.join(constant.tld_popular) + r'\b)\b)'
+fqdn         = r'(\b[a-zA-Z0-9-.]+\b([.]' + r'|'.join(constants.tld_iana) + r'\b)\b)'  # noqa
+fqdn_popular = r'(\b[a-zA-Z0-9-.]+\b([.]' + r'|'.join(constants.tld_popular) + r'\b)\b)'
 username = r'(\b[a-zA-Z0-9-.!#$%&*+-/=?^_`{|}~]+\b)'
 
 email = re.compile(r'(\b' + username + r'\b@\b' + fqdn + r'\b)')
@@ -162,15 +162,15 @@ email_popular = re.compile(r'(\b' + username + r'\b@\b' + fqdn_popular + r'\b)')
 # TODO: unmatched surrounding symbols are accepted/consumed, likewise for multiple dots/ats
 at = r'(([-@="_(\[{\|\s]+(at|At|AT)[-@="_)\]\}\|\s]+)|[@])'
 dot = r'(([-.="_(\[{\|\s]+(dot|dt|Dot|DOT)[-.="_)\]\}\|\s]+)|[.])'
-fqdn_obfuscated = r'(\b(([a-zA-Z0-9-]+' + dot + r'){1,7})(' + r'|'.join(constant.tld_iana) + r')\b)'
-fqdn_popular_obfuscated = r'(\b(([a-zA-Z0-9-]+' + dot + r'){1,7})(' + r'|'.join(constant.tld_popular) + r')\b)'
+fqdn_obfuscated = r'(\b(([a-zA-Z0-9-]+' + dot + r'){1,7})(' + r'|'.join(constants.tld_iana) + r')\b)'
+fqdn_popular_obfuscated = r'(\b(([a-zA-Z0-9-]+' + dot + r'){1,7})(' + r'|'.join(constants.tld_popular) + r')\b)'
 username_obfuscated = r'(([a-zA-Z0-9!#$%&*+/?^`~]+' + dot + r'?){1,7})'
 email_obfuscated = re.compile(r'(\b' + username_obfuscated + at + fqdn_obfuscated + r'\b)')
 email_popular_obfuscated = re.compile(r'(\b' + username_obfuscated + at + fqdn_popular_obfuscated + r'\b)')
 
 url_path = r'(\b[^\s]+)'
-url_scheme = r'(\b(' + '|'.join(constant.uri_schemes_iana) + r')[:][/]{2})'
-url_scheme_popular = r'(\b(' + '|'.join(constant.uri_schemes_popular) + r')[:][/]{2})'
+url_scheme = r'(\b(' + '|'.join(constants.uri_schemes_iana) + r')[:][/]{2})'
+url_scheme_popular = r'(\b(' + '|'.join(constants.uri_schemes_popular) + r')[:][/]{2})'
 
 url_strict  = r'(\b' + url_scheme        + fqdn         + url_path + r'?\b)'  # noqa
 url_liberal = r'(\b' + url_scheme + r'?' + fqdn         + url_path + r'?\b)'  # noqa
@@ -374,7 +374,7 @@ CHARS_ALPHANUM = CHARS_ALPHA + CHARS_DIGIT
 RE_CLASS_ALPHANUM = '[a-zA-Z0-9]'
 
 # Dots and allowed to delimit words, none of the 3 apostrophes nor & symbol do
-RE_WORD_DELIM = r"[^-&a-zA-Z0-9_" + constant.APOSTROPHE_CHARS + r"]"
+RE_WORD_DELIM = r"[^-&a-zA-Z0-9_" + constants.APOSTROPHE_CHARS + r"]"
 # FIXME: Only single-hyphenated words are accecpted, unaccptable-multi-hyphenated words
 RE_HYPHENATED_ALPHA = r"\w+\-\w+"
 RE_HYPHENATED_ALPHA_B = r'\b(' + RE_HYPHENATED_ALPHA + r')\b'

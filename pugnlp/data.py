@@ -32,4 +32,4 @@ One of the 1474 unicode emoticons is not unique, even when paired with its categ
 """
 
 
-df_extended_ascii = pd.DataFrame.from_csv('ascii-equivalents.csv', header=0)
+df_extended_ascii = pd.DataFrame.from_csv(os.path.join(DATA_PATH, 'ascii-equivalents.csv'), header=0)

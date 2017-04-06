@@ -72,10 +72,10 @@ from slugify import slugify
 
 from pugnlp import charlist
 
-from .constant import PUNC
-from .constant import FLOAT_TYPES, MAX_CHR
-from .constant import ROUNDABLE_NUMERIC_TYPES, COUNT_NAMES, SCALAR_TYPES, NUMBERS_AND_DATETIMES
-from .constant import DATETIME_TYPES, DEFAULT_TZ
+from .constants import PUNC
+from .constants import FLOAT_TYPES, MAX_CHR
+from .constants import ROUNDABLE_NUMERIC_TYPES, COUNT_NAMES, SCALAR_TYPES, NUMBERS_AND_DATETIMES
+from .constants import DATETIME_TYPES, DEFAULT_TZ
 
 from pugnlp import regexes as rex
 from .tutil import make_tz_aware
@@ -1824,7 +1824,7 @@ def make_us_postal_code(s, allowed_lengths=(), allowed_digits=()):
     return ''
 
 
-# TODO: create and check MYSQL_MAX_FLOAT constant
+# TODO: create and check MYSQL_MAX_FLOAT constants
 def make_float(s, default='', ignore_commas=True):
     r"""Coerce a string into a float
 
@@ -1866,7 +1866,7 @@ def make_float(s, default='', ignore_commas=True):
                     return default
 
 
-# TODO: create and check MYSQL_MAX_FLOAT constant
+# TODO: create and check MYSQL_MAX_FLOAT constants
 def make_int(s, default='', ignore_commas=True):
     r"""Coerce a string into an integer (long ints will fail)
 

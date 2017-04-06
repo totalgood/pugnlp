@@ -19,4 +19,3 @@ for is_greeting, filename in enumerate(['mavis-batey-sentences.txt', 'mavis-bate
         df = pd.concat([df, pd.DataFrame([[sentence.strip(), is_greeting] for sentence in f],
                        columns=['sentence', 'is_greeting'])],
                        ignore_index=True)
-

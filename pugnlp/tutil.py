@@ -28,8 +28,8 @@ from dateutil.parser import parse as parse_date
 
 import pytz
 
-from .constant import DEFAULT_TZ
-from .constant import MAX_DATETIME, MIN_DATETIME, MAX_TIMESTAMP, MIN_TIMESTAMP, NAT
+from .constants import DEFAULT_TZ
+from .constants import MAX_DATETIME, MIN_DATETIME, MAX_TIMESTAMP, MIN_TIMESTAMP, NAT
 import pugnlp.regexes as rex
 
 
@@ -470,7 +470,7 @@ def clean_wiki_datetime(dt, squelch=True):
 def clip_datetime(dt, tz=DEFAULT_TZ, is_dst=None):
     """Limit a datetime to a valid range for datetime, datetime64, and Timestamp objects
     >>> from datetime import timedelta
-    >>> from clayton.constant import MAX_DATETIME64, MAX_DATETIME, MAX_TIMESTAMP
+    >>> from clayton.constants import MAX_DATETIME64, MAX_DATETIME, MAX_TIMESTAMP
     >>> clip_datetime(MAX_DATETIME + timedelta(100)) == pd.Timestamp(MAX_DATETIME64, tz='utc') == MAX_TIMESTAMP
     True
     >>> MAX_TIMESTAMP

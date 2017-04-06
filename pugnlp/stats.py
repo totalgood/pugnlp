@@ -15,12 +15,12 @@ from scipy.optimize import minimize
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from pugnlp.constant import NUMERIC_TYPES
+from pugnlp.constants import NUMERIC_TYPES
 # watch out for circular import
 from pugnlp.segmentation import stringify
 from pugnlp.util import make_dataframe, listify
 from pugnlp.util import PrettyDict
-from pugnlp.constant import INF
+from pugnlp.constants import INF
 
 # from scipy import stats as scipy_stats
 # import pymc
@@ -848,7 +848,7 @@ def fun_inverse(fun=None, y=0, x0=None, args=(), disp=False, method='Nelder-Mead
       fun (function): function to be calculate an inverse for
       y (float): desired output of fun
       x0 (float): initial guess at input to fun, the fun arg that will be adjusted
-      args (list or tuple): constant arguments to fun which will not be adjusted
+      args (list or tuple): constants arguments to fun which will not be adjusted
       constraints (tuple): dictionary of optimizer constraints (see scipy.optimize.minimize)
       disp (bool): whether to display incremental results during optimization
       method (str): one of the scipy.optimize.minimize methods
