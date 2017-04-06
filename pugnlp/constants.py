@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 """Constants and discovered values, like path to current installation of pug-nlp."""
 from __future__ import division, print_function, absolute_import, unicode_literals
-from builtins import int, list, range, str, chr, zip
-# from builtins import (
-#          bytes, dict, int, list, object, range, str,
-#          ascii, chr, hex, input, next, oct, open,
-#          pow, round, super,
-#          filter, map, zip)
-# import re
+from builtins import (  # noqa
+    bytes, dict, int, list, object, range, str,
+    ascii, chr, hex, input, next, oct, open,
+    pow, round, super,
+    filter, map, zip)
+
 import os
 import string
 import datetime
@@ -27,6 +26,9 @@ except:
     TIME_ZONE = timezone('UTC')
 DEFAULT_TZ = timezone('UTC')
 
+BASE_PATH = os.path.dirname(__file__)
+DATA_PATH = os.path.join(BASE_PATH, 'data')
+
 ROUNDABLE_NUMERIC_TYPES = (float, int, Decimal, bool)
 FLOATABLE_NUMERIC_TYPES = (float, int, Decimal, bool)
 BASIC_NUMERIC_TYPES = (float, int)
@@ -42,10 +44,10 @@ PUNC = str(string.punctuation)
 COUNT_NAMES = ['count', 'cnt', 'number', 'num', '#', 'frequency', 'probability', 'prob', 'occurences']
 # 4 types of "histograms" and their canonical name/label
 HIST_NAME = {
-    'hist': 'hist',  'ff': 'hist',  'fd': 'hist', 'dff':  'hist', 'dfd': 'hist', 'gfd': 'hist', 'gff': 'hist', 'bfd': 'hist', 'bff': 'hist',
-    'pmf':  'pmf',  'pdf': 'pmf',   'pd': 'pmf',
-    'cmf':  'cmf',  'cdf': 'cmf',
-    'cfd':  'cfd',  'cff': 'cfd',   'cdf': 'cfd',
+    'hist': 'hist',  'ff': 'hist',  'fd': 'hist', 'dff':  'hist', 'dfd': 'hist', 'gfd': 'hist', 'gff': 'hist', 'bfd': 'hist', 'bff': 'hist', # noqa
+    'pmf':  'pmf',  'pdf': 'pmf',   'pd': 'pmf',  # noqa  prob. mass/density function, prob. density
+    'cmf':  'cmf',  'cdf': 'cmf',  # noqa
+    'cfd':  'cfd',  'cff': 'cfd',   'cdf': 'cfd',  # noqa
 }
 HIST_CONFIG = {
     'hist': {
@@ -83,9 +85,8 @@ HIST_CONFIG = {
     },
 }
 
+
 np = pd.np
-BASE_PATH = os.path.dirname(__file__)
-DATA_PATH = os.path.join(BASE_PATH, 'data')
 
 tld_iana = pd.read_csv(os.path.join(DATA_PATH, 'tlds-from-iana.csv'), encoding='utf8')
 tld_iana = OrderedDict(sorted(zip((tld.strip().lstrip('.') for tld in tld_iana.domain),
@@ -99,21 +100,21 @@ tld_popular = OrderedDict(sorted([
     ('org', ('Noncommercial', 1950000000)),
     ('edu', ('US accredited postsecondary institutions', 1550000000)),
     ('gov', ('United States Government', 1060000000)),
-    ('uk',  ('United Kingdom', 473000000)),
+    ('uk',  ('United Kingdom', 473000000)),  # noqa
     ('net', ('Network services', 206000000)),
-    ('ca', ('Canada', 165000000)),
-    ('de', ('Germany', 145000000)),
-    ('jp', ('Japan', 139000000)),
-    ('fr', ('France', 96700000)),
-    ('au', ('Australia', 91000000)),
-    ('us', ('United States', 68300000)),
-    ('ru', ('Russian Federation', 67900000)),
-    ('ch', ('Switzerland', 62100000)),
-    ('it', ('Italy', 55200000)),
-    ('nl', ('Netherlands', 45700000)),
-    ('se', ('Sweden', 39000000)),
-    ('no', ('Norway', 32300000)),
-    ('es', ('Spain', 31000000)),
+    ('ca',  ('Canada', 165000000)),  # noqa
+    ('de',  ('Germany', 145000000)),  # noqa
+    ('jp',  ('Japan', 139000000)),  # noqa
+    ('fr',  ('France', 96700000)),  # noqa
+    ('au',  ('Australia', 91000000)),  # noqa
+    ('us',  ('United States', 68300000)),  # noqa
+    ('ru',  ('Russian Federation', 67900000)),  # noqa
+    ('ch',  ('Switzerland', 62100000)),  # noqa
+    ('it',  ('Italy', 55200000)),  # noqa
+    ('nl',  ('Netherlands', 45700000)),  # noqa
+    ('se',  ('Sweden', 39000000)),  # noqa
+    ('no',  ('Norway', 32300000)),  # noqa
+    ('es',  ('Spain', 31000000)),  # noqa
     ('mil', ('US Military', 28400000)),
     ], key=lambda x: len(x[0]), reverse=True))
 

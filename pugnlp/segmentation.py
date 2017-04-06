@@ -2,20 +2,18 @@
 # -*- coding: utf-8 -*-
 """Sentence and token/word segmentation utilities like Tokenizer"""
 from __future__ import division, print_function, absolute_import  # , unicode_literals
+from builtins import (  # noqa
+    bytes, dict, int, list, object, range, str,
+    ascii, chr, hex, input, next, oct, open,
+    pow, round, super,
+    filter, map, zip)
 # from future import standard_library
 # standard_library.install_aliases()  # noqa
-from builtins import zip
-from builtins import chr, str
-from builtins import range
-from builtins import object
 from past.builtins import basestring
 
 import os
 import re
 from itertools import chain
-import copy
-
-from dateutil.parser import parse as parse_dt
 
 from .detector_morse import Detector
 from .detector_morse import slurp
@@ -24,10 +22,10 @@ import nlup
 
 from .constant import DATA_PATH
 from .futil import generate_files
-from . import charlist
+from .util import stringify, passthrough
 
 # regex namespace only conflicts with regex kwarg in Tokenizer constructur
-from pugnlp.regexes import CRE_TOKEN, RE_NONWORD
+from pugnlp.regex import CRE_TOKEN, RE_NONWORD
 
 
 def list_ngrams(token_list, n=1, join=' '):
@@ -73,7 +71,7 @@ def list_ngram_range(token_list, *args, **kwargs):
     return list(chain(*(list_ngrams(token_list, i + 1, join=join) for i in range(0, n))))
 
 
-def generate_sentences(text='', train_path=None, case_sensitive=True, epochs=20):  # , classifier=None, **kwargs):
+def generate_sentences(text='', train_path=None, case_sensitive=True, epochs=20, classifier=nlup.BinaryAveragedPerceptron, **kwargs):
     """Generate sentences from a sequence of characters (text)
 
     Thin wrapper for Kyle Gorman's "DetectorMorse" module
@@ -81,39 +79,13 @@ def generate_sentences(text='', train_path=None, case_sensitive=True, epochs=20)
     Arguments:
       case_sensitive (int): whether to consider case to make decisions about sentence boundaries
       epochs (int): number of epochs (iterations for classifier training)
-      classifier (ClassifierClass): default: nlup.BinaryAveragedPerceptron
 
     """
-    # classifier = nlup.BinaryAveragedPerceptron if classifier is None else classifier
     if train_path:
         generate_sentences.detector = Detector(slurp(train_path), epochs=epochs, nocase=not case_sensitive)
     # generate_sentences.detector = SentenceDetector(text=text, nocase=not case_sensitive, epochs=epochs, classifier=classifier)
     return iter(generate_sentences.detector.segments(text))
-generate_sentences.detector = nlup.decorators.IO(Detector.load)(os.path.join(DATA_PATH, 'wsj_nlup_detector_morse_model.json.gz'))
-
-
-def str_strip(s, strip_chars=charlist.punctuation + ' \t\n\r'):
-    return s.strip(strip_chars)
-
-
-def str_lower(s):
-    return s.lower()
-
-
-def to_ascii(s, filler='-'):
-    if not s:
-        return ''
-    if not isinstance(s, basestring):  # e.g. np.nan
-        return to_ascii(repr(s))
-    try:
-        return s.encode('utf8')
-    except:
-        return ''.join(c if c < chr(128) else filler for c in s if c)
-stringify = to_ascii
-
-
-def passthrough(s):
-    return s
+generate_sentences.detector = nlup.decorators.IO(Detector.load)(os.path.join(DATA_PATH, 'wsj_detector_morse_model.json.gz'))
 
 
 class Tokenizer(object):
@@ -154,15 +126,15 @@ class Tokenizer(object):
             self.strip_chars = '-_*`()"' + '"'
         strip = strip or None
         # strip whitespace, overrides strip() method
-        self.strip = strip if callable(strip) else (str_strip if strip else None)
-        self.doc = to_ascii(doc)
+        self.strip = strip if callable(strip) else (str.strip if strip else None)
+        self.doc = stringify(doc)
         self.regex = regex
         if isinstance(self.regex, basestring):
             self.regex = re.compile(self.regex)
         self.nonwords = nonwords  # whether to use the default REGEX for nonwords
         self.nonwords_set = nonwords_set or set()
         self.nonwords_regex = nonwords_regex
-        self.lower = lower if callable(lower) else (str_lower if lower else None)
+        self.lower = lower if callable(lower) else (str.lower if lower else None)
         self.stemmer_name, self.stem = 'passthrough', passthrough  # stem can be a callable Stemmer instance or just a function
         self.ngrams = ngrams or 1  # ngram degree, numger of ngrams per token
         if isinstance(self.nonwords_regex, basestring):
@@ -182,7 +154,7 @@ class Tokenizer(object):
         ['new', 'string', 'to', 'parse']
         """
         # tokenization doesn't happen until you try to iterate through the Tokenizer instance or class
-        self.doc = to_ascii(doc)
+        self.doc = stringify(doc)
         # need to return self so that this will work: Tokenizer()('doc (str) to parse even though default doc is None')
         return self
     # to conform to this part of the nltk.tokenize.TokenizerI interface
@@ -268,7 +240,7 @@ class Tokenizer(object):
             for w in self.regex.finditer(self.doc):
                 if w:
                     w = w.group()
-                    w = w if not self.strip_chars else str_strip(w, self.strip_chars)
+                    w = w if not self.strip_chars else str.strip(w, self.strip_chars)
                     w = w if not self.strip else self.strip(w)
                     w = w if not self.stem else self.stem(w)
                     w = w if not self.lemmatize else self.lemmatize(w)
@@ -321,76 +293,3 @@ class PassageIter(object):
         for fname in os.listdir(self.file_generator):
             for line in open(os.path.join(self.dirname, fname)):
                 yield line.split()
-
-
-def generate_ngrams(obj_list, n0, n1=None):
-    """Generate sequences of objects with n0 to n1 elements in each sequence generated
-
-    >>> list(generate_ngrams('ABC', 1, 2))
-    [['A'], ['B'], ['C'], ['A', 'B'], ['B', 'C']]
-    """
-    obj_list = list(obj_list)
-    if n1 is None:
-        return zip(*[obj_list[i:] for i in range(n0)])
-    return chain(*[tuple(generate_ngrams(obj_list, n)) for n in range(n0, n1 + 1)])
-
-
-def find_dates(s):
-    """Try to find dates in the provided string, returning all of them in a list
-
-    TODO: currently very crude and doesn't segment dates from nondates at all.
-
-    >>> s = 'nothing to see here, move right along 4 April'
-    >>> dates = find_dates(s)
-    >>> len(dates)
-    3
-    >>> dates == find_dates(s.replace(' ', '_'))
-    True
-    >>> dates[-1]
-    datetime.datetime(20..., 4, 4, 0, 0)
-    >>> find_dates("19701225")
-    [datetime.datetime(1970, 12, 25, 0, 0)]
-    >>> find_dates("1970_12_25")[-1]
-    datetime.datetime(1970, 12, 25, 0, 0)
-    """
-    dates = []
-    s = s.replace('_', ' ')
-    for ngram in generate_ngrams(s.split(), 1, 3):
-        news = ' '.join(ngram)
-        try:
-            dates += [parse_dt(news)]
-        except:
-            pass
-    return dates
-
-
-def generate_sentences_from_files(path='.', ext=['.txt', '.md', '.rst'], with_meta=True,
-                                  **segmenter_kwargs):
-    """Find all the files in the indicated path with the extension(s) requested and yield thier sentences
-
-    >>> generate_sentences_from_files(__file__)
-    >>> find_dates("19701225")
-    datetime.datetime(1970, 12, 25, 0, 0)
-    """
-    for info in generate_files(path=path, ext=ext):
-        sent_num = 0
-        char_num = 0
-        line_num = 0
-        with open(info['path']) as fin:
-            try:
-                text = fin.read()
-            except UnicodeDecodeError:
-                print('SKIPPING: {}'.format(fin.name))
-                continue
-            sent_gen = generate_sentences(text=text, **segmenter_kwargs)
-            for sent_num, sent in sent_gen:
-                if with_meta:
-                    info['sentence'] = sent
-                    info['sent_num'] = sent_num
-                    info['char_num'] = char_num
-                    info['line_num'] = line_num
-                    line_num += sent.count('\n' if '\n' in sent else '\r')
-                    char_num += len(sent)
-                    yield copy.deepcopy(info)
-                else:
-                    yield sent

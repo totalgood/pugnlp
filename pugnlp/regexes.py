@@ -238,6 +238,19 @@ optionally_notted_zero_pad_4_10_digit = re.compile(r'\s*(' + not_symbol.pattern 
 # python package version number specification (PEP 440: [N!]N(.N)*[{a|b|rc}N][.postN][.devN] )
 re_ver = re.compile(r"^\s*[_]{0,2}version[_]{0,2}\s*=\s*\'(\d*!)?(\d+)\.(\d+)(\.(\d+))?((a|b|rc)\d*)?\'")
 
+########################################################################
+# for Twitter tweets
+
+re_hashtag = r'([-\s!?.;]|^)(#[A-Za-z]{2,32})\b'
+cre_hashtag = re.compile(re_hashtag)
+re_atuser = r'([-\s!?.;]|^)(@[A-Za-z_0-9]{2,32})\b'
+cre_atuser = re.compile(re_atuser)
+re_hashtag_at_end = r'.*\s([#][A-Za-z]{2,32})\s*[.?!-=\s]{0,8}\s*$'
+cre_hashtag_at_end = re.compile(re_hashtag_at_end)
+
+# for Twitter tweets
+########################################################################
+
 
 #####################################################
 # Sequence getters/iterators/wrappers

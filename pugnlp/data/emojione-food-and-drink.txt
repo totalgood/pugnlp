@@ -1,0 +1,84 @@
+🍇 Grapes
+🍈 Melon
+🍉 Watermelon
+🍊 Tangerine
+🍋 Lemon
+🍌 Banana
+🍍 Pineapple
+🍎 Red Apple
+🍏 Green Apple
+🍐 Pear
+🍑 Peach
+🍒 Cherries
+🍓 Strawberry
+🥝 Kiwi Fruit
+🍅 Tomato
+🥑 Avocado
+🍆 Eggplant
+🥔 Potato
+🥕 Carrot
+🌽 Ear of Corn
+🌶 Hot Pepper
+🥒 Cucumber
+🍄 Mushroom
+🥜 Peanuts
+🌰 Chestnut
+🍞 Bread
+🥐 Croissant
+🥖 Baguette Bread
+🥞 Pancakes
+🧀 Cheese Wedge
+🍖 Meat on Bone
+🍗 Poultry Leg
+🥓 Bacon
+🍔 Hamburger
+🍟 French Fries
+🍕 Pizza
+🌭 Hot Dog
+🌮 Taco
+🌯 Burrito
+🍳 Cooking
+🍲 Pot of Food
+🥗 Green Salad
+🍿 Popcorn
+🍱 Bento Box
+🍘 Rice Cracker
+🍙 Rice Ball
+🍚 Cooked Rice
+🍛 Curry Rice
+🍜 Steaming Bowl
+🍝 Spaghetti
+🍠 Roasted Sweet Potato
+🍢 Oden
+🍣 Sushi
+🍤 Fried Shrimp
+🍥 Fish Cake With Swirl
+🍡 Dango
+🍦 Soft Ice Cream
+🍧 Shaved Ice
+🍨 Ice Cream
+🍩 Doughnut
+🍪 Cookie
+🎂 Birthday Cake
+🍰 Shortcake
+🍫 Chocolate Bar
+🍬 Candy
+🍭 Lollipop
+🍮 Custard
+🍯 Honey Pot
+🍼 Baby Bottle
+🥛 Glass of Milk
+☕ Hot Beverage
+🍵 Teacup Without Handle
+🍶 Sake
+🍾 Bottle With Popping Cork
+🍷 Wine Glass
+🍸 Cocktail Glass
+🍹 Tropical Drink
+🍺 Beer Mug
+🍻 Clinking Beer Mugs
+🥂 Clinking Glasses
+🥃 Tumbler Glass
+🍽 Fork and Knife With Plate
+🍴 Fork and Knife
+🥄 Spoon

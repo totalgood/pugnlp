@@ -19,17 +19,16 @@
 * days_since    -- subract two date or datetime objects and return difference in days (float)
 '''
 from __future__ import division, print_function, absolute_import, unicode_literals
+from builtins import (  # noqa
+    bytes, dict, int, list, object, range, str,
+    ascii, chr, hex, input, next, oct, open,
+    pow, round, super,
+    filter, map, zip)
 # from future import standard_library
 # standard_library.install_aliases()  # noqa
-from builtins import next
-from builtins import map
-from builtins import zip
-from builtins import chr
-from builtins import range
-from builtins import object
-from builtins import str  # noqa
-from future.utils import viewitems
 from past.builtins import basestring
+from future.utils import viewitems
+
 try:  # python 3.5+
     from io import StringIO
     # from ConfigParser import ConfigParser
@@ -256,6 +255,38 @@ def clean_field_dict(field_dict, cleaner=str.strip, time_zone=None):
 #         for syn in thesaurus[tok][1:]:
 #             tokens.discard(syn)
 #     return thesaurus
+
+
+################################################################################
+# basic string munging functions that can be `apply`ed to a pandas series
+
+
+def str_strip(s, strip_chars=charlist.punctuation + ' \t\n\r'):
+    return s.strip(strip_chars)
+
+
+def str_lower(s):
+    return s.lower()
+
+
+def to_ascii(s, filler='-'):
+    if not s:
+        return ''
+    if not isinstance(s, basestring):  # e.g. np.nan
+        return to_ascii(repr(s))
+    try:
+        return s.encode('utf8')
+    except:
+        return ''.join(c if c < chr(128) else filler for c in s if c)
+stringify = to_ascii
+
+
+def passthrough(s):
+    return s
+
+
+# basic string munging functions that can be `apply`ed to a pandas series
+################################################################################
 
 
 def reduce_vocab(tokens, similarity=.85, limit=20, sort_order=-1):

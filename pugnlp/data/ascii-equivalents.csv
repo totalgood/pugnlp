@@ -1,0 +1,257 @@
+"decimal","octal","hexadecimal","binary","symbol","html_number","html_name","description","ascii_chr","ascii_str","is_printable"
+0,0,0,0,"NUL","&#000;"," ","Null char","NUL","NUL",0
+1,1,1,1,"SOH","&#001;"," ","Start of Heading","SOH","SOH",0
+2,2,2,10,"STX","&#002;"," ","Start of Text","STX","STX",0
+3,3,3,11,"ETX","&#003;"," ","End of Text","ETX","ETX",0
+4,4,4,100,"EOT","&#004;"," ","End of Transmission","EOT","EOT",0
+5,5,5,101,"ENQ","&#005;"," ","Enquiry","ENQ","ENQ",0
+6,6,6,110,"ACK","&#006;"," ","Acknowledgment","ACK","ACK",0
+7,7,7,111,"BEL","&#007;"," ","Bell","BEL","BEL",0
+8,10,8,1000,"BS","&#008;"," ","Back Space","BS","BS",0
+9,11,9,1001,"HT","&#009;"," ","Horizontal Tab","HT","HT",0
+10,12,"0A",1010,"LF","&#010;"," ","Line Feed","LF","LF",0
+11,13,"0B",1011,"VT","&#011;"," ","Vertical Tab","VT","VT",0
+12,14,"0C",1100,"FF","&#012;"," ","Form Feed","FF","FF",0
+13,15,"0D",1101,"CR","&#013;"," ","Carriage Return","CR","CR",0
+14,16,"0E",1110,"SO","&#014;"," ","Shift Out / X-On","SO","SO",0
+15,17,"0F",1111,"SI","&#015;"," ","Shift In / X-Off","SI","SI",0
+16,20,10,10000,"DLE","&#016;"," ","Data Line Escape","DLE","DLE",0
+17,21,11,10001,"DC1","&#017;"," ","Device Control 1 (oft. XON)","DC1","DC1",0
+18,22,12,10010,"DC2","&#018;"," ","Device Control 2","DC2","DC2",0
+19,23,13,10011,"DC3","&#019;"," ","Device Control 3 (oft. XOFF)","DC3","DC3",0
+20,24,14,10100,"DC4","&#020;"," ","Device Control 4","DC4","DC4",0
+21,25,15,10101,"NAK","&#021;"," ","Negative Acknowledgement","NAK","NAK",0
+22,26,16,10110,"SYN","&#022;"," ","Synchronous Idle","SYN","SYN",0
+23,27,17,10111,"ETB","&#023;"," ","End of Transmit Block","ETB","ETB",0
+24,30,18,11000,"CAN","&#024;"," ","Cancel","CAN","CAN",0
+25,31,19,11001,"EM","&#025;"," ","End of Medium","EM","EM",0
+26,32,"1A",11010,"SUB","&#026;"," ","Substitute","SUB","SUB",0
+27,33,"1B",11011,"ESC","&#027;"," ","Escape","ESC","ESC",0
+28,34,"1C",11100,"FS","&#028;"," ","File Separator","FS","FS",0
+29,35,"1D",11101,"GS","&#029;"," ","Group Separator","GS","GS",0
+30,36,"1E",11110,"RS","&#030;"," ","Record Separator","RS","RS",0
+31,37,"1F",11111,"US","&#031;"," ","Unit Separator","US","US",0
+32,40,20,100000," ","&#32;"," ","Space"," ",,1
+33,41,21,100001,"!","&#33;"," ","Exclamation mark","!",,1
+34,42,22,100010,"""","&#34;","&quot;","Double quotes (or speech marks)","""",,1
+35,43,23,100011,"#","&#35;"," ","Number","#",,1
+36,44,24,100100,"$","&#36;"," ","Dollar","$",,1
+37,45,25,100101,"%","&#37;"," ","Procenttecken","%",,1
+38,46,26,100110,"&","&#38;","&amp;","Ampersand","&",,1
+39,47,27,100111,"'","&#39;"," ","Single quote","'",,1
+40,50,28,101000,"(","&#40;"," ","Open parenthesis (or open bracket)","(",,1
+41,51,29,101001,")","&#41;"," ","Close parenthesis (or close bracket)",")",,1
+42,52,"2A",101010,"*","&#42;"," ","Asterisk","*",,1
+43,53,"2B",101011,"+","&#43;"," ","Plus","+",,1
+44,54,"2C",101100,",","&#44;"," ","Comma",",",,1
+45,55,"2D",101101,"-","&#45;"," ","Hyphen","-",,1
+46,56,"2E",101110,0,"&#46;"," ","Period, dot or full stop",0,,1
+47,57,"2F",101111,"/","&#47;"," ","Slash or divide","/",,1
+48,60,30,110000,0,"&#48;"," ","Zero",0,,1
+49,61,31,110001,1,"&#49;"," ","One",1,,1
+50,62,32,110010,2,"&#50;"," ","Two",2,,1
+51,63,33,110011,3,"&#51;"," ","Three",3,,1
+52,64,34,110100,4,"&#52;"," ","Four",4,,1
+53,65,35,110101,5,"&#53;"," ","Five",5,,1
+54,66,36,110110,6,"&#54;"," ","Six",6,,1
+55,67,37,110111,7,"&#55;"," ","Seven",7,,1
+56,70,38,111000,8,"&#56;"," ","Eight",8,,1
+57,71,39,111001,9,"&#57;"," ","Nine",9,,1
+58,72,"3A",111010,":","&#58;"," ","Colon",":",,1
+59,73,"3B",111011,";","&#59;"," ","Semicolon",";",,1
+60,74,"3C",111100,"<","&#60;","&lt;","Less than (or open angled bracket)","<",,1
+61,75,"3D",111101,"=","&#61;"," ","Equals","=",,1
+62,76,"3E",111110,">","&#62;","&gt;","Greater than (or close angled bracket)",">",,1
+63,77,"3F",111111,"?","&#63;"," ","Question mark","?",,1
+64,100,40,1000000,"@","&#64;"," ","At symbol","@",,1
+65,101,41,1000001,"A","&#65;"," ","Uppercase A","A",,1
+66,102,42,1000010,"B","&#66;"," ","Uppercase B","B",,1
+67,103,43,1000011,"C","&#67;"," ","Uppercase C","C",,1
+68,104,44,1000100,"D","&#68;"," ","Uppercase D","D",,1
+69,105,45,1000101,"E","&#69;"," ","Uppercase E","E",,1
+70,106,46,1000110,"F","&#70;"," ","Uppercase F","F",,1
+71,107,47,1000111,"G","&#71;"," ","Uppercase G","G",,1
+72,110,48,1001000,"H","&#72;"," ","Uppercase H","H",,1
+73,111,49,1001001,"I","&#73;"," ","Uppercase I","I",,1
+74,112,"4A",1001010,"J","&#74;"," ","Uppercase J","J",,1
+75,113,"4B",1001011,"K","&#75;"," ","Uppercase K","K",,1
+76,114,"4C",1001100,"L","&#76;"," ","Uppercase L","L",,1
+77,115,"4D",1001101,"M","&#77;"," ","Uppercase M","M",,1
+78,116,"4E",1001110,"N","&#78;"," ","Uppercase N","N",,1
+79,117,"4F",1001111,"O","&#79;"," ","Uppercase O","O",,1
+80,120,50,1010000,"P","&#80;"," ","Uppercase P","P",,1
+81,121,51,1010001,"Q","&#81;"," ","Uppercase Q","Q",,1
+82,122,52,1010010,"R","&#82;"," ","Uppercase R","R",,1
+83,123,53,1010011,"S","&#83;"," ","Uppercase S","S",,1
+84,124,54,1010100,"T","&#84;"," ","Uppercase T","T",,1
+85,125,55,1010101,"U","&#85;"," ","Uppercase U","U",,1
+86,126,56,1010110,"V","&#86;"," ","Uppercase V","V",,1
+87,127,57,1010111,"W","&#87;"," ","Uppercase W","W",,1
+88,130,58,1011000,"X","&#88;"," ","Uppercase X","X",,1
+89,131,59,1011001,"Y","&#89;"," ","Uppercase Y","Y",,1
+90,132,"5A",1011010,"Z","&#90;"," ","Uppercase Z","Z",,1
+91,133,"5B",1011011,"[","&#91;"," ","Opening bracket","[",,1
+92,134,"5C",1011100,"\","&#92;"," ","Backslash","\",,1
+93,135,"5D",1011101,"]","&#93;"," ","Closing bracket","]",,1
+94,136,"5E",1011110,"^","&#94;"," ","Caret - circumflex","^",,1
+95,137,"5F",1011111,"_","&#95;"," ","Underscore","_",,1
+96,140,60,1100000,"`","&#96;"," ","Grave accent","`",,1
+97,141,61,1100001,"a","&#97;"," ","Lowercase a","a",,1
+98,142,62,1100010,"b","&#98;"," ","Lowercase b","b",,1
+99,143,63,1100011,"c","&#99;"," ","Lowercase c","c",,1
+100,144,64,1100100,"d","&#100;"," ","Lowercase d","d",,1
+101,145,65,1100101,"e","&#101;"," ","Lowercase e","e",,1
+102,146,66,1100110,"f","&#102;"," ","Lowercase f","f",,1
+103,147,67,1100111,"g","&#103;"," ","Lowercase g","g",,1
+104,150,68,1101000,"h","&#104;"," ","Lowercase h","h",,1
+105,151,69,1101001,"i","&#105;"," ","Lowercase i","i",,1
+106,152,"6A",1101010,"j","&#106;"," ","Lowercase j","j",,1
+107,153,"6B",1101011,"k","&#107;"," ","Lowercase k","k",,1
+108,154,"6C",1101100,"l","&#108;"," ","Lowercase l","l",,1
+109,155,"6D",1101101,"m","&#109;"," ","Lowercase m","m",,1
+110,156,"6E",1101110,"n","&#110;"," ","Lowercase n","n",,1
+111,157,"6F",1101111,"o","&#111;"," ","Lowercase o","o",,1
+112,160,70,1110000,"p","&#112;"," ","Lowercase p","p",,1
+113,161,71,1110001,"q","&#113;"," ","Lowercase q","q",,1
+114,162,72,1110010,"r","&#114;"," ","Lowercase r","r",,1
+115,163,73,1110011,"s","&#115;"," ","Lowercase s","s",,1
+116,164,74,1110100,"t","&#116;"," ","Lowercase t","t",,1
+117,165,75,1110101,"u","&#117;"," ","Lowercase u","u",,1
+118,166,76,1110110,"v","&#118;"," ","Lowercase v","v",,1
+119,167,77,1110111,"w","&#119;"," ","Lowercase w","w",,1
+120,170,78,1111000,"x","&#120;"," ","Lowercase x","x",,1
+121,171,79,1111001,"y","&#121;"," ","Lowercase y","y",,1
+122,172,"7A",1111010,"z","&#122;"," ","Lowercase z","z",,1
+123,173,"7B",1111011,"{","&#123;"," ","Opening brace","{",,1
+124,174,"7C",1111100,"|","&#124;"," ","Vertical bar","|",,1
+125,175,"7D",1111101,"}","&#125;"," ","Closing brace","}",,1
+126,176,"7E",1111110,"~","&#126;"," ","Equivalency sign - tilde","~",,1
+127,177,"7F",1111111,,"&#127;"," ","Delete",,"DEL",1
+128,200,80,10000000,"€","&#128;","&euro;","Euro sign","Euro",,-1
+129,201,81,10000001," "," "," "," "," "," ",-1
+130,202,82,10000010,"‚","&#130;","&sbquo;","Single low-9 quotation mark",",",",",-1
+131,203,83,10000011,"ƒ","&#131;","&fnof;","Latin small letter f with hook","f","f",-1
+132,204,84,10000100,"„","&#132;","&bdquo;","Double low-9 quotation mark","""","""",-1
+133,205,85,10000101,"…","&#133;","&hellip;","Horizontal ellipsis",".","…",-1
+134,206,86,10000110,"†","&#134;","&dagger;","Dagger","t","t",-1
+135,207,87,10000111,"‡","&#135;","&Dagger;","Double dagger","+","++",-1
+136,210,88,10001000,"ˆ","&#136;","&circ;","Modifier letter circumflex accent","^","^^",-1
+137,211,89,10001001,"‰","&#137;","&permil;","Per mille sign","%","(%o)",-1
+138,212,"8A",10001010,"Š","&#138;","&Scaron;","Latin capital letter S with caron","S","S'",-1
+139,213,"8B",10001011,"‹","&#139;","&lsaquo;","Single left-pointing angle quotation","<","<",-1
+140,214,"8C",10001100,"Œ","&#140;","&OElig;","Latin capital ligature OE","O","OE",-1
+141,215,"8D",10001101," "," "," "," "," "," ",-1
+142,216,"8E",10001110,"Ž","&#142;"," ","Latin captial letter Z with caron","Z","Z^u",-1
+143,217,"8F",10001111," "," "," "," "," "," ",-1
+144,220,90,10010000," "," "," "," "," "," ",-1
+145,221,91,10010001,"‘","&#145;","&lsquo;","Left single quotation mark","'","'",-1
+146,222,92,10010010,"’","&#146;","&rsquo;","Right single quotation mark","'","'",-1
+147,223,93,10010011,"“","&#147;","&ldquo;","Left double quotation mark","""","""",-1
+148,224,94,10010100,"”","&#148;","&rdquo;","Right double quotation mark","""","""",-1
+149,225,95,10010101,"•","&#149;","&bull;","Bullet","*","*",-1
+150,226,96,10010110,"–","&#150;","&ndash;","En dash","-","--",-1
+151,227,97,10010111,"—","&#151;","&mdash;","Em dash","-","---",-1
+152,230,98,10011000,"˜","&#152;","&tilde;","Small tilde","~","~",-1
+153,231,99,10011001,"™","&#153;","&trade;","Trade mark sign","T","(TM)",-1
+154,232,"9A",10011010,"š","&#154;","&scaron;","Latin small letter S with caron","s","s'",-1
+155,233,"9B",10011011,"›","&#155;","&rsaquo;","Single right-pointing angle quotation mark",">",,-1
+156,234,"9C",10011100,"œ","&#156;","&oelig;","Latin small ligature oe","o","oe",-1
+157,235,"9D",10011101," "," "," "," "," "," ",-1
+158,236,"9E",10011110,"ž","&#158;"," ","Latin small letter z with caron","z",,-1
+159,237,"9F",10011111,"Ÿ","&#159;","&Yuml;","Latin capital letter Y with diaeresis","Y","Y”",-1
+160,240,"A0",10100000," ","&#160;","&nbsp;","Non-breaking space"," "," ",-1
+161,241,"A1",10100001,"¡","&#161;","&iexcl;","Inverted exclamation mark","i","i",-1
+162,242,"A2",10100010,"¢","&#162;","&cent;","Cent sign","c","c",-1
+163,243,"A3",10100011,"£","&#163;","&pound;","Pound sign","L","L",-1
+164,244,"A4",10100100,"¤","&#164;","&curren;","Currency sign","$","$",-1
+165,245,"A5",10100101,"¥","&#165;","&yen;","Yen sign","Y","Yen",-1
+166,246,"A6",10100110,"¦","&#166;","&brvbar;","Pipe, Broken vertical bar","|","|",-1
+167,247,"A7",10100111,"§","&#167;","&sect;","Section sign","S","(section)",-1
+168,250,"A8",10101000,"¨","&#168;","&uml;","Spacing diaeresis - umlaut","""","""",-1
+169,251,"A9",10101001,"©","&#169;","&copy;","Copyright sign","c","(C)",-1
+170,252,"AA",10101010,"ª","&#170;","&ordf;","Feminine ordinal indicator","a","a",-1
+171,253,"AB",10101011,"«","&#171;","&laquo;","Left double angle quotes","<","<<",-1
+172,254,"AC",10101100,"¬","&#172;","&not;","Not sign","-","--",-1
+173,255,"AD",10101101,,"&#173;","&shy;","Soft hyphen","-","-",-1
+174,256,"AE",10101110,"®","&#174;","&reg;","Registered trade mark sign","R","(R)",-1
+175,257,"AF",10101111,"¯","&#175;","&macr;","Spacing macron - overline","-","-",-1
+176,260,"B0",10110000,"°","&#176;","&deg;","Degree sign","o","deg",-1
+177,261,"B1",10110001,"±","&#177;","&plusmn;","Plus-or-minus sign","+","+/-",-1
+178,262,"B2",10110010,"²","&#178;","&sup2;","Superscript two - squared",2,"^2",-1
+179,263,"B3",10110011,"³","&#179;","&sup3;","Superscript three - cubed",3,"^3",-1
+180,264,"B4",10110100,"´","&#180;","&acute;","Acute accent - spacing acute","'","'",-1
+181,265,"B5",10110101,"µ","&#181;","&micro;","Micro sign","u","micro",-1
+182,266,"B6",10110110,"¶","&#182;","&para;","Pilcrow sign - paragraph sign","P","|P",-1
+183,267,"B7",10110111,"·","&#183;","&middot;","Middle dot - Georgian comma","*","(dot)",-1
+184,270,"B8",10111000,"¸","&#184;","&cedil;","Spacing cedilla","_","_",-1
+185,271,"B9",10111001,"¹","&#185;","&sup1;","Superscript one",1,"^1",-1
+186,272,"BA",10111010,"º","&#186;","&ordm;","Masculine ordinal indicator","o","^o",-1
+187,273,"BB",10111011,"»","&#187;","&raquo;","Right double angle quotes",">",">>",-1
+188,274,"BC",10111100,"¼","&#188;","&frac14;","Fraction one quarter","?","1/4",-1
+189,275,"BD",10111101,"½","&#189;","&frac12;","Fraction one half","?","1/2",-1
+190,276,"BE",10111110,"¾","&#190;","&frac34;","Fraction three quarters","?","3/4",-1
+191,277,"BF",10111111,"¿","&#191;","&iquest;","Inverted question mark","?","?",-1
+192,300,"C0",11000000,"À","&#192;","&Agrave;","Latin capital letter A with grave","A","A`",-1
+193,301,"C1",11000001,"Á","&#193;","&Aacute;","Latin capital letter A with acute","A","A'",-1
+194,302,"C2",11000010,"Â","&#194;","&Acirc;","Latin capital letter A with circumflex","A","A^",-1
+195,303,"C3",11000011,"Ã","&#195;","&Atilde;","Latin capital letter A with tilde","A","A~",-1
+196,304,"C4",11000100,"Ä","&#196;","&Auml;","Latin capital letter A with diaeresis","A","A:",-1
+197,305,"C5",11000101,"Å","&#197;","&Aring;","Latin capital letter A with ring above","A","A^o",-1
+198,306,"C6",11000110,"Æ","&#198;","&AElig;","Latin capital letter AE","A","AE",-1
+199,307,"C7",11000111,"Ç","&#199;","&Ccedil;","Latin capital letter C with cedilla","C","C",-1
+200,310,"C8",11001000,"È","&#200;","&Egrave;","Latin capital letter E with grave","E","E`",-1
+201,311,"C9",11001001,"É","&#201;","&Eacute;","Latin capital letter E with acute","E","E'",-1
+202,312,"CA",11001010,"Ê","&#202;","&Ecirc;","Latin capital letter E with circumflex","E","E^",-1
+203,313,"CB",11001011,"Ë","&#203;","&Euml;","Latin capital letter E with diaeresis","E","E",-1
+204,314,"CC",11001100,"Ì","&#204;","&Igrave;","Latin capital letter I with grave","I","I",-1
+205,315,"CD",11001101,"Í","&#205;","&Iacute;","Latin capital letter I with acute","I","I'",-1
+206,316,"CE",11001110,"Î","&#206;","&Icirc;","Latin capital letter I with circumflex","I","I^",-1
+207,317,"CF",11001111,"Ï","&#207;","&Iuml;","Latin capital letter I with diaeresis","I","I:",-1
+208,320,"D0",11010000,"Ð","&#208;","&ETH;","Latin capital letter ETH","D","-D",-1
+209,321,"D1",11010001,"Ñ","&#209;","&Ntilde;","Latin capital letter N with tilde","N","N~",-1
+210,322,"D2",11010010,"Ò","&#210;","&Ograve;","Latin capital letter O with grave","O","O`",-1
+211,323,"D3",11010011,"Ó","&#211;","&Oacute;","Latin capital letter O with acute","O","O'",-1
+212,324,"D4",11010100,"Ô","&#212;","&Ocirc;","Latin capital letter O with circumflex","O","O^",-1
+213,325,"D5",11010101,"Õ","&#213;","&Otilde;","Latin capital letter O with tilde","O","O~",-1
+214,326,"D6",11010110,"Ö","&#214;","&Ouml;","Latin capital letter O with diaeresis","O","O:",-1
+215,327,"D7",11010111,"×","&#215;","&times;","Multiplication sign","x","x",-1
+216,330,"D8",11011000,"Ø","&#216;","&Oslash;","Latin capital letter O with slash","O","O/",-1
+217,331,"D9",11011001,"Ù","&#217;","&Ugrave;","Latin capital letter U with grave","U","U`",-1
+218,332,"DA",11011010,"Ú","&#218;","&Uacute;","Latin capital letter U with acute","U","U'",-1
+219,333,"DB",11011011,"Û","&#219;","&Ucirc;","Latin capital letter U with circumflex","U","U^",-1
+220,334,"DC",11011100,"Ü","&#220;","&Uuml;","Latin capital letter U with diaeresis","U","U:",-1
+221,335,"DD",11011101,"Ý","&#221;","&Yacute;","Latin capital letter Y with acute","Y","Y",-1
+222,336,"DE",11011110,"Þ","&#222;","&THORN;","Latin capital letter THORN","p","p",-1
+223,337,"DF",11011111,"ß","&#223;","&szlig;","Latin small letter sharp s - ess-zed","B","B",-1
+224,340,"E0",11100000,"à","&#224;","&agrave;","Latin small letter a with grave","a","a`",-1
+225,341,"E1",11100001,"á","&#225;","&aacute;","Latin small letter a with acute","a","a'",-1
+226,342,"E2",11100010,"â","&#226;","&acirc;","Latin small letter a with circumflex","a","a^",-1
+227,343,"E3",11100011,"ã","&#227;","&atilde;","Latin small letter a with tilde","a","a~",-1
+228,344,"E4",11100100,"ä","&#228;","&auml;","Latin small letter a with diaeresis","a","a:",-1
+229,345,"E5",11100101,"å","&#229;","&aring;","Latin small letter a with ring above","a","a",-1
+230,346,"E6",11100110,"æ","&#230;","&aelig;","Latin small letter ae","ae","ae",-1
+231,347,"E7",11100111,"ç","&#231;","&ccedil;","Latin small letter c with cedilla","c","c",-1
+232,350,"E8",11101000,"è","&#232;","&egrave;","Latin small letter e with grave","e","e`",-1
+233,351,"E9",11101001,"é","&#233;","&eacute;","Latin small letter e with acute","e","e'",-1
+234,352,"EA",11101010,"ê","&#234;","&ecirc;","Latin small letter e with circumflex","e","e^",-1
+235,353,"EB",11101011,"ë","&#235;","&euml;","Latin small letter e with diaeresis","e","e:",-1
+236,354,"EC",11101100,"ì","&#236;","&igrave;","Latin small letter i with grave","i","i",-1
+237,355,"ED",11101101,"í","&#237;","&iacute;","Latin small letter i with acute","i","i",-1
+238,356,"EE",11101110,"î","&#238;","&icirc;","Latin small letter i with circumflex","i","i",-1
+239,357,"EF",11101111,"ï","&#239;","&iuml;","Latin small letter i with diaeresis","i","i",-1
+240,360,"F0",11110000,"ð","&#240;","&eth;","Latin small letter eth","d","eth",-1
+241,361,"F1",11110001,"ñ","&#241;","&ntilde;","Latin small letter n with tilde","n","n~",-1
+242,362,"F2",11110010,"ò","&#242;","&ograve;","Latin small letter o with grave","o","o`",-1
+243,363,"F3",11110011,"ó","&#243;","&oacute;","Latin small letter o with acute","o","o'",-1
+244,364,"F4",11110100,"ô","&#244;","&ocirc;","Latin small letter o with circumflex","o","o^",-1
+245,365,"F5",11110101,"õ","&#245;","&otilde;","Latin small letter o with tilde","o","o~",-1
+246,366,"F6",11110110,"ö","&#246;","&ouml;","Latin small letter o with diaeresis","o","o:",-1
+247,367,"F7",11110111,"÷","&#247;","&divide;","Division sign","/","/",-1
+248,370,"F8",11111000,"ø","&#248;","&oslash;","Latin small letter o with slash","o","o/",-1
+249,371,"F9",11111001,"ù","&#249;","&ugrave;","Latin small letter u with grave","u","u`",-1
+250,372,"FA",11111010,"ú","&#250;","&uacute;","Latin small letter u with acute","u","u'",-1
+251,373,"FB",11111011,"û","&#251;","&ucirc;","Latin small letter u with circumflex","u","u^",-1
+252,374,"FC",11111100,"ü","&#252;","&uuml;","Latin small letter u with diaeresis","u","u~",-1
+253,375,"FD",11111101,"ý","&#253;","&yacute;","Latin small letter y with acute","u","u:",-1
+254,376,"FE",11111110,"þ","&#254;","&thorn;","Latin small letter thorn","b","b",-1
+255,377,"FF",11111111,"ÿ","&#255;","&yuml;","Latin small letter y with diaeresis","y","y:",-1
