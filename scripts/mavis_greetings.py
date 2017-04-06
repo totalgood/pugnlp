@@ -19,3 +19,6 @@ for is_greeting, filename in enumerate(['mavis-batey-sentences.txt', 'mavis-bate
         df = pd.concat([df, pd.DataFrame([[sentence.strip(), is_greeting] for sentence in f],
                        columns=['sentence', 'is_greeting'])],
                        ignore_index=True)
+
+df.to_csv(os.path.join(DATA_PATH, 'mavis-greeting-training-set.csv'))
+# df = pd.DataFrame.from_csv('https://raw.githubusercontent.com/totalgood/pugnlp/master/pugnlp/data/mavis-greeting-training-set.csv', header=0)
