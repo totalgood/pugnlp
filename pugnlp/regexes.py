@@ -132,12 +132,11 @@ RE_CAMEL_BASIC_B, RE_CAMEL_NORMAL_B, RE_CAMEL_LIBERAL_B
 'hobson _.DOT._ lane'
 """
 from __future__ import division, print_function, absolute_import, unicode_literals
-from builtins import range, str, chr
-# from builtins import (
-#          bytes, dict, int, list, object, range, str,
-#          ascii, chr, hex, input, next, oct, open,
-#          pow, round, super,
-#          filter, map, zip)
+from builtins import (  # noqa
+         bytes, dict, int, list, object, range, str,
+         ascii, chr, hex, input, next, oct, open,
+         pow, round, super,
+         filter, map, zip)
 
 import re
 import string
