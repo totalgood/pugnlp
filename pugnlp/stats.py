@@ -194,6 +194,40 @@ def dataframe_tptnfpfn(df, pos_label=True, labels=None):
     return tp, tn, fp, fn
 
 
+class Conf(pd.DataFrame):
+
+    def __init__(self, df, *args, **kwargs):
+        c = pd.DataFrame(np.zeros(2, 2))
+        a, b = df.columns[:2]
+        c.columns = sorted(set(df[a]))[:2]
+        c.index = c.columns
+        c.index.name = a
+        c.columns.name = b
+        c1, c2 = c.columns
+        c1, c2 = c.columns
+        c[c1][c1] = ((df[a] == c1) & (df[b] == c1)).sum()
+        c[c1][c2] = ((df[a] == c1) & (df[b] == c2)).sum()
+        c[c2][c2] = ((df[a] == c2) & (df[b] == c2)).sum()
+        c[c2][c1] = ((df[a] == c2) & (df[b] == c1)).sum()
+        super(Conf, self).__init__(c.values, columns=c.columns, index=c.index)
+
+
+def confusion(df, labels=['neg', 'pos']):
+    """ Binary classification confusion """
+    c = pd.DataFrame(np.zeros((2, 2)), dtype=int)
+    a, b = df.columns[:2]  # labels[df.columns[:2]]
+    c.columns = sorted(set(df[a]))[:2]
+    c.columns.name = a
+    c.index = list(c.columns)
+    c.index.name = b
+    c1, c2 = c.columns
+    c[c1][c1] = ((df[a] == c1) & (df[b] == c1)).sum()
+    c[c1][c2] = ((df[a] == c1) & (df[b] == c2)).sum()
+    c[c2][c2] = ((df[a] == c2) & (df[b] == c2)).sum()
+    c[c2][c1] = ((df[a] == c2) & (df[b] == c1)).sum()
+    return c
+
+
 class Confusion(pd.DataFrame):
     """Compute a confusion matrix from a dataframe of true and predicted classes (2 cols)
     Stats are computed as if each of the classes were considered "positive" and
