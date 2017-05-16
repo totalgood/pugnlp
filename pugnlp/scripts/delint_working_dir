@@ -5,7 +5,7 @@ exec 1>&2
 find . -name "*.pyc" -type f -delete
 
 # Run flake8 and report any failures
-flake8_result=$(flake8 --config=$HOME/.git-templates/flake8.cfg .)
+flake8_result=$(flake8 --config=$HOME/.git-template/flake8.cfg .)
 if [ -z "$flake8_result" ]; then
     echo "flake8 passed"
     future_verification_result=$(python ../copenhagen/travis/future_verification.py django)
