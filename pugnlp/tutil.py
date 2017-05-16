@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 r"""table utils"""
-from __future__ import division, print_function, absolute_import
-from builtins import str, int, list  # , zip, unicode  # noqa
+from __future__ import print_function, unicode_literals, division, absolute_import
+from future import standard_library
+standard_library.install_aliases()  # noqa
+from builtins import *  # noqa
+
 from future.utils import viewitems  # noqa
 from past.builtins import basestring
 # from builtins import (
@@ -482,7 +485,7 @@ def clip_datetime(dt, tz=DEFAULT_TZ, is_dst=None):
         #       set it back when done
         dt = make_tz_aware(dt, tz=tz, is_dst=is_dst)
         try:
-            return pd.tslib.Timestamp(dt)
+            return pd.Timestamp(dt)
         except:
             pass
         if dt > MAX_DATETIME:

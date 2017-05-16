@@ -18,14 +18,11 @@
 * ordinal_float, datetime_from_ordinal_float -- conversion between datetimes and float days
 * days_since    -- subract two date or datetime objects and return difference in days (float)
 '''
-from __future__ import division, print_function, absolute_import, unicode_literals
-from builtins import (  # noqa
-    bytes, dict, int, list, object, range, str,
-    ascii, chr, hex, input, next, oct, open,
-    pow, round, super,
-    filter, map, zip)
-# from future import standard_library
-# standard_library.install_aliases()  # noqa
+from __future__ import print_function, unicode_literals, division, absolute_import
+from future import standard_library
+standard_library.install_aliases()  # noqa
+from builtins import *  # noqa
+
 from past.builtins import basestring
 from future.utils import viewitems
 
@@ -2898,7 +2895,7 @@ class DatetimeEncoder(json.JSONEncoder):
     #     # self.clip = False
 
     def default(self, obj):
-        if isinstance(obj, tuple(list(DATETIME_TYPES) + [pd.tslib.Timestamp])):
+        if isinstance(obj, tuple(list(DATETIME_TYPES) + [pd.Timestamp])):
             if getattr(self, 'clip', False):
                 return int(mktime(clip_datetime(make_tz_aware(obj)).timetuple()))
             else:
@@ -2909,7 +2906,7 @@ class DatetimeEncoder(json.JSONEncoder):
 class PrettyDict(OrderedDict):
     """Improved repr() for an OrderedDict, looks like dict but consistently ordered and prettier ;)
     Arguments:
-      clip (bool): Whether to clip dates to a valid pd.tslib.Timestamp range
+      clip (bool): Whether to clip dates to a valid pd.Timestamp range
       indent (int or None): Whether and how deep to insert LF + spaces to prettify string
                             Passed directly through to json.dumps which interprets it like this:
                               `None`: minify the json (no line breaks or indentation whitespace
@@ -2921,7 +2918,7 @@ class PrettyDict(OrderedDict):
     # FIXME: check the values and fix the discrepancy in default timezone for travis and local
     >>> from pugnlp.tutil import make_tz_aware
     >>> PrettyDict([('scif', make_tz_aware(datetime.datetime(3015, 10, 21))),
-    ...             ('btfd', pd.tslib.Timestamp(make_tz_aware(datetime.datetime(2015, 10, 21))))])
+    ...             ('btfd', pd.Timestamp(make_tz_aware(datetime.datetime(2015, 10, 21))))])
     {
       "scif": 3300...,
       "btfd": 1445...

@@ -167,6 +167,9 @@ username_obfuscated = r'(([a-zA-Z0-9!#$%&*+/?^`~]+' + dot + r'?){1,7})'
 email_obfuscated = re.compile(r'(\b' + username_obfuscated + at + fqdn_obfuscated + r'\b)')
 email_popular_obfuscated = re.compile(r'(\b' + username_obfuscated + at + fqdn_popular_obfuscated + r'\b)')
 
+href = r'([Hh][Rr][Ee][Ff]\s?=\s?["\'])([^"\']+)'
+cre_href = re.compile(href)
+
 url_path = r'(\b[^\s"\'>]+)'  # doesn't allow for unescaped query strings like ?param="value"
 url_scheme = r'(\b(' + '|'.join(constants.uri_schemes_iana) + r')[:][/]{2})'
 url_scheme_popular = r'(\b(' + '|'.join(constants.uri_schemes_popular) + r')[:][/]{2})'

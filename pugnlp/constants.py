@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Constants and discovered values, like path to current installation of pug-nlp."""
-from __future__ import division, print_function, absolute_import, unicode_literals
-from builtins import (  # noqa
-    bytes, dict, int, list, object, range, str,
-    ascii, chr, hex, input, next, oct, open,
-    pow, round, super,
-    filter, map, zip)
+from __future__ import print_function, unicode_literals, division, absolute_import
+from future import standard_library
+standard_library.install_aliases()  # noqa
+from builtins import *  # noqa
+
+from future.utils import viewitems  # noqa
+from past.builtins import basestring  # noqa
 
 import os
 import string
@@ -149,11 +150,11 @@ MAX_UINT32 = 4294967295
 MAX_INT32 = MAX_UINT32 // 2
 MAX_UINT16 = 65535
 MAX_INT16 = 32767
-MAX_TIMESTAMP = pd.tslib.Timestamp('2262-04-11 23:47:16.854775807', tz='utc')
-MIN_TIMESTAMP = pd.tslib.Timestamp(pd.datetime(1677, 9, 22, 0, 12, 44), tz='utc')
-ZERO_TIMESTAMP = pd.tslib.Timestamp('1970-01-01 00:00:00', tz='utc')
-MIN_DATETIME = MIN_TIMESTAMP.to_datetime()
-MAX_DATETIME = MAX_TIMESTAMP.to_datetime()
+MAX_TIMESTAMP = pd.Timestamp('2262-04-11 23:47:16.854775', tz='utc')  # 807 nanoseconds ignored by to_pydatetime()
+MIN_TIMESTAMP = pd.Timestamp(pd.datetime(1677, 9, 22, 0, 12, 44), tz='utc')
+ZERO_TIMESTAMP = pd.Timestamp('1970-01-01 00:00:00', tz='utc')
+MIN_DATETIME = MIN_TIMESTAMP.to_pydatetime()
+MAX_DATETIME = MAX_TIMESTAMP.to_pydatetime()
 MIN_DATETIME64 = MIN_TIMESTAMP.to_datetime64()
 MAX_DATETIME64 = MAX_TIMESTAMP.to_datetime64()
 INF = pd.np.inf
