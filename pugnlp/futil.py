@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 r"""file utils"""
-from __future__ import division, print_function, absolute_import
-# from builtins import str  # , zip  # noqa
-from past.builtins import basestring  # noqa
-try:  # python 3.5+
-    from io import StringIO
-    from configparser import ConfigParser
-    # from itertools import izip as zip
-except ImportError:
-    from StringIO import StringIO
-    from ConfigParser import ConfigParser
+from __future__ import print_function, unicode_literals, division, absolute_import
+from future import standard_library
+standard_library.install_aliases()  # noqa
+from builtins import *  # noqa
+
+from io import StringIO
+from configparser import ConfigParser
 
 import os
 import datetime
@@ -18,6 +15,7 @@ import warnings
 import subprocess
 from collections import Mapping
 import errno
+import json
 
 
 def expand_path(path, follow_links=False):
@@ -63,6 +61,45 @@ def walk_level(path, level=1):
         raise RuntimeError("Can't find a valid folder or file for path {0}".format(repr(path)))
 
 
+def get_type(full_path):
+    """Get the type (socket, file, dir, symlink, ...) for the provided path"""
+    status = {'type': []}
+    if os.path.ismount(full_path):
+        status['type'] += ['mount-point']
+    elif os.path.islink(full_path):
+        status['type'] += ['symlink']
+    if os.path.isfile(full_path):
+        status['type'] += ['file']
+    elif os.path.isdir(full_path):
+        status['type'] += ['dir']
+    if not status['type']:
+        if os.stat.S_ISSOCK(status['mode']):
+            status['type'] += ['socket']
+        elif os.stat.S_ISCHR(status['mode']):
+            status['type'] += ['special']
+        elif os.stat.S_ISBLK(status['mode']):
+            status['type'] += ['block-device']
+        elif os.stat.S_ISFIFO(status['mode']):
+            status['type'] += ['pipe']
+    if not status['type']:
+        status['type'] += ['unknown']
+    elif status['type'] and status['type'][-1] == 'symlink':
+        status['type'] += ['broken']
+    return status['type']
+
+
+def get_stat(full_path):
+    """Use python builtin equivalents to unix `stat` command and return dict containing stat data about a file"""
+    status = {}
+    status['size'] = os.path.getsize(full_path)
+    status['accessed'] = datetime.datetime.fromtimestamp(os.path.getatime(full_path))
+    status['modified'] = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
+    status['changed'] = datetime.datetime.fromtimestamp(os.path.getctime(full_path))
+    status['mode'] = os.stat(full_path).st_mode   # first 3 digits are User, Group, Other permissions: 1=execute,2=write,4=read
+    status['type'] = get_type(full_path)
+    return status
+
+
 def path_status(path, filename='', status=None, deep=False, verbosity=0):
     """ Retrieve the access, modify, and create timetags for a path along with its size
 
@@ -97,33 +134,7 @@ def path_status(path, filename='', status=None, deep=False, verbosity=0):
     status['dir'] = dir_path
     status['type'] = []
     try:
-        status['size'] = os.path.getsize(full_path)
-        status['size'] = os.path.getsize(full_path)
-        status['accessed'] = datetime.datetime.fromtimestamp(os.path.getatime(full_path))
-        status['modified'] = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
-        status['changed'] = datetime.datetime.fromtimestamp(os.path.getctime(full_path))
-        status['mode'] = os.stat(full_path).st_mode   # first 3 digits are User, Group, Other permissions: 1=execute,2=write,4=read
-        if os.path.ismount(full_path):
-            status['type'] += ['mount-point']
-        elif os.path.islink(full_path):
-            status['type'] += ['symlink']
-        if os.path.isfile(full_path):
-            status['type'] += ['file']
-        elif os.path.isdir(full_path):
-            status['type'] += ['dir']
-        if not status['type']:
-            if os.stat.S_ISSOCK(status['mode']):
-                status['type'] += ['socket']
-            elif os.stat.S_ISCHR(status['mode']):
-                status['type'] += ['special']
-            elif os.stat.S_ISBLK(status['mode']):
-                status['type'] += ['block-device']
-            elif os.stat.S_ISFIFO(status['mode']):
-                status['type'] += ['pipe']
-        if not status['type']:
-            status['type'] += ['unknown']
-        elif status['type'] and status['type'][-1] == 'symlink':
-            status['type'] += ['broken']
+        status.update(get_stat(full_path))
     except OSError:
         status['type'] = ['nonexistent'] + status['type']
         if verbosity > -1:
@@ -240,7 +251,9 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
       True
     """
     path = expand_path(path or '.')
+    # multiple extensions can be specified in a list or tuple
     ext = ext if isinstance(ext, (list, tuple)) else [ext]
+    # case-insensitive extensions
     ext = set(x.lower() for x in ext)
 
     if os.path.isfile(path) and any(path.lower().endswith(x) for x in ext):
@@ -255,15 +268,10 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
                     continue
                 yield path_status(dir_path, fn, verbosity=verbosity)
         if dirs:
-            # TODO: warn user if ext and dirs both set
             for fn in dir_names:
                 if ext and not any((fn.lower().endswith(x) for x in ext)):
                     continue
                 yield path_status(dir_path, fn, verbosity=verbosity)
-
-    # if verbosity > 1:
-    #     print files_found
-    # return files_found
 
 
 def find_dirs(*args, **kwargs):
@@ -356,3 +364,13 @@ def ssid_password(source='/etc/NetworkConnections/system-connections', ext=''):
         return ssid_password(config)
     elif isinstance(source, basestring):
         return ssid_password(StringIO(source))
+
+
+def read_json(file_or_path):
+    """Parse json contents of string or file object or file path and return python nested dict/lists"""
+    try:
+        with (open(file_or_path, 'r') if isinstance(file_or_path, (str, bytes)) else file_or_path) as f:
+            obj = json.load(f)
+    except IOError:
+        obj = json.loads(file_or_path)
+    return obj

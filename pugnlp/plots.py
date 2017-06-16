@@ -2,12 +2,7 @@
 # -*- coding: utf-8 -*-
 """Constants and discovered values, like path to current installation of pug-nlp."""
 from __future__ import division, print_function, absolute_import, unicode_literals
-from builtins import (  # noqa
-    bytes, dict, int, list, object, range, str,
-    ascii, chr, hex, input, next, oct, open,
-    pow, round, super,
-    filter, map, zip)
-
+from builtins import *
 import os
 
 import seaborn as sb
@@ -20,6 +15,9 @@ from pandas.tools.plotting import scatter_matrix
 from pugnlp.constants import DATA_PATH
 
 from mpl_toolkits.mplot3d import Axes3D
+
+from plotly import offline
+import plotly.graph_objs as go
 
 np = pd.np
 
@@ -226,3 +224,73 @@ def point_cloud(df, columns=[0, 1, 2]):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')  # noqa
     Axes3D.scatter(*[df[columns[i]] for i in range(3)], zdir='z', s=20, c=None, depthshade=True)
+    return ax
+
+
+def plotly_scatter(df):
+
+trace1 = go.Scatter(
+    x=[0, 1, 2],
+    y=[1, 1, 1],
+    mode='lines+markers+text',
+    name='Lines, Markers and Text',
+    text=['Text A', 'Text B', 'Text C'],
+    textposition='top'
+)
+trace2 = go.Scatter(
+    x=[0, 1, 2],
+    y=[2, 2, 2],
+    mode='markers+text',
+    name='Markers and Text',
+    text=['Text D', 'Text E', 'Text F'],
+    textposition='bottom'
+)
+trace3 = go.Scatter(
+    x=[0, 1, 2],
+    y=[3, 3, 3],
+    mode='lines+text',
+    name='Lines and Text',
+    text=['Text G', 'Text H', 'Text I'],
+    textposition='bottom'
+)
+data = [trace1, trace2, trace3]
+layout = go.Layout(
+    showlegend=False
+)
+fig = go.Figure(data=data, layout=layout)
+plot_url = py.plot(fig, filename='text-chart-basic')
+
+
+def join_spans(spans):
+    spans = list(spans)
+    joined_spans = [list(spans[0])]
+    for i, (start, stop) in enumerate(spans[1:]):
+        if start > joined_spans[i][1]:
+            joined_spans += [[start, stop]]
+        else:
+            joined_spans[i - 1][1] = stop
+    return joined_spans
+
+
+def mask2spans(mask, index=None):
+    """Convert a sequence of bools (True/False) into a list of the start and stop of the True "sections" or spans"""
+    index = list(range(len(mask))) if index is None else index
+
+    mask = pd.Series(mask)
+    mask = mask.astype(int).fillna(0).diff().fillna(0)
+    starts = list(index[mask > 0])
+    stops = list(index[mask < 0])
+    if len(stops) == len(starts) - 1:
+        stops += [index.values[-1]]
+    spans = join_spans(join_spans(zip(starts, stops)))
+    return spans
+
+
+def plotly_timeseries(df, mask=None):
+    spans = mask2spans(mask)
+    offline.plot(df.iplot(
+        asFigure=True, xTitle='Date-Time', yTitle='Monitor Value', kind='scatter', logy=True,
+        vspan=spans),
+        filename=filename,
+        )
+    return df
