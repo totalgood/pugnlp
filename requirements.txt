@@ -29,7 +29,7 @@ gensim>=2.1.0,<3.0.0
 # nlup is a perceptron and jsonpickle for Kyle Gorman's sentence segmenter called DetectorMorse
 
 # # scipy requires:
-#$ sudo apt-get install gfortran libopenblas-dev liblapack-dev python-scipy python-matplotlib python-numpy
+#$ sudo apt-get install python-dev python3.5-dev python3-virtualenv python-pip build-essential gfortran
 
 # # matplotlib requires:
 #$ sudo apt-get install libpng12-dev libfreetype6-dev
