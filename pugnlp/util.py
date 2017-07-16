@@ -95,6 +95,27 @@ def qs_to_table(qs, excluded_fields=['id']):
     return rows
 
 
+def remove_invalid_chars(str_or_seq, valid_regex=r'\w'):
+    seq = [str_or_seq] if isinstance(str_or_seq, str) else str_or_seq
+    seq = [''.join(re.findall(valid_regex, s)) for s in seq]
+    return seq[0] if isinstance(str_or_seq, str) else seq
+
+
+def clean_columns(columns, valid_regex=r'\w', lower=True):
+    rettype = None
+    if isinstance(columns, str):
+        rettype = type(columns)
+        columns = [columns]
+    columns = [c.strip() for c in columns]
+    # # unneccessary because these are invalid characters removed below
+    # columns = [(c[1:-1] if c[0] in '\'"' and c[-1] == c[0] else c) for c in columns]
+    # columns = [(c[1:-1] if c[0] in '{([<' and c[-1] in '})]>' else c) for c in columns]
+    columns = [re.sub('\s', '_', c).lower() for c in columns]
+    columns = remove_invalid_chars(columns, valid_regex=r'\w')
+    columns = np.array(columns) if rettype is None else rettype(columns[0])
+    return columns
+
+
 def force_hashable(obj, recursive=True):
     """Force frozenset() command to freeze the order and contents of mutables and iterables like lists, dicts, generators
 
