@@ -18,10 +18,10 @@ addons:
     packages:
       - git
       - python-pip
-      # - gfortran
-      # - libopenblas-dev
-      # - liblapack-dev
-      # - python-numpy
+      - gfortran
+      - libopenblas-dev
+      - liblapack-dev
+      #- python-numpy
       # - python-scipy
       # - python-matplotlib
       # - python3-pip
