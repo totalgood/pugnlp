@@ -5,7 +5,7 @@
 sudo: false
 language: python
 virtualenv:
-  system_site_packages: true
+  system_site_packages: false
 env:
   matrix:
     # - DISTRIB="ubuntu" PYTHON_VERSION="2.7" COVERAGE="true" COVERALLS="false"
@@ -18,12 +18,12 @@ addons:
     packages:
       - git
       - python-pip
-      - gfortran
-      - libopenblas-dev
-      - liblapack-dev
-      - python-numpy
-      - python-scipy
-      - python-matplotlib
+      # - gfortran
+      # - libopenblas-dev
+      # - liblapack-dev
+      # - python-numpy
+      # - python-scipy
+      # - python-matplotlib
       # - python3-pip
       # - python3-numpy
       # - python3-scipy
