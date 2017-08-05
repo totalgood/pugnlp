@@ -2,7 +2,7 @@
 # Read more under http://docs.travis-ci.com/user/build-configuration/
 # THIS SCRIPT IS SUPPOSED TO BE AN EXAMPLE. MODIFY IT ACCORDING TO YOUR NEEDS!
 
-sudo: true
+sudo: false
 language: python
 virtualenv:
   system_site_packages: true
@@ -24,10 +24,10 @@ addons:
       - python-numpy
       - python-scipy
       - python-matplotlib
-      - python3-pip
-      - python3-numpy
-      - python3-scipy
-      - python3-matplotlib
+      # - python3-pip
+      # - python3-numpy
+      # - python3-scipy
+      # - python3-matplotlib
 install:
   - source tests/travis_install.sh
   - pip install -r requirements.txt
