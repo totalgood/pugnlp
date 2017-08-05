@@ -1,7 +1,7 @@
 """Run doctests in pugnlp.constant"""
 
 
-import pugnlp.constant
+import pugnlp.constants
 
 from unittest import TestCase
 
@@ -13,4 +13,4 @@ class Test(TestCase):
         pass
 
     def test_importability(self):
-        self.assertTrue(pugnlp.constant)
+        self.assertTrue(pugnlp.constants)
