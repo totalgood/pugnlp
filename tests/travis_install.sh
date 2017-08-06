@@ -32,8 +32,8 @@ if [[ "$DISTRIB" == "conda" ]]; then
     conda install scipy
 
 elif [[ "$DISTRIB" == "ubuntu" ]]; then
-    echo "installing packages in .travis.yml"
-    # sudo apt-get install -y gfortran libopenblas-dev liblapack-dev python-numpy python-scipy python-matplotlib
+    # echo "installing packages in .travis.yml"
+    sudo apt-get install -y gfortran libopenblas-dev liblapack-dev python-numpy python-scipy python-matplotlib
 fi
 
 if [[ "$COVERAGE" == "true" ]]; then

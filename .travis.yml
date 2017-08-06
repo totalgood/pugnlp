@@ -21,7 +21,7 @@ addons:
       - gfortran
       - libopenblas-dev
       - liblapack-dev
-      - python3-matplotlib
+      - python-matplotlib
       # - python-numpy
       # - python-scipy
       # - python-matplotlib
