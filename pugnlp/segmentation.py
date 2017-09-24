@@ -15,8 +15,8 @@ import os
 import re
 from itertools import chain
 
-from .detector_morse import Detector
-from .detector_morse import slurp
+from pugnlp.detector_morse import Detector
+from pugnlp.detector_morse import slurp
 # from .penn_treebank_tokenizer import word_tokenize
 import nlup
 
@@ -70,21 +70,32 @@ def list_ngram_range(token_list, *args, **kwargs):
     return list(chain(*(list_ngrams(token_list, i + 1, join=join) for i in range(0, n))))
 
 
-def generate_sentences(text='', train_path=None, case_sensitive=True, epochs=20, classifier=nlup.BinaryAveragedPerceptron, **kwargs):
+def generate_sentences(text='', train_path=None, case_sensitive=True, preprocess=1,
+                       epochs=20, classifier=nlup.BinaryAveragedPerceptron, **kwargs):
     """Generate sentences from a sequence of characters (text)
 
     Thin wrapper for Kyle Gorman's "DetectorMorse" module
 
     Arguments:
+      preprocess (bool): whether to assume common sentence delimitters in markdown and asciidoc formatting
+                         using r'[.?!][ \t]*\n\n|[.?!][ \t]*\r\n\r\n|[.?!][ \t]*\r\r|[.?!][ ][ ][A-Z]'
       case_sensitive (int): whether to consider case to make decisions about sentence boundaries
       epochs (int): number of epochs (iterations for classifier training)
 
     """
+    texts = [text] if isinstance(text, (str, bytes, basestring)) else text
+    if preprocess:
+        re_eos = re.compile(r'[.?!][ \t]*\n\n|[.?!][ \t]*\r\n\r\n|[.?!][ \t]*\r\r|[.?!][ ][ ][A-Z]')
+        texts = chain(re_eos.split(text) for text in texts)
+
     if train_path:
         generate_sentences.detector = Detector(slurp(train_path), epochs=epochs, nocase=not case_sensitive)
+    else:
+        generate_sentences.detector = nlup.decorators.IO(Detector.load)(
+            os.path.join(DATA_PATH, 'wsj_pugnlp.detector_morse.Detector.json.gz'))
+
     # generate_sentences.detector = SentenceDetector(text=text, nocase=not case_sensitive, epochs=epochs, classifier=classifier)
-    return iter(generate_sentences.detector.segments(text))
-generate_sentences.detector = nlup.decorators.IO(Detector.load)(os.path.join(DATA_PATH, 'wsj_detector_morse_model.json.gz'))
+    return iter(chain(generate_sentences.detector.segments(text) for text in texts))
 
 
 class Tokenizer(object):

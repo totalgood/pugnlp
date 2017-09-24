@@ -1,3 +1,18 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+""" Penn Treebank tokenizer, adapted from *nltk.tokenize.treebank.py*
+by Kyle Gorman, which in turn is adapted from an infamous sed script by Robert McIntyre.
+Even ignoring the reduced import overhead, this is about half again faster than
+the NLTK version; don't ask me why.
+
+Examples:
+    >>> s = \'\'\'Good muffins cost $3.88\\nin New York.  Please buy me\\ntwo of them.\\nThanks.\'\'\'
+    >>> word_tokenize(s)
+    ['Good', 'muffins', 'cost', '$', '3.88', 'in', 'New', 'York.', 'Please', 'buy', 'me', 'two', 'of', 'them.', 'Thanks', '.']
+    >>> s = "They'll save and invest more."
+    >>> word_tokenize(s)
+    ['They', "'ll", 'save', 'and', 'invest', 'more', '.']
+"""
 # Copyright (c) 2014 Kyle Gorman <gormanky@ohsu.edu>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
@@ -18,21 +33,15 @@
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-"""Penn Treebank tokenizer, adapted from `nltk.tokenize.treebank.py`, which
-in turn is adapted from an infamous sed script by Robert McIntyre. Even
-ignoring the reduced import overhead, this is about half again faster than
-the NLTK version; don't ask me why.
-
-Examples:
-    >>> s = '''Good muffins cost $3.88\\nin New York.  Please buy me\\ntwo of them.\\nThanks.'''
-    >>> word_tokenize(s)
-    ['Good', 'muffins', 'cost', '$', '3.88', 'in', 'New', 'York.', 'Please', 'buy', 'me', 'two', 'of', 'them.', 'Thanks', '.']
-    >>> s = "They'll save and invest more."
-    >>> word_tokenize(s)
-    ['They', "'ll", 'save', 'and', 'invest', 'more', '.']
-"""
+from __future__ import division, print_function, absolute_import  # , unicode_literals
+from builtins import (  # noqa
+    bytes, dict, int, list, object, range, str,
+    ascii, chr, hex, input, next, oct, open,
+    pow, round, super,
+    filter, map, zip)
+# from future import standard_library
+# standard_library.install_aliases()  # noqa
+from past.builtins import basestring
 
 from re import sub
 

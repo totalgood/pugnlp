@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""Sentence segmentor "DetectorMorse" by Kyle Gorman
+
+Thin wrappers by Hobson Lane
+"""
 # Copyright (c) 2014 Kyle Gorman <gormanky@ohsu.edu>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
@@ -18,15 +24,21 @@
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+from __future__ import division, print_function, absolute_import  # , unicode_literals
+from builtins import (  # noqa
+    bytes, dict, int, list, object, range, str,
+    ascii, chr, hex, input, next, oct, open,
+    pow, round, super,
+    filter, map, zip)
+# from future import standard_library
+# standard_library.install_aliases()  # noqa
+from past.builtins import basestring
 
 import logging
-
 from re import finditer, match, search
 from collections import namedtuple
 
-from nlup import case_feature, isnumberlike, listify, \
-    BinaryAveragedPerceptron, BinaryConfusion, IO, JSONable
+from nlup import case_feature, isnumberlike, listify, BinaryAveragedPerceptron, BinaryConfusion, IO, JSONable
 
 from .penn_treebank_tokenizer import word_tokenize
 # FIXME(kbg) can surely avoid full-blown tokenization
