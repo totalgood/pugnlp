@@ -17,6 +17,7 @@ from itertools import chain
 
 from pugnlp.detector_morse import Detector
 from pugnlp.detector_morse import slurp
+from pugnlp.futil import find_files
 # from .penn_treebank_tokenizer import word_tokenize
 import nlup
 
@@ -88,7 +89,8 @@ class Split(object):
             yield self.text[start:]
 
 
-def generate_sentences(text='', train_path=None, case_sensitive=True,
+# TODO: break this up
+def generate_sentences(text='', train_path=None, case_sensitive=True, ext=['.md', '.txt', '.asc', '.asciidoc'],
                        normalize_ordinals=1, normalize_newlines=1, normalize_sentence_boundaries=1,
                        epochs=20, classifier=nlup.BinaryAveragedPerceptron,
                        re_eol=r'\r\n|\r|\n', **kwargs):
@@ -104,7 +106,18 @@ def generate_sentences(text='', train_path=None, case_sensitive=True,
       epochs (int): number of epochs (iterations for classifier training)
 
     """
-    if isinstance(text, (str, bytes, basestring)):
+    ext = [ext] if isinstance(ext, (str, bytes)) else ext
+    if isinstance(text, (str, bytes)) and len(text) <= 256:
+        if os.path.isfile(text) and os.path.splitext(text)[-1].lower() in ext:
+            text = open(text)
+        elif os.path.isdir(text):
+            return chain.from_iterable((
+                generate_sentences(text=stat['path'], train_path=train_path, ext=ext,
+                                   normalize_ordinals=normalize_ordinals, normalize_newlines=normalize_ordinals,
+                                   normalize_sentence_boundaries=normalize_sentence_boundaries,
+                                   epochs=epochs, classifier=classifier, re_eol=re_eol, **kwargs)
+                for stat in find_files(text, ext=ext)))
+    if isinstance(text, (str, bytes)):
         texts = Split(re_eol, text)
     else:
         texts = chain.from_iterable(Split(re_eol, doc) for doc in text)
@@ -126,6 +139,8 @@ def generate_sentences(text='', train_path=None, case_sensitive=True,
             os.path.join(DATA_PATH, 'wsj_pugnlp.detector_morse.Detector.json.gz'))
     # generate_sentences.detector = SentenceDetector(text=text, nocase=not case_sensitive, epochs=epochs, classifier=classifier)
     return iter(chain.from_iterable((s.lstrip() for s in generate_sentences.detector.segments(text)) for text in texts))
+
+
 
 
 class Tokenizer(object):
