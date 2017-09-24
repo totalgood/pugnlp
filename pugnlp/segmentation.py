@@ -70,11 +70,32 @@ def list_ngram_range(token_list, *args, **kwargs):
     return list(chain(*(list_ngrams(token_list, i + 1, join=join) for i in range(0, n))))
 
 
-def generate_sentences(text='', train_path=None, case_sensitive=True, preprocess=1,
-                       epochs=20, classifier=nlup.BinaryAveragedPerceptron, **kwargs):
+class Split(object):
+
+    def __init__(self, re_delim, text):
+        self.text = text
+        self.re_delim = re_delim if hasattr(re_delim, 'finditer') else re.compile(re_delim)
+
+    def __iter__(self):
+        start = 0
+        for delim_match in self.re_delim.finditer(self.text):
+            delim_start, delim_stop = delim_match.span()
+            yield self.text[start:delim_stop]
+            start = delim_stop
+            if start >= len(self.text):
+                break
+        if start < len(self.text):
+            yield self.text[start:]
+
+
+def generate_sentences(text='', train_path=None, case_sensitive=True,
+                       normalize_ordinals=1, normalize_newlines=1, normalize_sentence_boundaries=1,
+                       epochs=20, classifier=nlup.BinaryAveragedPerceptron,
+                       re_eol=r'\r\n|\r|\n', **kwargs):
     """Generate sentences from a sequence of characters (text)
 
-    Thin wrapper for Kyle Gorman's "DetectorMorse" module
+    Wrapped text (newlines at column 80, for instance) will break this, breaking up sentences.
+    Wrapper and preprocessor for Kyle Gorman's "DetectorMorse" module
 
     Arguments:
       preprocess (bool): whether to assume common sentence delimitters in markdown and asciidoc formatting
@@ -83,19 +104,28 @@ def generate_sentences(text='', train_path=None, case_sensitive=True, preprocess
       epochs (int): number of epochs (iterations for classifier training)
 
     """
-    texts = [text] if isinstance(text, (str, bytes, basestring)) else text
-    if preprocess:
-        re_eos = re.compile(r'[.?!][ \t]*\n\n|[.?!][ \t]*\r\n\r\n|[.?!][ \t]*\r\r|[.?!][ ][ ][A-Z]')
-        texts = chain(re_eos.split(text) for text in texts)
+    if isinstance(text, (str, bytes, basestring)):
+        texts = Split(re_eol, text)
+    else:
+        texts = chain.from_iterable(Split(re_eol, doc) for doc in text)
+
+    if normalize_newlines:
+        re_eol = re.compile(r'\r\n|\r')
+        texts = (re_eol.sub(r'\n', doc) for doc in texts)
+    if normalize_ordinals:
+        re_ord = re.compile(r'\b([0-9]+|[A-Za-z])[.?!][ \t]{1,4}([A-Za-z])')
+        texts = (re_ord.sub(r'\1) \2', doc) for doc in texts)
+    if normalize_sentence_boundaries:
+        re_eos = re.compile(r'([.?!])([ ][ ])[\n]?([A-Z])')
+        texts = (re_eos.sub(r'\1\n\3', doc) for doc in texts)
 
     if train_path:
         generate_sentences.detector = Detector(slurp(train_path), epochs=epochs, nocase=not case_sensitive)
-    else:
-        generate_sentences.detector = nlup.decorators.IO(Detector.load)(
+    elif not isinstance(getattr(generate_sentences, 'detector', None), Detector):
+        generate_sentences.detector = Detector.load(
             os.path.join(DATA_PATH, 'wsj_pugnlp.detector_morse.Detector.json.gz'))
-
     # generate_sentences.detector = SentenceDetector(text=text, nocase=not case_sensitive, epochs=epochs, classifier=classifier)
-    return iter(chain(generate_sentences.detector.segments(text) for text in texts))
+    return iter(chain.from_iterable((s.lstrip() for s in generate_sentences.detector.segments(text)) for text in texts))
 
 
 class Tokenizer(object):
