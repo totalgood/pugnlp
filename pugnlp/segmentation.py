@@ -28,6 +28,67 @@ from .util import stringify, passthrough
 from pugnlp.regexes import CRE_TOKEN, RE_NONWORD
 
 
+class Split(object):
+
+    def __init__(self, text, re_delim=r'\r\n|\r|\n'):
+        self.text = text
+        self.re_delim = re_delim if hasattr(re_delim, 'finditer') else re.compile(re_delim)
+
+    def __iter__(self):
+        start = 0
+        for delim_match in self.re_delim.finditer(self.text):
+            delim_start, delim_stop = delim_match.span()
+            yield self.text[start:delim_stop]
+            start = delim_stop
+            if start >= len(self.text):
+                break
+        if start < len(self.text):
+            yield self.text[start:]
+
+
+def generate_lines(text, ext=['.txt', '.md', '.rst', '.asciidoc', '.asc']):
+    """ Yield text one line at a time from from a single file path, files in a directory, or a text string
+
+    >>> list(generate_lines('Hello crazy\r\nMS/Apple world\rof EOLS.\n'))
+    ['Hello crazy\r\n', 'MS/Apple world\r', 'of EOLS.\n']
+    """
+
+    if isinstance(text, (str, bytes)):
+        if len(text) <= 256:
+            if os.path.isfile(text) and os.path.splitext(text)[-1].lower() in ext:
+                return open(text)
+            elif os.path.isdir(text):
+                return chain.from_iterable(generate_lines(stat['path']) for stat in find_files(text, ext=ext))
+            else:
+                return (line for line in Split(text=text))
+        else:
+            return Split(text=text)
+    return chain.from_iterable(generate_lines(obj) for obj in text)
+
+
+def segment_text(text=os.path.join(DATA_PATH, 'goodreads-omniscient-books.txt'),
+                 start=None, stop=r'^Rate\ this', ignore=r'^[\d]'):
+    """ Split text into segments (sections, paragraphs) using regular expressions to trigger breaks.start
+    """
+    start = start if hasattr(start, 'match') else re.compile(start) if start else None
+    stop = stop if hasattr(stop, 'match') else re.compile(stop) if stop else None
+    ignore = ignore if hasattr(ignore, 'match') else re.compile(ignore) if ignore else None
+
+    segments = []
+    segment = []
+    for line in streamify(open('/home/hobs/Dropbox/Docs/projects/controller/goodreads-omniscient.txt')):
+        if start is not None and start.match(line):
+            segments += [segment] if len(segment) else []
+            segment = [line]
+        elif stop is not None and stop.match(line):
+            segments += [segment]
+            segment = []
+        elif ignore is not None and ignore.match(line):
+            continue
+        else:
+            segment += [segment]
+
+
 def list_ngrams(token_list, n=1, join=' '):
     """Return a list of n-tuples, one for each possible sequence of n items in the token_list
 
@@ -71,24 +132,6 @@ def list_ngram_range(token_list, *args, **kwargs):
     return list(chain(*(list_ngrams(token_list, i + 1, join=join) for i in range(0, n))))
 
 
-class Split(object):
-
-    def __init__(self, re_delim, text):
-        self.text = text
-        self.re_delim = re_delim if hasattr(re_delim, 'finditer') else re.compile(re_delim)
-
-    def __iter__(self):
-        start = 0
-        for delim_match in self.re_delim.finditer(self.text):
-            delim_start, delim_stop = delim_match.span()
-            yield self.text[start:delim_stop]
-            start = delim_stop
-            if start >= len(self.text):
-                break
-        if start < len(self.text):
-            yield self.text[start:]
-
-
 # TODO: break this up
 def generate_sentences(text='', train_path=None, case_sensitive=True, ext=['.md', '.txt', '.asc', '.asciidoc'],
                        normalize_ordinals=1, normalize_newlines=1, normalize_sentence_boundaries=1,
@@ -118,9 +161,9 @@ def generate_sentences(text='', train_path=None, case_sensitive=True, ext=['.md'
                                    epochs=epochs, classifier=classifier, re_eol=re_eol, **kwargs)
                 for stat in find_files(text, ext=ext)))
     if isinstance(text, (str, bytes)):
-        texts = Split(re_eol, text)
+        texts = Split(text=text, re_delim=re_eol)
     else:
-        texts = chain.from_iterable(Split(re_eol, doc) for doc in text)
+        texts = chain.from_iterable(Split(text=doc, re_delm=re_eol) for doc in text)
 
     if normalize_newlines:
         re_eol = re.compile(r'\r\n|\r')

@@ -106,6 +106,7 @@ def clean_columns(columns, valid_regex=r'\w', lower=True):
     if isinstance(columns, str):
         rettype = type(columns)
         columns = [columns]
+
     columns = [c.strip() for c in columns]
     # # unneccessary because these are invalid characters removed below
     # columns = [(c[1:-1] if c[0] in '\'"' and c[-1] == c[0] else c) for c in columns]
