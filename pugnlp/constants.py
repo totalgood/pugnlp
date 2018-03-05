@@ -144,15 +144,24 @@ VECTOR_TYPES = (list, tuple, np.matrix, np.ndarray)
 MAPPING_TYPES = (Mapping, pd.Series, pd.DataFrame)
 
 # These are the valid dates for all 3 datetime types in python (and the underelying integer nanoseconds)
-MAX_INT64 = 9223372036854775807
-MAX_UINT64 = MAX_INT64 * 2 - 1
-MAX_UINT32 = 4294967295
-MAX_INT32 = MAX_UINT32 // 2
-MAX_UINT16 = 65535
-MAX_INT16 = 32767
-MAX_TIMESTAMP = pd.Timestamp('2262-04-11 23:47:16.854775', tz='utc')  # 807 nanoseconds ignored by to_pydatetime()
+INT_MAX = INT64_MAX = 2 ** 63 - 1
+INT_MIN = INT64_MIN = - 2 ** 63
+UINT_MAX = UINT64_MAX = - 2 ** 64 - 1
+
+INT32_MAX = 2 ** 31 - 1
+INT32_MIN = - 2 ** 31
+UINT32_MAX = - 2 ** 32 - 1
+
+INT16_MAX = 2 ** 15 - 1
+INT16_MIN = - 2 ** 15
+UINT16_MAX = - 2 ** 16 - 1
+
+# Pandas timestamps can handle nanoseconds? by python datetimestampes cannot.
+MAX_TIMESTAMP = pd.Timestamp('2262-04-11 23:47:16.854775', tz='utc')
 MIN_TIMESTAMP = pd.Timestamp(pd.datetime(1677, 9, 22, 0, 12, 44), tz='utc')
 ZERO_TIMESTAMP = pd.Timestamp('1970-01-01 00:00:00', tz='utc')
+
+# to_pydatetime() rounds to microseconds, ignoring 807 nanoseconds available in other MAX TIMESTAMPs
 MIN_DATETIME = MIN_TIMESTAMP.to_pydatetime()
 MAX_DATETIME = MAX_TIMESTAMP.to_pydatetime()
 MIN_DATETIME64 = MIN_TIMESTAMP.to_datetime64()
@@ -160,6 +169,7 @@ MAX_DATETIME64 = MAX_TIMESTAMP.to_datetime64()
 INF = pd.np.inf
 NAN = pd.np.nan
 NAT = pd.NaT
+
 
 # str constants
 MAX_CHR = MAX_CHAR = chr(127)
