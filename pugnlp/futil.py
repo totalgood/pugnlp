@@ -122,13 +122,13 @@ def path_status(path, filename='', status=None, deep=False, verbosity=0):
     status = {} if status is None else status
 
     path = expand_path(path)
-    if not filename:
-        dir_path, filename = os.path.split(path)  # this will split off a dir and as `filename` if path doesn't end in a /
-    else:
+    if filename:
         dir_path = path
+    else:
+        dir_path, filename = os.path.split(path)  # this will split off a dir as `filename` if path doesn't end in a /
     full_path = os.path.join(dir_path, filename)
     if verbosity > 1:
-        print(full_path)
+        print('stat: {}'.format(full_path))
     status['name'] = filename
     status['path'] = full_path
     status['dir'] = dir_path
@@ -183,8 +183,11 @@ def find_files(path='', ext='', level=None, typ=list, dirs=False, files=True, ve
       And it should be at the top of the list.
       >>> sorted(d['name'] for d in find_files(os.path.dirname(__file__), ext='.py', level=0))[0]
       '__init__.py'
-      >>> all(d['type'] in ('file','dir','symlink->file','symlink->dir','mount-point->file','mount-point->dir','block-device',
-                            'symlink->broken','pipe','special','socket','unknown') for d in find_files(level=1, files=True, dirs=True))
+      >>> all(d['type'] in ('file', 'dir',
+      ...                   'symlink->file', 'symlink->dir', 'symlink->broken',
+      ...                   'mount-point->file', 'mount-point->dir',
+      ...                   'block-device', 'pipe', 'special', 'socket', 'unknown')
+      ...     for d in find_files(level=1, files=True, dirs=True))
       True
       >>> os.path.join(os.path.dirname(__file__), '__init__.py') in find_files(
       ... os.path.dirname(__file__), ext='.py', level=0, typ=dict)
@@ -232,7 +235,8 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
     Examples:
       >>> 'util.py' in [d['name'] for d in generate_files(os.path.dirname(__file__), ext='.py', level=0)]
       True
-      >>> (d for d in generate_files(os.path.dirname(__file__), ext='.py') if d['name'] == 'util.py').next()['size'] > 1000
+      >>> (d for d in generate_files(os.path.dirname(__file__), ext='.py')
+      ...  if d['name'] == 'util.py').next()['size'] > 1000
       True
       >>> sorted(generate_files().next().keys())
       ['accessed', 'created', 'dir', 'mode', 'modified', 'name', 'path', 'size', 'type']
@@ -245,8 +249,11 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
       True
       >>> sorted(list(generate_files())[0].keys())
       ['accessed', 'created', 'dir', 'mode', 'modified', 'name', 'path', 'size', 'type']
-      >>> all(d['type'] in ('file','dir','symlink->file','symlink->dir','mount-point->file','mount-point->dir','block-device','symlink->broken',
-      ...                   'pipe','special','socket','unknown')
+      >>> all(d['type'] in ('file', 'dir',
+      ...                   'symlink->file', 'symlink->dir', 'symlink->broken',
+      ...                   'mount-point->file', 'mount-point->dir',
+      ...                   'block-device', 'pipe', 'special', 'socket', 'unknown')
+      ...     for d in find_files(level=1, files=True, dirs=True))
       ... for d in generate_files(level=1, files=True, dirs=True))
       True
     """
@@ -257,21 +264,21 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
     ext = set(x.lower() for x in ext)
 
     if os.path.isfile(path) and any(path.lower().endswith(x) for x in ext):
-        for fn in [path]:
-            yield path_status(os.path.dirname(path), os.path.basename(path), verbosity=verbosity)
-    for dir_path, dir_names, filenames in walk_level(path, level=level):
-        if verbosity > 0:
-            print('Checking path "{}"'.format(dir_path))
-        if files:
-            for fn in filenames:  # itertools.chain(filenames, dir_names)
-                if ext and not any((fn.lower().endswith(x) for x in ext)):
-                    continue
-                yield path_status(dir_path, fn, verbosity=verbosity)
-        if dirs:
-            for fn in dir_names:
-                if ext and not any((fn.lower().endswith(x) for x in ext)):
-                    continue
-                yield path_status(dir_path, fn, verbosity=verbosity)
+        yield path_status(os.path.dirname(path), os.path.basename(path), verbosity=verbosity)
+    else:
+        for dir_path, dir_names, filenames in walk_level(path, level=level):
+            if verbosity > 0:
+                print('Checking path "{}"'.format(dir_path))
+            if files:
+                for fn in filenames:  # itertools.chain(filenames, dir_names)
+                    if ext and not any((fn.lower().endswith(x) for x in ext)):
+                        continue
+                    yield path_status(dir_path, fn, verbosity=verbosity)
+            if dirs:
+                for fn in dir_names:
+                    if ext and not any((fn.lower().endswith(x) for x in ext)):
+                        continue
+                    yield path_status(dir_path, fn, verbosity=verbosity)
 
 
 def find_dirs(*args, **kwargs):
