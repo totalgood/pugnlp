@@ -5,7 +5,7 @@
 sudo: false
 language: python
 virtualenv:
-  system_site_packages: false
+  system_site_packages: true
 env:
   matrix:
     # - DISTRIB="ubuntu" PYTHON_VERSION="2.7" COVERAGE="true" COVERALLS="false"
@@ -17,18 +17,7 @@ addons:
   apt:
     packages:
       - git
-      - python3-pip
-      - gfortran
-      - libopenblas-dev
-      - liblapack-dev
-      - python-matplotlib
-      # - python-numpy
-      # - python-scipy
-      # - python-matplotlib
-      # - python3-pip
-      # - python3-numpy
-      # - python3-scipy
-      # - python3-matplotlib
+      - python-pip
 install:
   - source tests/travis_install.sh
   - pip install --upgrade pip
@@ -37,9 +26,8 @@ before_script:
   - git config --global user.email "travis@totalgood.com"
   - git config --global user.name "pugnlp Travis Tests"
 script:
-  - if [[ "$COVERAGE" == "true" ]]; then coverage run setup.py test; else python setup.py test; fi
-  - if [[ "$COVERAGE" == "true" ]]; then coverage report; fi
+  - python setup.py test
 after_success:
-  - if [[ "$COVERALLS" == "true" ]]; then coveralls || echo "failed"; fi
+  - if [[ "$COVERAGE" == "true" ]]; then coveralls || echo "failed"; fi
 cache:
   - apt

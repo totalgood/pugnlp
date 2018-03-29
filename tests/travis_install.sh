@@ -17,23 +17,23 @@ if [[ "$DISTRIB" == "conda" ]]; then
 
     # Use the miniconda installer for faster download / install of conda
     # itself
+    DOWNLOAD_DIR=${DOWNLOAD_DIR:-$HOME/.tmp/miniconda}
+    mkdir -p $DOWNLOAD_DIR
     wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
-        -O miniconda.sh
-    chmod +x miniconda.sh && ./miniconda.sh -b -p $HOME/miniconda
+        -O $DOWNLOAD_DIR/miniconda.sh
+    chmod +x $DOWNLOAD_DIR/miniconda.sh && \
+        bash $DOWNLOAD_DIR/miniconda.sh -b -p $HOME/miniconda && \
+        rm -r -d -f $DOWNLOAD_DIR
     export PATH=$HOME/miniconda/bin:$PATH
     conda update --yes conda
-    conda config --set always_yes yes --set changeps1 no
-    conda info -a
 
     # Configure the conda environment and put it in the path using the
     # provided versions
     conda create -n testenv --yes python=$PYTHON_VERSION pip
     source activate testenv
-    conda install scipy
-
 elif [[ "$DISTRIB" == "ubuntu" ]]; then
-    # echo "installing packages in .travis.yml"
-    sudo apt-get install -y gfortran libopenblas-dev liblapack-dev python-numpy python-scipy python-matplotlib
+    # Use standard ubuntu packages in their default version
+    echo $DISTRIB
 fi
 
 if [[ "$COVERAGE" == "true" ]]; then
