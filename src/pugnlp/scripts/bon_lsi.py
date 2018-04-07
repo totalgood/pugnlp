@@ -7,18 +7,24 @@ from builtins import (  # noqa
     ascii, chr, hex, input, next, oct, open,
     pow, round, super,
     filter, map, zip)
+import logging
 
 import pandas as pd
 from nltk.tokenize.casual import casual_tokenize
 
-
 from gensim.corpora import Dictionary
 from gensim.models import LsiModel, TfidfModel
 
+logger = logging.getLogger(__name__)
+
 try:
     from twote.models import Tweet
-except ImportError:
-    from openchat.models import Tweet
+except (ImportError, ModuleNotFoundError):
+    try:
+        from openchat.models import Tweet
+    except (ImportError, ModuleNotFoundError):
+        Tweet = object
+        logger.warn('Unable to import a Tweet data model (ORM object)')
 np = pd.np
 
 

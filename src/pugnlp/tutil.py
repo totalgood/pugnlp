@@ -86,14 +86,14 @@ for row in TZ_OFFSET_ABBREV:
 # FIXME: autogenerate this from pytz.timezone(iso_tz_name).tzname(datetime.datetime())
 #         or [pytz.timezone(tz)._tzinfos.keys() for tz in pytz.all_timezones if hasattr(pytz.timezone(tz), '_tzinfos')]
 TZ_ABBREV_INFO = {
-    'AKST': ('US/Alaska',  -10), 'AKDT': ('US/Alaska',   -9),  'AKT': ('US/Alaska',  -10),  # noqa
-    'HAST': ('US/Hawaii',   -9), 'HADT': ('US/Hawaii',   -8),  'HAT': ('US/Hawaii',   -9),  # noqa
-    'PST':  ('US/Pacific',  -8),  'PDT': ('US/Pacific',  -7),   'PT': ('US/Pacific',  -8),  # noqa
-    'MST':  ('US/Mountain', -7),  'MDT': ('US/Mountain', -6),   'MT': ('US/Mountain', -7),  # noqa
-    'CST':  ('US/Central',  -6),  'CDT': ('US/Central',  -5),   'CT': ('US/Central',  -6),  # noqa
-    'EST':  ('US/Eastern',  -5),  'EDT': ('US/Eastern',  -4),   'ET': ('US/Eastern',  -5),  # noqa
-    'AST':  ('US/Atlantic', -4),  'ADT': ('US/Atlantic', -3),   'AT': ('US/Atlantic', -4),  # noqa
-    'GMT':  ('UTC', 0),
+    'AKST': ('US/Alaska', -10), 'AKDT': ('US/Alaska', -9), 'AKT': ('US/Alaska', -10),  # noqa
+    'HAST': ('US/Hawaii', -9), 'HADT': ('US/Hawaii', -8), 'HAT': ('US/Hawaii', -9),  # noqa
+    'PST': ('US/Pacific', -8), 'PDT': ('US/Pacific', -7), 'PT': ('US/Pacific', -8),  # noqa
+    'MST': ('US/Mountain', -7), 'MDT': ('US/Mountain', -6), 'MT': ('US/Mountain', -7),  # noqa
+    'CST': ('US/Central', -6), 'CDT': ('US/Central', -5), 'CT': ('US/Central', -6),  # noqa
+    'EST': ('US/Eastern', -5), 'EDT': ('US/Eastern', -4), 'ET': ('US/Eastern', -5),  # noqa
+    'AST': ('US/Atlantic', -4), 'ADT': ('US/Atlantic', -3), 'AT': ('US/Atlantic', -4),  # noqa
+    'GMT': ('UTC', 0),
 }
 TZ_ABBREV_OFFSET = dict(((abbrev, info[1]) for abbrev, info in viewitems(TZ_ABBREV_INFO)))
 TZ_ABBREV_NAME = dict(((abbrev, info[0]) for abbrev, info in viewitems(TZ_ABBREV_INFO)))
@@ -134,7 +134,7 @@ def make_date(dt, date_parser=parse_date):
         dt = date_parser(dt)
     try:
         dt = dt.timetuple()[:3]
-    except:
+    except AttributeError:
         dt = tuple(dt)[:3]
     return datetime.date(*dt)
 
@@ -174,20 +174,20 @@ def make_datetime(dt, date_parser=parse_date):
     if isinstance(dt, basestring):
         try:
             return date_parser(dt)
-        except:
+        except ValueError:
             print('Unable to make_datetime({})'.format(dt))
             raise
     try:
         return datetime.datetime(*dt.timetuple()[:7])
-    except:
+    except AttributeError:
         try:
             dt = list(dt)
             if 0 < len(dt) < 7:
                 try:
                     return datetime.datetime(*dt[:7])
-                except:
+                except ValueError:
                     pass
-        except:  # TypeError
+        except (ValueError, AttributeError):  # TypeError
             # dt is not iterable
             return dt
 
@@ -218,12 +218,12 @@ def make_time(dt, date_parser=parse_date):
     if isinstance(dt, basestring):
         try:
             dt = date_parser(dt)
-        except:
+        except (ValueError, AttributeError):
             print_exc()
             print('Unable to parse {}'.format(repr(dt)))
     try:
         dt = dt.timetuple()[3:6]
-    except:
+    except AttributeError:
         dt = tuple(dt)[3:6]
     return datetime.time(*dt)
 
@@ -288,10 +288,10 @@ def ordinal_float(dt):
     """
     try:
         return dt.toordinal() + ((((dt.microsecond / 1000000.) + dt.second) / 60. + dt.minute) / 60 + dt.hour) / 24.
-    except:
+    except AttributeError:
         try:
             return ordinal_float(make_datetime(dt))
-        except:
+        except ValueError:
             pass
     dt = list(make_datetime(val) for val in dt)
     assert(all(isinstance(val, datetime.datetime) for val in dt))
@@ -321,7 +321,8 @@ def datetime_from_ordinal_float(days):
 def timetag_str(dt=None, sep='-', filler='0', resolution=6):
     """Generate a date-time tag suitable for appending to a file name.
 
-    >>> timetag_str(resolution=3) == '-'.join('{0:02d}'.format(i) for i in tuple(datetime.datetime.now().timetuple()[:3]))
+    >>> timetag_str(resolution=3) == '-'.join('{0:02d}'.format(i) for i in
+    ...             tuple(datetime.datetime.now().timetuple()[:3]))
     True
     >>> timetag_str(datetime.datetime(2004,12,8,1,2,3,400000))
     '2004-12-08-01-02-03'
@@ -336,7 +337,10 @@ def timetag_str(dt=None, sep='-', filler='0', resolution=6):
     sep = str(sep)
     dt = datetime.datetime.now() if dt is None else dt
     # FIXME: don't use timetuple which truncates microseconds
-    return sep.join(('{0:' + filler + ('2' if filler else '') + 'd}').format(i) for i in tuple(dt.timetuple()[:resolution]))
+    return sep.join(('{0:' + filler + ('2' if filler else '') + 'd}').format(i)
+                    for i in tuple(dt.timetuple()[:resolution]))
+
+
 timestamp_str = make_timestamp = make_timetag = timetag_str
 
 
@@ -355,7 +359,8 @@ def make_tz_aware(dt, tz='UTC', is_dst=None):
     [datetime.datetime(1970, 10, 31, 0, 0, tzinfo=<DstTzInfo 'US/Central' CST-1 day, 18:00:00 STD>),
      datetime.datetime(1970, 12, 25, 0, 0, tzinfo=<DstTzInfo 'US/Central' CST-1 day, 18:00:00 STD>),
      datetime.datetime(1971,  7,  4, 0, 0, tzinfo=<DstTzInfo 'US/Central' CDT-1 day, 19:00:00 DST>)]
-    >>> make_tz_aware([None, float('nan'), float('inf'), 1980, 1979.25*365.25, '1970-10-31', '1970-12-25', '1971-07-04'],
+    >>> make_tz_aware([None, float('nan'), float('inf'), 1980, 1979.25*365.25, '1970-10-31',
+    ...                '1970-12-25', '1971-07-04'],
     ...               'CDT')  # doctest: +NORMALIZE_WHITESPACE
     [None, nan, inf,
      datetime.datetime(6, 6, 3, 0, 0, tzinfo=<DstTzInfo 'US/Central' LMT-1 day, 18:09:00 STD>),
@@ -383,7 +388,7 @@ def make_tz_aware(dt, tz='UTC', is_dst=None):
         if tzstr in TZ_ABBREV_NAME:
             is_dst = is_dst or tzstr.endswith('DT')
             tz = TZ_ABBREV_NAME.get(tzstr, tz)
-    except:
+    except ValueError:
         pass
     try:
         tz = pytz.timezone(tz)
@@ -393,7 +398,7 @@ def make_tz_aware(dt, tz='UTC', is_dst=None):
         pass
     try:
         return tz.localize(dt, is_dst=is_dst)
-    except:
+    except (AttributeError, TypeError):
         # from traceback import print_exc
         # print_exc()  # TypeError: unsupported operand type(s) for +: 'datetime.time' and 'datetime.timedelta'
         pass
@@ -435,7 +440,7 @@ def clean_wiki_datetime(dt, squelch=True):
         dt = ' '.join(dt)
     try:
         return make_tz_aware(parse_date(dt))
-    except:
+    except (AttributeError, ValueError):
         if not squelch:
             print("Failed to parse %r as a date" % dt)
     dt = [s.strip() for s in dt.split(' ')]
@@ -464,7 +469,9 @@ def clean_wiki_datetime(dt, squelch=True):
     except Exception as e:
         if squelch:
             from traceback import format_exc
-            print(format_exc(e) + '\n^^^ Exception caught ^^^\nWARN: Failed to parse datetime string %r\n      from list of strings %r' %
+            print(format_exc(e) +
+                  '\n^^^ Exception caught ^^^\nWARN: Failed to parse datetime string %r\n' +
+                  '      from list of strings %r' %
                   (' '.join(dt), dt))
             return dt
         raise(e)
@@ -473,7 +480,6 @@ def clean_wiki_datetime(dt, squelch=True):
 def clip_datetime(dt, tz=DEFAULT_TZ, is_dst=None):
     """Limit a datetime to a valid range for datetime, datetime64, and Timestamp objects
     >>> from datetime import timedelta
-    >>> from clayton.constants import MAX_DATETIME64, MAX_DATETIME, MAX_TIMESTAMP
     >>> clip_datetime(MAX_DATETIME + timedelta(100)) == pd.Timestamp(MAX_DATETIME64, tz='utc') == MAX_TIMESTAMP
     True
     >>> MAX_TIMESTAMP
@@ -486,7 +492,7 @@ def clip_datetime(dt, tz=DEFAULT_TZ, is_dst=None):
         dt = make_tz_aware(dt, tz=tz, is_dst=is_dst)
         try:
             return pd.Timestamp(dt)
-        except:
+        except (ValueError, AttributeError):
             pass
         if dt > MAX_DATETIME:
             return MAX_TIMESTAMP
