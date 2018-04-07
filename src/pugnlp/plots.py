@@ -6,8 +6,8 @@ from builtins import *
 import os
 
 import seaborn as sb
-from seaborn import plt
 import pandas as pd
+from matplotlib import pyplot as plt
 import bisect
 
 from pandas.tools.plotting import scatter_matrix
@@ -53,10 +53,10 @@ def histplot(data, bins=None, nbins=5):
     h = ['%.1g' % x for x in list(bins) + [maxx]] if space < 1 or space > 1000 else [
         str(int(x)) for x in list(bins) + [maxx]]
     print(h)
-    if len(str(l[1]) + '-' + l[2]) > 10:
-        displab = l[:-1]
+    if len(str(h[1]) + '-' + h[2]) > 10:
+        displab = h[:-1]
     else:
-        displab = [x + '-\n ' + y for x, y in zip(l[:-1], l[1:])]
+        displab = [x + '-\n ' + y for x, y in zip(h[:-1], h[1:])]
     barplot(displab, [binned.count(x + 1) for x in range(len(bins))])
 
 
@@ -271,7 +271,7 @@ def scatmat(df, category=None, colors='rgob',
     FIXME: empty plots that dont go away, Plot and/save scatter matrix in groups of num_columns topics"""
     if category is None:
         category = list(df.columns)[-1]
-    if isinstance(category, (basestring, int)) and category in df.columns:
+    if isinstance(category, (str, bytes, basestring, int)) and category in df.columns:
         category = df[category]
     else:
         category = pd.Series(category)
@@ -335,7 +335,7 @@ def plotly_scatter(df):
         showlegend=False
     )
     fig = go.Figure(data=data, layout=layout)
-    plot_url = py.plot(fig, filename='text-chart-basic')
+    plot_url = plt.plot(fig, filename='text-chart-basic')
     return plot_url
 
 
@@ -364,7 +364,7 @@ def mask2spans(mask, index=None):
     return spans
 
 
-def plotly_timeseries(df, mask=None):
+def plotly_timeseries(df, mask=None, filename='plotly_timeseries.html'):
     spans = mask2spans(mask)
     offline.plot(df.iplot(
         asFigure=True, xTitle='Date-Time', yTitle='Monitor Value', kind='scatter', logy=True,

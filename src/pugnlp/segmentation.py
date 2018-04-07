@@ -47,7 +47,7 @@ class Split(object):
 
 
 def generate_lines(text, ext=['.txt', '.md', '.rst', '.asciidoc', '.asc']):
-    """ Yield text one line at a time from from a single file path, files in a directory, or a text string
+    r""" Yield text one line at a time from from a single file path, files in a directory, or a text string
 
     >>> list(generate_lines('Hello crazy\r\nMS/Apple world\rof EOLS.\n'))
     ['Hello crazy\r\n', 'MS/Apple world\r', 'of EOLS.\n']
@@ -76,17 +76,18 @@ def segment_text(text=os.path.join(DATA_PATH, 'goodreads-omniscient-books.txt'),
 
     segments = []
     segment = []
-    for line in streamify(open('/home/hobs/Dropbox/Docs/projects/controller/goodreads-omniscient.txt')):
-        if start is not None and start.match(line):
-            segments += [segment] if len(segment) else []
-            segment = [line]
-        elif stop is not None and stop.match(line):
-            segments += [segment]
-            segment = []
-        elif ignore is not None and ignore.match(line):
-            continue
-        else:
-            segment += [segment]
+    with open(text) as fin:
+        for line in fin:
+            if start is not None and start.match(line):
+                segments += [segment] if len(segment) else []
+                segment = [line]
+            elif stop is not None and stop.match(line):
+                segments += [segment]
+                segment = []
+            elif ignore is not None and ignore.match(line):
+                continue
+            else:
+                segment += [segment]
 
 
 def list_ngrams(token_list, n=1, join=' '):
@@ -180,10 +181,9 @@ def generate_sentences(text='', train_path=None, case_sensitive=True, ext=['.md'
     elif not isinstance(getattr(generate_sentences, 'detector', None), Detector):
         generate_sentences.detector = Detector.load(
             os.path.join(DATA_PATH, 'wsj_pugnlp.detector_morse.Detector.json.gz'))
-    # generate_sentences.detector = SentenceDetector(text=text, nocase=not case_sensitive, epochs=epochs, classifier=classifier)
+    # generate_sentences.detector = SentenceDetector(text=text, nocase=not case_sensitive,
+    # epochs=epochs, classifier=classifier)
     return iter(chain.from_iterable((s.lstrip() for s in generate_sentences.detector.segments(text)) for text in texts))
-
-
 
 
 class Tokenizer(object):
@@ -212,8 +212,9 @@ class Tokenizer(object):
     >>> sorted(set(Tokenizer(doc, stem='WordNet')) - set(Tokenizer(doc, stem='Lancaster')))
     ["Here're", 'pleasure', 'provided', 'some', 'stemmable', 'stemming', 'your']
     """
-    def __init__(self, doc=None, regex=CRE_TOKEN, strip=True, nonwords=False, nonwords_set=None, nonwords_regex=RE_NONWORD,
-                 lower=None, stem=None, ngrams=1):
+
+    def __init__(self, doc=None, regex=CRE_TOKEN, strip=True, nonwords=False, nonwords_set=None,
+                 nonwords_regex=RE_NONWORD, lower=None, stem=None, ngrams=1):
         # specific set of characters to strip
         self.strip_chars = None
         if isinstance(strip, basestring):
@@ -233,7 +234,8 @@ class Tokenizer(object):
         self.nonwords_set = nonwords_set or set()
         self.nonwords_regex = nonwords_regex
         self.lower = lower if callable(lower) else (str.lower if lower else None)
-        self.stemmer_name, self.stem = 'passthrough', passthrough  # stem can be a callable Stemmer instance or just a function
+        # stem can be a callable Stemmer instance or just a function
+        self.stemmer_name, self.stem = 'passthrough', passthrough
         self.ngrams = ngrams or 1  # ngram degree, numger of ngrams per token
         if isinstance(self.nonwords_regex, basestring):
             self.nonwords_regex = re.compile(self.nonwords_regex)
@@ -261,7 +263,7 @@ class Tokenizer(object):
     def __reduce__(self):
         """Unpickling constructor and args so that pickling can be done efficiently without any bound methods, etc"""
         return (Tokenizer, (None, self.regex, self.strip, self.nonwords, self.nonwords_set, self.nonwords_regex,
-                self.lower, self.stemmer_name, self.ngrams))
+                            self.lower, self.stemmer_name, self.ngrams))
 
     def span_tokenize(self, s):
         """Identify the tokens using integer offsets `(start_i, end_i)` rather than copying them to a new sequence
@@ -274,7 +276,8 @@ class Tokenizer(object):
           generator of 2-tuples of ints, like ((int, int) for token in s)
         """
         return
-        # raise NotImplementedError("span_tokenizer interface not yet implemented, so just suck it up and use RAM to tokenize() ;)")
+        # raise NotImplementedError("span_tokenizer interface not yet implemented,
+        # so just suck it up and use RAM to tokenize() ;)")
 
     def tokenize_sents(self, strings):
         """NTLK.
@@ -301,11 +304,14 @@ class Tokenizer(object):
           - each of 3 nonword filters on a separate line, setting w=None when nonword "hits"
           - refactor `nonwords` arg/attr to `ignore_stopwords` to be more explicit
 
-        >>> doc = "John D. Rock\n\nObjective: \n\tSeeking a position as Software --Architect-- / _Project Lead_ that can utilize my expertise and"
+        >>> doc = ("John D. Rock\n\nObjective: \n\tSeeking a position as Software --Architect-- / " +
+        ...        "_Project Lead_ that can utilize my expertise and")
         >>> doc += " experiences in business application development and proven records in delivering 90's software. "
         >>> doc += "\n\nSummary: \n\tSoftware Architect"
-        >>> doc += " who has gone through several full product-delivery life cycles from requirements gathering to deployment / production, and"
-        >>> doc += " skilled in all areas of software development from client-side JavaScript to database modeling. With strong experiences in:"
+        >>> doc += (" who has gone through several full product-delivery life cycles from requirements " +
+        ...         "gathering to deployment / production, and")
+        >>> doc += " skilled in all areas of software development from client-side JavaScript to " +
+        ...        "database modeling. With strong experiences in:"
         >>> doc += " \n\tRequirements gathering and analysis."
 
         The python splitter will produce 2 tokens that are only punctuation ("/")
@@ -322,7 +328,8 @@ class Tokenizer(object):
         False
 
         But you can turn off stripping when instantiating the object.
-        >>> all(t in Tokenizer(doc, strip=False, nonwords=True) for t in ('D', '_Project', 'Lead_', "90's", "product-delivery"))
+        >>> all(t in Tokenizer(doc, strip=False, nonwords=True) for t in
+        ...     ('D', '_Project', 'Lead_', "90's", "product-delivery"))
         True
         """
         ngrams = ngrams or self.ngrams
@@ -352,7 +359,8 @@ class Tokenizer(object):
                             w not in self.nonwords_set):
                         yield w
 
-    # can these all just be left to default assignments in __init__ or as class methods assigned to global `passthrough()`
+    # can these all just be left to default assignments in __init__
+    # or as class methods assigned to global `passthrough()`
     def strip(self, s):
         """Strip punctuation surrounding a token"""
         return s
