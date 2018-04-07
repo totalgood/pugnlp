@@ -11,373 +11,375 @@ from configparser import ConfigParser
 
 import os
 import datetime
-import warnings
 import subprocess
 from collections import Mapping
 import errno
 import json
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def expand_path(path, follow_links=False):
-    path = os.path.expandvars(os.path.expanduser(path))
-    if follow_links:
-        return os.path.realpath(path)
-    return os.path.abspath(path)
+  path = os.path.expandvars(os.path.expanduser(path))
+  if follow_links:
+    return os.path.realpath(path)
+  return os.path.abspath(path)
 
 
 def walk_level(path, level=1):
-    """Like os.walk, but takes `level` kwarg that indicates how deep the recursion will go.
+  """Like os.walk, but takes `level` kwarg that indicates how deep the recursion will go.
 
-    Notes:
-      TODO: refactor `level`->`depth`
+  Notes:
+    TODO: refactor `level`->`depth`
 
-    References:
-      http://stackoverflow.com/a/234329/623735
+  References:
+    http://stackoverflow.com/a/234329/623735
 
-    Args:
-     path (str):  Root path to begin file tree traversal (walk)
-      level (int, optional): Depth of file tree to halt recursion at.
-        None = full recursion to as deep as it goes
-        0 = nonrecursive, just provide a list of files at the root level of the tree
-        1 = one level of depth deeper in the tree
+  Args:
+   path (str):  Root path to begin file tree traversal (walk)
+    level (int, optional): Depth of file tree to halt recursion at.
+      None = full recursion to as deep as it goes
+      0 = nonrecursive, just provide a list of files at the root level of the tree
+      1 = one level of depth deeper in the tree
 
-    Examples:
-      >>> root = os.path.dirname(__file__)
-      >>> all((os.path.join(base,d).count('/')==(root.count('/')+1)) for (base, dirs, files) in walk_level(root, level=0) for d in dirs)
-      True
-    """
-    if level is None:
-        level = float('inf')
-    path = expand_path(path)
-    if os.path.isdir(path):
-        root_level = path.count(os.path.sep)
-        for root, dirs, files in os.walk(path):
-            yield root, dirs, files
-            if root.count(os.path.sep) >= root_level + level:
-                del dirs[:]
-    elif os.path.isfile(path):
-        yield os.path.dirname(path), [], [os.path.basename(path)]
-    else:
-        raise RuntimeError("Can't find a valid folder or file for path {0}".format(repr(path)))
+  Examples:
+    >>> root = os.path.dirname(__file__)
+    >>> all((os.path.join(base,d).count('/')==(root.count('/')+1)) for (base, dirs, files) in walk_level(root, level=0) for d in dirs)
+    True
+  """
+  if level is None:
+    level = float('inf')
+  path = expand_path(path)
+  if os.path.isdir(path):
+    root_level = path.count(os.path.sep)
+    for root, dirs, files in os.walk(path):
+      yield root, dirs, files
+      if root.count(os.path.sep) >= root_level + level:
+        del dirs[:]
+  elif os.path.isfile(path):
+    yield os.path.dirname(path), [], [os.path.basename(path)]
+  else:
+    raise RuntimeError("Can't find a valid folder or file for path {0}".format(repr(path)))
 
 
 def get_type(full_path):
-    """Get the type (socket, file, dir, symlink, ...) for the provided path"""
-    status = {'type': []}
-    if os.path.ismount(full_path):
-        status['type'] += ['mount-point']
-    elif os.path.islink(full_path):
-        status['type'] += ['symlink']
-    if os.path.isfile(full_path):
-        status['type'] += ['file']
-    elif os.path.isdir(full_path):
-        status['type'] += ['dir']
-    if not status['type']:
-        if os.stat.S_ISSOCK(status['mode']):
-            status['type'] += ['socket']
-        elif os.stat.S_ISCHR(status['mode']):
-            status['type'] += ['special']
-        elif os.stat.S_ISBLK(status['mode']):
-            status['type'] += ['block-device']
-        elif os.stat.S_ISFIFO(status['mode']):
-            status['type'] += ['pipe']
-    if not status['type']:
-        status['type'] += ['unknown']
-    elif status['type'] and status['type'][-1] == 'symlink':
-        status['type'] += ['broken']
-    return status['type']
+  """Get the type (socket, file, dir, symlink, ...) for the provided path"""
+  status = {'type': []}
+  if os.path.ismount(full_path):
+    status['type'] += ['mount-point']
+  elif os.path.islink(full_path):
+    status['type'] += ['symlink']
+  if os.path.isfile(full_path):
+    status['type'] += ['file']
+  elif os.path.isdir(full_path):
+    status['type'] += ['dir']
+  if not status['type']:
+    if os.stat.S_ISSOCK(status['mode']):
+      status['type'] += ['socket']
+    elif os.stat.S_ISCHR(status['mode']):
+      status['type'] += ['special']
+    elif os.stat.S_ISBLK(status['mode']):
+      status['type'] += ['block-device']
+    elif os.stat.S_ISFIFO(status['mode']):
+      status['type'] += ['pipe']
+  if not status['type']:
+    status['type'] += ['unknown']
+  elif status['type'] and status['type'][-1] == 'symlink':
+    status['type'] += ['broken']
+  return status['type']
 
 
 def get_stat(full_path):
-    """Use python builtin equivalents to unix `stat` command and return dict containing stat data about a file"""
-    status = {}
-    status['size'] = os.path.getsize(full_path)
-    status['accessed'] = datetime.datetime.fromtimestamp(os.path.getatime(full_path))
-    status['modified'] = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
-    status['changed'] = datetime.datetime.fromtimestamp(os.path.getctime(full_path))
-    status['mode'] = os.stat(full_path).st_mode   # first 3 digits are User, Group, Other permissions: 1=execute,2=write,4=read
-    status['type'] = get_type(full_path)
-    return status
+  """Use python builtin equivalents to unix `stat` command and return dict containing stat data about a file"""
+  status = {}
+  status['size'] = os.path.getsize(full_path)
+  status['accessed'] = datetime.datetime.fromtimestamp(os.path.getatime(full_path))
+  status['modified'] = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
+  status['changed'] = datetime.datetime.fromtimestamp(os.path.getctime(full_path))
+  # first 3 digits are User, Group, Other permissions: 1=execute,2=write,4=read
+  status['mode'] = os.stat(full_path).st_mode
+  status['type'] = get_type(full_path)
+  return status
 
 
 def path_status(path, filename='', status=None, deep=False, verbosity=0):
-    """ Retrieve the access, modify, and create timetags for a path along with its size
+  """ Retrieve the access, modify, and create timetags for a path along with its size
 
-    Arguments:
-        path (str): full path to the file or directory to be statused
-        status (dict): optional existing status to be updated/overwritten with new status values
-        try_open (bool): whether to try to open the file to get its encoding and openability
+  Arguments:
+      path (str): full path to the file or directory to be statused
+      status (dict): optional existing status to be updated/overwritten with new status values
+      try_open (bool): whether to try to open the file to get its encoding and openability
 
-    Returns:
-        dict: {'size': bytes (int), 'accessed': (datetime), 'modified': (datetime), 'created': (datetime)}
+  Returns:
+      dict: {'size': bytes (int), 'accessed': (datetime), 'modified': (datetime), 'created': (datetime)}
 
-    >>> stat = path_status(__file__)
-    >>> stat['path'] == __file__
-    True
-    >>> 256000 > stat['size'] > 14373
-    True
-    >>> stat['type']
-    'file'
-    """
-    status = {} if status is None else status
+  >>> stat = path_status(__file__)
+  >>> stat['path'] == __file__
+  True
+  >>> 256000 > stat['size'] > 14373
+  True
+  >>> stat['type']
+  'file'
+  """
+  status = {} if status is None else status
 
-    path = expand_path(path)
-    if filename:
-        dir_path = path
-    else:
-        dir_path, filename = os.path.split(path)  # this will split off a dir as `filename` if path doesn't end in a /
-    full_path = os.path.join(dir_path, filename)
-    if verbosity > 1:
-        print('stat: {}'.format(full_path))
-    status['name'] = filename
-    status['path'] = full_path
-    status['dir'] = dir_path
-    status['type'] = []
-    try:
-        status.update(get_stat(full_path))
-    except OSError:
-        status['type'] = ['nonexistent'] + status['type']
-        if verbosity > -1:
-            warnings.warn("Unable to stat path '{}'".format(full_path))
-    status['type'] = '->'.join(status['type'])
+  path = expand_path(path)
+  if filename:
+    dir_path = path
+  else:
+    dir_path, filename = os.path.split(path)  # this will split off a dir as `filename` if path doesn't end in a /
+  full_path = os.path.join(dir_path, filename)
+  if verbosity > 1:
+    print('stat: {}'.format(full_path))
+  status['name'] = filename
+  status['path'] = full_path
+  status['dir'] = dir_path
+  status['type'] = []
+  try:
+    status.update(get_stat(full_path))
+  except OSError:
+    status['type'] = ['nonexistent'] + status['type']
+    logger.info("Unable to stat path '{}'".format(full_path))
+  status['type'] = '->'.join(status['type'])
 
-    return status
+  return status
 
 
 def find_files(path='', ext='', level=None, typ=list, dirs=False, files=True, verbosity=0):
-    """ Recursively find all files in the indicated directory
+  """ Recursively find all files in the indicated directory
 
-    Filter by the indicated file name extension (ext)
+  Filter by the indicated file name extension (ext)
 
-    Args:
-      path (str):  Root/base path to search.
-      ext (str):   File name extension. Only file paths that ".endswith()" this string will be returned
-      level (int, optional): Depth of file tree to halt recursion at.
-        None = full recursion to as deep as it goes
-        0 = nonrecursive, just provide a list of files at the root level of the tree
-        1 = one level of depth deeper in the tree
-      typ (type):  output type (default: list). if a mapping type is provided the keys will be the full paths (unique)
-      dirs (bool):  Whether to yield dir paths along with file paths (default: False)
-      files (bool): Whether to yield file paths (default: True)
-        `dirs=True`, `files=False` is equivalent to `ls -d`
+  Args:
+    path (str):  Root/base path to search.
+    ext (str):   File name extension. Only file paths that ".endswith()" this string will be returned
+    level (int, optional): Depth of file tree to halt recursion at.
+      None = full recursion to as deep as it goes
+      0 = nonrecursive, just provide a list of files at the root level of the tree
+      1 = one level of depth deeper in the tree
+    typ (type):  output type (default: list). if a mapping type is provided the keys will be the full paths (unique)
+    dirs (bool):  Whether to yield dir paths along with file paths (default: False)
+    files (bool): Whether to yield file paths (default: True)
+      `dirs=True`, `files=False` is equivalent to `ls -d`
 
-    Returns:
-      list of dicts: dict keys are { 'path', 'name', 'bytes', 'created', 'modified', 'accessed', 'permissions' }
-        path (str): Full, absolute paths to file beneath the indicated directory and ending with `ext`
-        name (str): File name only (everythin after the last slash in the path)
-        size (int): File size in bytes
-        created (datetime): File creation timestamp from file system
-        modified (datetime): File modification timestamp from file system
-        accessed (datetime): File access timestamp from file system
-        permissions (int): File permissions bytes as a chown-style integer with a maximum of 4 digits
-        type (str): One of 'file', 'dir', 'symlink->file', 'symlink->dir', 'symlink->broken'
-          e.g.: 777 or 1755
+  Returns:
+    list of dicts: dict keys are { 'path', 'name', 'bytes', 'created', 'modified', 'accessed', 'permissions' }
+      path (str): Full, absolute paths to file beneath the indicated directory and ending with `ext`
+      name (str): File name only (everythin after the last slash in the path)
+      size (int): File size in bytes
+      created (datetime): File creation timestamp from file system
+      modified (datetime): File modification timestamp from file system
+      accessed (datetime): File access timestamp from file system
+      permissions (int): File permissions bytes as a chown-style integer with a maximum of 4 digits
+      type (str): One of 'file', 'dir', 'symlink->file', 'symlink->dir', 'symlink->broken'
+        e.g.: 777 or 1755
 
-    Examples:
-      >>> 'util.py' in [d['name'] for d in find_files(os.path.dirname(__file__), ext='.py', level=0)]
-      True
-      >>> (d for d in find_files(os.path.dirname(__file__), ext='.py') if d['name'] == 'util.py').next()['size'] > 1000
-      True
+  Examples:
+    >>> 'util.py' in [d['name'] for d in find_files(os.path.dirname(__file__), ext='.py', level=0)]
+    True
+    >>> (d for d in find_files(os.path.dirname(__file__), ext='.py') if d['name'] == 'util.py').next()['size'] > 1000
+    True
 
-      There should be an __init__ file in the same directory as this script.
-      And it should be at the top of the list.
-      >>> sorted(d['name'] for d in find_files(os.path.dirname(__file__), ext='.py', level=0))[0]
-      '__init__.py'
-      >>> all(d['type'] in ('file', 'dir',
-      ...                   'symlink->file', 'symlink->dir', 'symlink->broken',
-      ...                   'mount-point->file', 'mount-point->dir',
-      ...                   'block-device', 'pipe', 'special', 'socket', 'unknown')
-      ...     for d in find_files(level=1, files=True, dirs=True))
-      True
-      >>> os.path.join(os.path.dirname(__file__), '__init__.py') in find_files(
-      ... os.path.dirname(__file__), ext='.py', level=0, typ=dict)
-      True
-    """
-    path = expand_path(path)
-    gen = generate_files(path, ext=ext, level=level, dirs=dirs, files=files, verbosity=verbosity)
-    if isinstance(typ(), Mapping):
-        return typ((ff['path'], ff) for ff in gen)
-    elif typ is not None:
-        return typ(gen)
-    else:
-        return gen
+    There should be an __init__ file in the same directory as this script.
+    And it should be at the top of the list.
+    >>> sorted(d['name'] for d in find_files(os.path.dirname(__file__), ext='.py', level=0))[0]
+    '__init__.py'
+    >>> all(d['type'] in ('file', 'dir',
+    ...                   'symlink->file', 'symlink->dir', 'symlink->broken',
+    ...                   'mount-point->file', 'mount-point->dir',
+    ...                   'block-device', 'pipe', 'special', 'socket', 'unknown')
+    ...     for d in find_files(level=1, files=True, dirs=True))
+    True
+    >>> os.path.join(os.path.dirname(__file__), '__init__.py') in find_files(
+    ... os.path.dirname(__file__), ext='.py', level=0, typ=dict)
+    True
+  """
+  path = expand_path(path)
+  gen = generate_files(path, ext=ext, level=level, dirs=dirs, files=files, verbosity=verbosity)
+  if isinstance(typ(), Mapping):
+    return typ((ff['path'], ff) for ff in gen)
+  elif typ is not None:
+    return typ(gen)
+  else:
+    return gen
 
 
 def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosity=0):
-    """ Recursively generate files (and thier stats) in the indicated directory
+  """ Recursively generate files (and thier stats) in the indicated directory
 
-    Filter by the indicated file name extension (ext)
+  Filter by the indicated file name extension (ext)
 
-    Args:
-      path (str):  Root/base path to search.
-      ext (str or list of str):  File name extension(s). Only file paths that ".endswith()" this string will be returned
-      level (int, optional): Depth of file tree to halt recursion at.
-        None = full recursion to as deep as it goes
-        0 = nonrecursive, just provide a list of files at the root level of the tree
-        1 = one level of depth deeper in the tree
-      typ (type):  output type (default: list). if a mapping type is provided the keys will be the full paths (unique)
-      dirs (bool):  Whether to yield dir paths along with file paths (default: False)
-      files (bool): Whether to yield file paths (default: True)
-        `dirs=True`, `files=False` is equivalent to `ls -d`
+  Args:
+    path (str):  Root/base path to search.
+    ext (str or list of str):  File name extension(s). Only file paths that ".endswith()" this string will be returned
+    level (int, optional): Depth of file tree to halt recursion at.
+      None = full recursion to as deep as it goes
+      0 = nonrecursive, just provide a list of files at the root level of the tree
+      1 = one level of depth deeper in the tree
+    typ (type):  output type (default: list). if a mapping type is provided the keys will be the full paths (unique)
+    dirs (bool):  Whether to yield dir paths along with file paths (default: False)
+    files (bool): Whether to yield file paths (default: True)
+      `dirs=True`, `files=False` is equivalent to `ls -d`
 
-    Returns:
-      list of dicts: dict keys are { 'path', 'name', 'bytes', 'created', 'modified', 'accessed', 'permissions' }
-        path (str): Full, absolute paths to file beneath the indicated directory and ending with `ext`
-        name (str): File name only (everythin after the last slash in the path)
-        size (int): File size in bytes
-        created (datetime): File creation timestamp from file system
-        modified (datetime): File modification timestamp from file system
-        accessed (datetime): File access timestamp from file system
-        permissions (int): File permissions bytes as a chown-style integer with a maximum of 4 digits
-        type (str): One of 'file', 'dir', 'symlink->file', 'symlink->dir', 'symlink->broken'
-          e.g.: 777 or 1755
+  Returns:
+    list of dicts: dict keys are { 'path', 'name', 'bytes', 'created', 'modified', 'accessed', 'permissions' }
+      path (str): Full, absolute paths to file beneath the indicated directory and ending with `ext`
+      name (str): File name only (everythin after the last slash in the path)
+      size (int): File size in bytes
+      created (datetime): File creation timestamp from file system
+      modified (datetime): File modification timestamp from file system
+      accessed (datetime): File access timestamp from file system
+      permissions (int): File permissions bytes as a chown-style integer with a maximum of 4 digits
+      type (str): One of 'file', 'dir', 'symlink->file', 'symlink->dir', 'symlink->broken'
+        e.g.: 777 or 1755
 
-    Examples:
-      >>> 'util.py' in [d['name'] for d in generate_files(os.path.dirname(__file__), ext='.py', level=0)]
-      True
-      >>> (d for d in generate_files(os.path.dirname(__file__), ext='.py')
-      ...  if d['name'] == 'util.py').next()['size'] > 1000
-      True
-      >>> sorted(generate_files().next().keys())
-      ['accessed', 'created', 'dir', 'mode', 'modified', 'name', 'path', 'size', 'type']
+  Examples:
+    >>> 'util.py' in [d['name'] for d in generate_files(os.path.dirname(__file__), ext='.py', level=0)]
+    True
+    >>> (d for d in generate_files(os.path.dirname(__file__), ext='.py')
+    ...  if d['name'] == 'util.py').next()['size'] > 1000
+    True
+    >>> sorted(generate_files().next().keys())
+    ['accessed', 'created', 'dir', 'mode', 'modified', 'name', 'path', 'size', 'type']
 
-      There should be an __init__ file in the same directory as this script.
-      And it should be at the top of the list.
-      >>> sorted(d['name'] for d in generate_files(os.path.dirname(__file__), ext='.py', level=0))[0]
-      '__init__.py'
-      >>> list(generate_files(__file__))[0]['name'] == os.path.basename(__file__)
-      True
-      >>> sorted(list(generate_files())[0].keys())
-      ['accessed', 'created', 'dir', 'mode', 'modified', 'name', 'path', 'size', 'type']
-      >>> all(d['type'] in ('file', 'dir',
-      ...                   'symlink->file', 'symlink->dir', 'symlink->broken',
-      ...                   'mount-point->file', 'mount-point->dir',
-      ...                   'block-device', 'pipe', 'special', 'socket', 'unknown')
-      ...     for d in find_files(level=1, files=True, dirs=True))
-      ... for d in generate_files(level=1, files=True, dirs=True))
-      True
-    """
-    path = expand_path(path or '.')
-    # multiple extensions can be specified in a list or tuple
-    ext = ext if isinstance(ext, (list, tuple)) else [ext]
-    # case-insensitive extensions
-    ext = set(x.lower() for x in ext)
+    There should be an __init__ file in the same directory as this script.
+    And it should be at the top of the list.
+    >>> sorted(d['name'] for d in generate_files(os.path.dirname(__file__), ext='.py', level=0))[0]
+    '__init__.py'
+    >>> list(generate_files(__file__))[0]['name'] == os.path.basename(__file__)
+    True
+    >>> sorted(list(generate_files())[0].keys())
+    ['accessed', 'created', 'dir', 'mode', 'modified', 'name', 'path', 'size', 'type']
+    >>> all(d['type'] in ('file', 'dir',
+    ...                   'symlink->file', 'symlink->dir', 'symlink->broken',
+    ...                   'mount-point->file', 'mount-point->dir',
+    ...                   'block-device', 'pipe', 'special', 'socket', 'unknown')
+    ...     for d in find_files(level=1, files=True, dirs=True))
+    ... for d in generate_files(level=1, files=True, dirs=True))
+    True
+  """
+  path = expand_path(path or '.')
+  # multiple extensions can be specified in a list or tuple
+  ext = ext if isinstance(ext, (list, tuple)) else [ext]
+  # case-insensitive extensions
+  ext = set(x.lower() for x in ext)
 
-    if os.path.isfile(path) and any(path.lower().endswith(x) for x in ext):
-        yield path_status(os.path.dirname(path), os.path.basename(path), verbosity=verbosity)
-    else:
-        for dir_path, dir_names, filenames in walk_level(path, level=level):
-            if verbosity > 0:
-                print('Checking path "{}"'.format(dir_path))
-            if files:
-                for fn in filenames:  # itertools.chain(filenames, dir_names)
-                    if ext and not any((fn.lower().endswith(x) for x in ext)):
-                        continue
-                    yield path_status(dir_path, fn, verbosity=verbosity)
-            if dirs:
-                for fn in dir_names:
-                    if ext and not any((fn.lower().endswith(x) for x in ext)):
-                        continue
-                    yield path_status(dir_path, fn, verbosity=verbosity)
+  if os.path.isfile(path) and any(path.lower().endswith(x) for x in ext):
+    yield path_status(os.path.dirname(path), os.path.basename(path), verbosity=verbosity)
+  else:
+    for dir_path, dir_names, filenames in walk_level(path, level=level):
+      if verbosity > 0:
+        print('Checking path "{}"'.format(dir_path))
+      if files:
+        for fn in filenames:  # itertools.chain(filenames, dir_names)
+          if ext and not any((fn.lower().endswith(x) for x in ext)):
+            continue
+          yield path_status(dir_path, fn, verbosity=verbosity)
+      if dirs:
+        for fn in dir_names:
+          if ext and not any((fn.lower().endswith(x) for x in ext)):
+            continue
+          yield path_status(dir_path, fn, verbosity=verbosity)
 
 
 def find_dirs(*args, **kwargs):
-    kwargs['files'] = kwargs.get('files', False)
-    kwargs.update({'dirs': True})
-    return find_files(*args, **kwargs)
+  kwargs['files'] = kwargs.get('files', False)
+  kwargs.update({'dirs': True})
+  return find_files(*args, **kwargs)
 
 
 def mkdir_p(path):
-    """`mkdir -p` functionality (don't raise exception if path exists)
+  """`mkdir -p` functionality (don't raise exception if path exists)
 
-    Make containing directory and parent directories in `path`, if they don't exist.
+  Make containing directory and parent directories in `path`, if they don't exist.
 
-    Arguments:
-      path (str): Full or relative path to a directory to be created with mkdir -p
+  Arguments:
+    path (str): Full or relative path to a directory to be created with mkdir -p
 
-    Returns:
-      str: 'pre-existing' or 'new'
+  Returns:
+    str: 'pre-existing' or 'new'
 
-    References:
-      http://stackoverflow.com/a/600612/623735
-    """
-    path = expand_path(path)
-    try:
-        os.makedirs(path)
-    except OSError as exception:
-        if exception.errno == errno.EEXIST and os.path.isdir(path):
-            return 'pre-existing'
-        else:
-            raise
-    return 'new'
+  References:
+    http://stackoverflow.com/a/600612/623735
+  """
+  path = expand_path(path)
+  try:
+    os.makedirs(path)
+  except OSError as exception:
+    if exception.errno == errno.EEXIST and os.path.isdir(path):
+      return 'pre-existing'
+    else:
+      raise
+  return 'new'
 
 
 def sudo_yield_file_lines(file_path='/etc/NetworkManager/system-connections/*'):
-    r"""Cat a file iterating/yielding one line at a time,
+  r"""Cat a file iterating/yielding one line at a time,
 
-    shell will exeucte: `sudo cat $file_path` so if your shell doesn't have sudo or cat, no joy
-    Input:
-      file_path(str): glob stars are fine
+  shell will exeucte: `sudo cat $file_path` so if your shell doesn't have sudo or cat, no joy
+  Input:
+    file_path(str): glob stars are fine
 
-    >> for line in sudo_yield_file_lines('/etc/NetworkManager/system-connections/*')
+  >> for line in sudo_yield_file_lines('/etc/NetworkManager/system-connections/*')
 
 
-    """
-    # substitute your Windoze/DOS/PowerlessShell command here:
-    sudo_cat_cmd = 'sudo cat {}'.format(file_path)
+  """
+  # substitute your Windoze/DOS/PowerlessShell command here:
+  sudo_cat_cmd = 'sudo cat {}'.format(file_path)
 
-    process = subprocess.Popen(sudo_cat_cmd, stdout=subprocess.PIPE, shell=True)
-    # read one line at a time, as it becomes available
-    for line in iter(process.stdout.readline, ''):
-        yield line
+  process = subprocess.Popen(sudo_cat_cmd, stdout=subprocess.PIPE, shell=True)
+  # read one line at a time, as it becomes available
+  for line in iter(process.stdout.readline, ''):
+    yield line
 
 
 def sudo_iter_file_lines(file_path):
 
-    class FileLineIterable:
+  class FileLineIterable:
 
-        def __init__(self, file_path=file_path):
-            file_path = expand_path(file_path)
-            self.file_path = file_path
-            self.cat_cmd = 'sudo cat {}'.format(self.file_path)
-            self.process = subprocess.Popen(self.cat_cmd, stdout=subprocess.PIPE, shell=True)
+    def __init__(self, file_path=file_path):
+      file_path = expand_path(file_path)
+      self.file_path = file_path
+      self.cat_cmd = 'sudo cat {}'.format(self.file_path)
+      self.process = subprocess.Popen(self.cat_cmd, stdout=subprocess.PIPE, shell=True)
 
-        def __iter__(self):
-            # __iter__ returns an `iterator` instance. having an __iter__ make this class `iterable`
-            return self
+    def __iter__(self):
+      # __iter__ returns an `iterator` instance. having an __iter__ make this class `iterable`
+      return self
 
-        def next(self):
-            # substitute your Windoze/DOS/PowerlessShell command here:
-            return self.process.stdout.readline()
-            # raise StopIteration()
+    def next(self):
+      # substitute your Windoze/DOS/PowerlessShell command here:
+      return self.process.stdout.readline()
+      # raise StopIteration()
 
-    return FileLineIterable(file_path)
+  return FileLineIterable(file_path)
 
 
 def ssid_password(source='/etc/NetworkConnections/system-connections', ext=''):
-    source = expand_path(source)
-    if isinstance(source, ConfigParser):
-        ssid = source.get('wifi', 'ssid') if source.has_option('wifi', 'ssid') else None
-        psk = source.get('wifi-security', 'psk') if source.has_option('wifi-security', 'psk') else None
-        return (ssid or os.path.basename(source), psk or '')
-    elif os.path.isdir(source):
-        return dict([ssid_password(meta['path']) for meta in find_files(source, ext=ext)])
-    elif os.path.isfile(source) or callable(getattr(source, 'read', None)):
-        config = ConfigParser()
-        if hasattr(source, 'read'):
-            config.read_file(source)
-        else:
-            config.read(source)
-        return ssid_password(config)
-    elif isinstance(source, basestring):
-        return ssid_password(StringIO(source))
+  source = expand_path(source)
+  if isinstance(source, ConfigParser):
+    ssid = source.get('wifi', 'ssid') if source.has_option('wifi', 'ssid') else None
+    psk = source.get('wifi-security', 'psk') if source.has_option('wifi-security', 'psk') else None
+    return (ssid or os.path.basename(source), psk or '')
+  elif os.path.isdir(source):
+    return dict([ssid_password(meta['path']) for meta in find_files(source, ext=ext)])
+  elif os.path.isfile(source) or callable(getattr(source, 'read', None)):
+    config = ConfigParser()
+    if hasattr(source, 'read'):
+      config.read_file(source)
+    else:
+      config.read(source)
+    return ssid_password(config)
+  elif isinstance(source, basestring):
+    return ssid_password(StringIO(source))
 
 
 def read_json(file_or_path):
-    """Parse json contents of string or file object or file path and return python nested dict/lists"""
-    try:
-        with (open(file_or_path, 'r') if isinstance(file_or_path, (str, bytes)) else file_or_path) as f:
-            obj = json.load(f)
-    except IOError:
-        obj = json.loads(file_or_path)
-    return obj
+  """Parse json contents of string or file object or file path and return python nested dict/lists"""
+  try:
+    with (open(file_or_path, 'r') if isinstance(file_or_path, (str, bytes)) else file_or_path) as f:
+      obj = json.load(f)
+  except IOError:
+    obj = json.loads(file_or_path)
+  return obj
