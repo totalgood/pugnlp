@@ -96,6 +96,27 @@ def piechart(labels, data):
     return fig
 
 
+def regress(x, y=None):
+    """
+    Fit a line to the x, y data supplied and plot it along with teh raw samples
+
+    >>> # Gainseville, FL census data shows 14 more new homes are built each year, starting with 517 completed in 1991
+    >>> poly = regress([483, 576, 529, 551, 529, 551, 663, 639, 704, 675, 601, 621, 630, 778, 831, 610])
+    """
+    if y is None:
+        y = x
+        x = range(len(x))
+    if not isinstance(x[0], (float, int, np.float64, np.float32)):
+        x = [row[0] for row in x]
+    A = np.vstack([np.array(x), np.ones(len(x))]).T
+    fit = np.linalg.lstsq(A, y)
+    # if fit is None:
+    #     fit = [(1, 0), None, None, None]
+    poly = fit[0][0], fit[0][-1]
+    poly = regressionplot(x, y, poly)
+    return poly
+
+
 def regression_and_plot(x, y=None):
     """
     Fit a line to the x, y data supplied and plot it along with teh raw samples
@@ -179,11 +200,10 @@ def regression_and_plot(x, y=None):
     ...        38000, 267000, 15600, 1800, 17000, 45000, 31000, 5000, 8000, 43000, 103000, 45000, 8800, 26000, 47000,
     ...        40000, 8000]
     >>> # Udacity data shows that people earn $1.8K more for each year of age and start with a $21K deficit
-    >>> regression_and_plot(age, wage)   # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+    >>> regress(age, wage)   # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
     (1768.275..., -21991.9...)
     >>> # Gainseville, FL census data shows 14 more new homes are built each year, starting with 517 completed in 1991
-    >>> regression_and_plot([483, 576, 529, 551, 529, 551, 663, 639, 704, 675, 601, 621, 630, 778, 831, 610])
-    (14.213..., 516.588...)
+    >>> poly = regress([483, 576, 529, 551, 529, 551, 663, 639, 704, 675, 601, 621, 630, 778, 831, 610])
     """
     if y is None:
         y = x
@@ -192,19 +212,19 @@ def regression_and_plot(x, y=None):
         x = [row[0] for row in x]
     A = np.vstack([np.array(x), np.ones(len(x))]).T
     fit = np.linalg.lstsq(A, y)
-    poly = regressionplot(x, y, fit)
+    # if fit is None:
+    #     fit = [(1, 0), None, None, None]
+    poly = fit[0][0], fit[0][-1]
+    poly = regressionplot(x, y, poly)
     return poly
 
 
-def regressionplot(x, y, fit=None):
+def regressionplot(x, y, poly=None):
     """
     Plot a 2-D linear regression (y = slope * x + offset) overlayed over the raw data samples
     """
-    if fit is None:
-        fit = [(1, 0), None, None, None]
     if not isinstance(x[0], (float, int, np.float64, np.float32)):
         x = [row[0] for row in x]
-    poly = fit[0][0], fit[0][-1]
     y_regression = poly[0] * np.array(x) + poly[-1]
     try:
         plt.ion()
@@ -214,9 +234,9 @@ def regressionplot(x, y, fit=None):
         plt.legend(['%+.2g * x + %.2g' % poly, 'Samples'])
         ax.grid(True)
         plt.draw()
-    except plt:
+    except:
         logger.warn('No display available')
-    return poly
+    return y_regression
 
 
 class ColorMap(object):
