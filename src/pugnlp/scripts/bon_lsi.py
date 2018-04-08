@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Constants and discovered values, like path to current installation of pug-nlp."""
+""" Bot-or-not tweet LSA/LSI model ."""
 from __future__ import division, print_function, absolute_import, unicode_literals
 from builtins import (  # noqa
     bytes, dict, int, list, object, range, str,
@@ -16,19 +16,10 @@ from gensim.corpora import Dictionary
 from gensim.models import LsiModel, TfidfModel
 
 logger = logging.getLogger(__name__)
-
-try:
-    from twote.models import Tweet
-except (ImportError, ModuleNotFoundError):
-    try:
-        from openchat.models import Tweet
-    except (ImportError, ModuleNotFoundError):
-        Tweet = object
-        logger.warn('Unable to import a Tweet data model (ORM object)')
 np = pd.np
 
 
-if __name__ == '__main__':
+def main(Tweet=None):
     qs = Tweet.objects.filter(is_strict__gte=13)
     tweets = np.array(qs.values_list('pk', 'text', 'user__screen_name', 'user__is_bot'))
     tweets = pd.DataFrame(np.array(tweets), columns='pk text user is_bot'.split())
@@ -42,3 +33,15 @@ if __name__ == '__main__':
     lsi.save('/home/hobs/src/hackor/twote/data/lsi{}x{}x{}.saved'.format(len(tweets), lsi.num_topics, lsi.num_terms))
     topics = lsi[tfidf[bows]]
     topics = pd.DataFrame([dict(d) for d in topics], index=tweets.index, columns=range(80))
+
+
+if __name__ == '__main__':
+    try:
+        from twote.models import Tweet
+    except (ImportError, ModuleNotFoundError):
+        try:
+            from openchat.models import Tweet
+        except (ImportError, ModuleNotFoundError):
+            Tweet = object
+            logger.warn('Unable to import a Tweet data model (ORM object)')
+    main(Tweet)
