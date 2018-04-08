@@ -10,6 +10,7 @@ nltk>=3.2.2,<3.3.0
 nlup>=0.5
 pandas>=0.19.2
 pip>=8.1.2
+plotly>=2.3.0,<2.4.0
 pypandoc>=1.4.0
 # python-igraph>=0.7.1.post6
 python-Levenshtein>=0.12.0
@@ -22,7 +23,6 @@ tqdm>=4.11.2
 # twython>=3.5.0
 wheel>=0.30.0a0
 gensim>=3.4.0,<3.5.0
-plotly
 
 
 # ###################################################
