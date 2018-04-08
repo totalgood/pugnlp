@@ -21,16 +21,14 @@
 from __future__ import print_function, unicode_literals, division, absolute_import
 from future import standard_library
 standard_library.install_aliases()  # noqa
-from builtins import *  # noqa
-
-from past.builtins import basestring
+from builtins import (bytes, dict, int, list, object, range, str, ascii, chr, hex, input,  # noqa
+    next, oct, open, pow, round, super, filter, map, zip)
 from future.utils import viewitems
 
 try:  # python 3.5+
     from io import StringIO
     # from ConfigParser import ConfigParser
-
-except:
+except ImportError:
     from StringIO import StringIO
     # from configparser import ConfigParser
 
@@ -55,7 +53,7 @@ import json
 try:
     # python2
     from threading import _get_ident as get_ident
-except:
+except ImportError:
     # python3
     from threading import get_ident
 from time import mktime
@@ -139,7 +137,7 @@ def force_hashable(obj, recursive=True):
         try:
             hash(obj)
             return obj
-        except:
+        except (IndexError, ValueError, AttributeError, TypeError):
             pass
     if hasattr(obj, '__iter__'):
         # looks like a Mapping if it has .get() and .items(), so should treat it like one
@@ -242,7 +240,7 @@ def clean_field_dict(field_dict, cleaner=str.strip, time_zone=None):
     for k, v in viewitems(field_dict):
         if k == '_state':
             continue
-        if isinstance(v, basestring):
+        if isinstance(v, (str, bytes)):
             d[k] = cleaner(str(v))
         elif isinstance(v, (datetime.datetime, datetime.date)):
             d[k] = tz.localize(v)
@@ -291,13 +289,20 @@ def str_lower(s):
 def to_ascii(s, filler='-'):
     if not s:
         return ''
-    if not isinstance(s, basestring):  # e.g. np.nan
-        return to_ascii(repr(s))
+    # turn bytes to str if necessary
     try:
-        return s.encode('utf8')
-    except:
-        return ''.join(c if c < chr(128) else filler for c in s if c)
-stringify = to_ascii
+        s = s.decode()
+    except AttributeError:
+        pass
+    if not isinstance(s, str):  # e.g. np.nan
+        return to_ascii(str(s))
+    return ''.join(c if c < chr(128) else filler for c in s if c)
+
+
+def stringify(s, filler='-'):
+    s = to_ascii(s, filler=filler)
+    assert isinstance(s, str)
+    return s
 
 
 def passthrough(s):
@@ -424,18 +429,19 @@ def quantify_field_dict(field_dict, precision=None, date_precision=None, cleaner
                 if date_precision is not None and isinstance(d[k], ROUNDABLE_NUMERIC_TYPES):
                     d[k] = round(d[k], date_precision)
                     continue
-            except:
+            except (IndexError, ValueError, AttributeError, TypeError):
                 pass
         if not isinstance(d[k], (int, float)):
             try:
                 d[k] = float(d[k])
-            except:
+            except (IndexError, ValueError, AttributeError, TypeError):
                 pass
         if precision is not None and isinstance(d[k], ROUNDABLE_NUMERIC_TYPES):
             d[k] = round(d[k], precision)
         if isinstance(d[k], float) and d[k].is_integer():
             # `int()` will convert to a long, if value overflows an integer type
-            # use the original value, `v`, in case it was a long and d[k] is has been truncated by the conversion to float!
+            # use the original value, `v`, in case it was a long and d[k] is has been
+            # truncated by the conversion to float!
             d[k] = int(v)
     return d
 
@@ -462,7 +468,8 @@ def generate_batches(sequence, batch_len=1, allow_partial=True, ignore_errors=Tr
                 else:
                     raise StopIteration
             except Exception:
-                # 'Error: new-line character seen in unquoted field - do you need to open the file in universal-newline mode?'
+                # 'Error: new-line character seen in unquoted field -
+                # do you need to open the file in universal-newline mode?'
                 if verbosity > 0:
                     print_exc()
                 if not ignore_errors:
@@ -534,7 +541,7 @@ def generate_slices(sliceable_set, batch_len=1, length=None, start_batch=0):
     if length is None:
         try:
             length = sliceable_set.count()
-        except:
+        except (IndexError, ValueError, AttributeError, TypeError):
             length = len(sliceable_set)
     length = int(length)
 
@@ -610,7 +617,8 @@ def list_set(seq):
     return type(seq)(new_list)
 
 
-def fuzzy_get(possible_keys, approximate_key, default=None, similarity=0.6, tuple_joiner='|', key_and_value=False, dict_keys=None):
+def fuzzy_get(possible_keys, approximate_key, default=None, similarity=0.6, tuple_joiner='|',
+              key_and_value=False, dict_keys=None):
     r"""Find the closest matching key in a dictionary (or element in a list)
 
     For a dict, optionally retrieve the associated value associated with the closest key
@@ -624,44 +632,48 @@ def fuzzy_get(possible_keys, approximate_key, default=None, similarity=0.6, tupl
       possible_keys (dict): object to run the get method on using the key that is most similar to one within the dict
       approximate_key (str): key to look for a fuzzy match within the dict keys
       default (obj): the value to return if a similar key cannote be found in the `possible_keys`
-      similarity (float): fractional similiarity between the approximate_key and the dict key (0.9 means 90% of characters must be identical)
+      similarity (float): fractional similiarity between the approximate_key and the dict key
+        (0.9 means 90% of characters must be identical)
       tuple_joiner (str): Character to use as delimitter/joiner between tuple elements.
         Used to create keys of any tuples to be able to use fuzzywuzzy string matching on it.
       key_and_value (bool): Whether to return both the key and its value (True) or just the value (False).
         Default is the same behavior as dict.get (i.e. key_and_value=False)
-      dict_keys (list of str): if you already have a set of keys to search, this will save this funciton a little time and RAM
+      dict_keys (list of str): if you already have a set of keys to search,
+        this will save this funciton a little time and RAM
 
     See Also:
       get_similar: Allows nonstring keys and searches object attributes in addition to keys
 
     Examples:
-      >>> fuzzy_get({'seller': 2.7, 'sailor': set('e')}, 'sail') == set(['e'])
-      True
-      >>> fuzzy_get({'seller': 2.7, 'sailor': set('e'), 'camera': object()}, 'SLR')
-      2.7
-      >>> fuzzy_get({'seller': 2.7, 'sailor': set('e'), 'camera': object()}, 'I') == set(['e'])
-      True
-      >>> fuzzy_get({'word': tuple('word'), 'noun': tuple('noun')}, 'woh!', similarity=.3, key_and_value=True)
-      ('word', ('w', 'o', 'r', 'd'))
-      >>> fuzzy_get({'word': tuple('word'), 'noun': tuple('noun')}, 'woh!', similarity=.9, key_and_value=True)
-      (None, None)
-      >>> fuzzy_get({'word': tuple('word'), 'noun': tuple('noun')}, 'woh!', similarity=.9, default='darn :-()', key_and_value=True)
-      (None, 'darn :-()')
-      >>> possible_keys = ('alerts astronomy conditions currenthurricane forecast forecast10day geolookup history ' +
-      ...                  'hourly hourly10day planner rawtide satellite tide webcams yesterday').split()
-      >>> fuzzy_get(possible_keys, "cond")
-      'conditions'
-      >>> fuzzy_get(possible_keys, "Tron")
-      'astronomy'
-      >>> df = pd.DataFrame(np.arange(6*2).reshape(2,6), columns=('alpha','beta','omega','begin','life','end'))
-      >>> fuzzy_get(df, 'beg')  # doctest: +NORMALIZE_WHITESPACE, +ELLIPSIS
-      0    3
-      1    9
-      Name: begin, dtype: int...
-      >>> fuzzy_get(df, 'get')
-      >>> fuzzy_get(df, 'et')[1]
-      7
-      >>> fuzzy_get(df, 'get')
+
+    >>> fuzzy_get({'seller': 2.7, 'sailor': set('e')}, 'sail') == set(['e'])
+    True
+    >>> fuzzy_get({'seller': 2.7, 'sailor': set('e'), 'camera': object()}, 'SLR')
+    2.7
+    >>> fuzzy_get({'seller': 2.7, 'sailor': set('e'), 'camera': object()}, 'I') == set(['e'])
+    True
+    >>> fuzzy_get({'word': tuple('word'), 'noun': tuple('noun')}, 'woh!', similarity=.3, key_and_value=True)
+    ('word', ('w', 'o', 'r', 'd'))
+    >>> fuzzy_get({'word': tuple('word'), 'noun': tuple('noun')}, 'woh!', similarity=.9, key_and_value=True)
+    (None, None)
+    >>> fuzzy_get({'word': tuple('word'), 'noun': tuple('noun')}, 'woh!', similarity=.9,
+    ...           default='darn :-()', key_and_value=True)
+    (None, 'darn :-()')
+    >>> possible_keys = ('alerts astronomy conditions currenthurricane forecast forecast10day geolookup history ' +
+    ...                  'hourly hourly10day planner rawtide satellite tide webcams yesterday').split()
+    >>> fuzzy_get(possible_keys, "cond")
+    'conditions'
+    >>> fuzzy_get(possible_keys, "Tron")
+    'astronomy'
+    >>> df = pd.DataFrame(np.arange(6*2).reshape(2,6), columns=('alpha','beta','omega','begin','life','end'))
+    >>> fuzzy_get(df, 'beg')  # doctest: +NORMALIZE_WHITESPACE, +ELLIPSIS
+    0    3
+    1    9
+    Name: begin, dtype: int...
+    >>> fuzzy_get(df, 'get')
+    >>> fuzzy_get(df, 'et')[1]
+    7
+    >>> fuzzy_get(df, 'get')
     """
     dict_obj = copy.copy(possible_keys)
     if not isinstance(dict_obj, (Mapping, pd.DataFrame, pd.Series)):
@@ -687,12 +699,15 @@ def fuzzy_get(possible_keys, approximate_key, default=None, similarity=0.6, tupl
                 if strkey in dict_keys:
                     fuzzy_key, value = strkey, dict_obj[strkey]
                 else:
-                    fuzzy_key_scores = fuzzy.extractBests(strkey, dict_keys, score_cutoff=min(max(similarity * 100.0 - 1, 0), 100), limit=6)
+                    fuzzy_key_scores = fuzzy.extractBests(strkey, dict_keys,
+                                                          score_cutoff=min(max(similarity * 100.0 - 1, 0), 100),
+                                                          limit=6)
                     if fuzzy_key_scores:
                         fuzzy_score_keys = []
                         # add length similarity as part of score
                         for (i, (k, score)) in enumerate(fuzzy_key_scores):
-                            fuzzy_score_keys += [(score * math.sqrt(len(strkey)**2 / float((len(k)**2 + len(strkey)**2) or 1)), k)]
+                            fuzzy_score_keys += [(score * math.sqrt(len(strkey)**2 /
+                                                                    float((len(k)**2 + len(strkey)**2) or 1)), k)]
                         fuzzy_score, fuzzy_key = sorted(fuzzy_score_keys)[-1]
                         value = dict_obj[fuzzy_key]
     if key_and_value:
@@ -714,12 +729,14 @@ def fuzzy_get_value(obj, approximate_key, default=None, **kwargs):
       obj (dict-like): object to run the get method on using the key that is most similar to one within the dict
       approximate_key (str): key to look for a fuzzy match within the dict keys
       default (obj): the value to return if a similar key cannote be found in the `possible_keys`
-      similarity (str): fractional similiarity between the approximate_key and the dict key (0.9 means 90% of characters must be identical)
+      similarity (str): fractional similiarity between the approximate_key and the dict key
+        (0.9 means 90% of characters must be identical)
       tuple_joiner (str): Character to use as delimitter/joiner between tuple elements.
         Used to create keys of any tuples to be able to use fuzzywuzzy string matching on it.
       key_and_value (bool): Whether to return both the key and its value (True) or just the value (False).
         Default is the same behavior as dict.get (i.e. key_and_value=False)
-      dict_keys (list of str): if you already have a set of keys to search, this will save this funciton a little time and RAM
+      dict_keys (list of str): if you already have a set of keys to search, this will save this funciton
+        a little time and RAM
 
     Examples:
       >>> fuzzy_get_value({'seller': 2.7, 'sailor': set('e')}, 'sail') == set(['e'])
@@ -752,9 +769,11 @@ def fuzzy_get_tuple(dict_obj, approximate_key, dict_keys=None, key_and_value=Fal
 def sod_transposed(seq_of_dicts, align=True, pad=True, filler=None):
     """Return sequence (list) of dictionaries, transposed into a dictionary of sequences (lists)
 
-    >>> sorted(sod_transposed([{'c': 1, 'cm': 'P'}, {'c': 1, 'ct': 2, 'cm': 6, 'cn': 'MUS'}, {'c': 1, 'cm': 'Q', 'cn': 'ROM'}], filler=0).items())
+    >>> sorted(sod_transposed([{'c': 1, 'cm': 'P'}, {'c': 1, 'ct': 2, 'cm': 6, 'cn': 'MUS'},
+    ...                        {'c': 1, 'cm': 'Q', 'cn': 'ROM'}], filler=0).items())
     [('c', [1, 1, 1]), ('cm', ['P', 6, 'Q']), ('cn', [0, 'MUS', 'ROM']), ('ct', [0, 2, 0])]
-    >>> sorted(sod_transposed(({'c': 1, 'cm': 'P'}, {'c': 1, 'ct': 2, 'cm': 6, 'cn': 'MUS'}, {'c': 1, 'cm': 'Q', 'cn': 'ROM'}),
+    >>> sorted(sod_transposed(({'c': 1, 'cm': 'P'}, {'c': 1, 'ct': 2, 'cm': 6, 'cn': 'MUS'},
+    ...                        {'c': 1, 'cm': 'Q', 'cn': 'ROM'}),
     ...                       filler=0, align=0).items())
     [('c', [1, 1, 1]), ('cm', ['P', 6, 'Q']), ('cn', ['MUS', 'ROM']), ('ct', [2])]
     """
@@ -787,7 +806,7 @@ def joined_seq(seq, sep=None):
     (1, 2, 3)
     """
     joined_seq = tuple(seq)
-    if isinstance(sep, basestring):
+    if isinstance(sep, (str, bytes)):
         joined_seq = sep.join(str(item) for item in joined_seq)
     return joined_seq
 
@@ -795,7 +814,8 @@ def joined_seq(seq, sep=None):
 def consolidate_stats(dict_of_seqs, stats_key=None, sep=','):
     """Join (stringify and concatenate) keys (table fields) in a dict (table) of sequences (columns)
 
-    >>> consolidate_stats(dict([('c', [1, 1, 1]), ('cm', ['P', 6, 'Q']), ('cn', [0, 'MUS', 'ROM']), ('ct', [0, 2, 0])]), stats_key='c')
+    >>> consolidate_stats(dict([('c', [1, 1, 1]), ('cm', ['P', 6, 'Q']), ('cn', [0, 'MUS', 'ROM']),
+    ...                        ('ct', [0, 2, 0])]), stats_key='c')
     [{'P,0,0': 1}, {'6,MUS,2': 1}, {'Q,ROM,0': 1}]
     >>> consolidate_stats([{'c': 1, 'cm': 'P', 'cn': 0, 'ct': 0}, {'c': 1, 'cm': 6, 'cn': 'MUS', 'ct': 2},
     ...                    {'c': 1, 'cm': 'Q', 'cn': 'ROM', 'ct': 0}], stats_key='c')
@@ -826,7 +846,7 @@ def dos_from_table(table, header=None):
         header = table[0]
         start_row = 1
     header_list = header
-    if header and isinstance(header, basestring):
+    if header and isinstance(header, (str, bytes)):
         header_list = header.split('\t')
         if len(header_list) != len(table[0]):
             header_list = header.split(',')
@@ -847,10 +867,10 @@ def transposed_lists(list_of_lists, default=None):
     [[1, 3, 6], [2, 4], [5]]
     >>> transposed_lists(transposed_lists([[], [1, 2, 3], [4]]))
     [[1, 2, 3], [4]]
-    >>> l = transposed_lists([range(4),[4,5]])
-    >>> l
+    >>> x = transposed_lists([range(4),[4,5]])
+    >>> x
     [[0, 4], [1, 5], [2], [3]]
-    >>> transposed_lists(l)
+    >>> transposed_lists(x)
     [[0, 1, 2, 3], [4, 5]]
     """
     if default is None or default is [] or default is tuple():
@@ -890,10 +910,10 @@ def transposed_matrix(matrix, filler=None, row_type=list, matrix_type=list, valu
     [[None, 1.0, 4.0], [None, 2.0, None], [None, 3.0, None]]
     >>> transposed_matrix(transposed_matrix([[], [1, 2, 3], [4]]))
     [[None, None, None], [1.0, 2.0, 3.0], [4.0, None, None]]
-    >>> l = transposed_matrix([range(4),[4,5]])
-    >>> l
+    >>> x = transposed_matrix([range(4),[4,5]])
+    >>> x
     [[0, 4], [1, 5], [2, None], [3, None]]
-    >>> transposed_matrix(l)
+    >>> transposed_matrix(x)
     [[0, 1, 2, 3], [4, 5, None, None]]
     >>> transposed_matrix([[1,2],[1],[1,2,3]])
     [[1, 1, 1], [2, None, 2], [None, None, 3]]
@@ -902,7 +922,7 @@ def transposed_matrix(matrix, filler=None, row_type=list, matrix_type=list, valu
 
     try:
         row_type = row_type or type(matrix[0])
-    except:
+    except (IndexError, ValueError, AttributeError, TypeError):
         pass
     if not row_type or row_type is None:
         row_type = list
@@ -912,7 +932,7 @@ def transposed_matrix(matrix, filler=None, row_type=list, matrix_type=list, valu
             value_type = value_type or float
         else:
             value_type = value_type or type(matrix[0][0]) or float
-    except:
+    except (IndexError, ValueError, AttributeError, TypeError):
         pass
     if not value_type or value_type is None:
         value_type = float
@@ -945,7 +965,8 @@ def hist_from_counts(counts, normalize=False, cumulative=False, to_str=False, se
     """
     counters = [dict((i, c)for i, c in enumerate(counts))]
 
-    intkeys_list = [[c for c in counts_dict if (isinstance(c, int) or (isinstance(c, float) and int(c) == c))] for counts_dict in counters]
+    intkeys_list = [[c for c in counts_dict if (isinstance(c, int) or (isinstance(c, float) and int(c) == c))]
+                    for counts_dict in counters]
     min_bin, max_bin = min_bin or 0, max_bin or len(counts) - 1
 
     histograms = []
@@ -979,7 +1000,8 @@ def hist_from_counts(counts, normalize=False, cumulative=False, to_str=False, se
     return aligned_histograms
 
 
-def hist_from_values_list(values_list, fillers=(None,), normalize=False, cumulative=False, to_str=False, sep=',', min_bin=None, max_bin=None):
+def hist_from_values_list(values_list, fillers=(None,), normalize=False,
+                          cumulative=False, to_str=False, sep=',', min_bin=None, max_bin=None):
     """Compute an emprical histogram, PMF or CDF in a list of lists or a csv string
 
     Only works for discrete (integer) values (doesn't bin real values).
@@ -988,7 +1010,7 @@ def hist_from_values_list(values_list, fillers=(None,), normalize=False, cumulat
     >>> hist_from_values_list([1,1,2,1,1,1,2,3,2,4,4,5,7,7,9])  # doctest: +NORMALIZE_WHITESPACE
     [(1, 5), (2, 3), (3, 1), (4, 2), (5, 1), (6, 0), (7, 2), (8, 0), (9, 1)]
     >>> hist_from_values_list([(1,9),(1,8),(2,),(1,),(1,4),(2,5),(3,3),(5,0),(2,2)])  # doctest: +NORMALIZE_WHITESPACE
-    [[(1, 4), (2, 3), (3, 1), (4, 0), (5, 1)], [(0, 1), (1, 0), (2, 1), (3, 1), (4, 1), (5, 1), (6, 0), (7, 0), (8, 1), (9, 1)]]
+    [[(1, 4), (2, 3), (3, 1), (4, 0), (5, 1)], [(0, 1), (1, 0), ... (6, 0), (7, 0), (8, 1), (9, 1)]]
     >>> hist_from_values_list(transposed_matrix([(8,),(1,3,5),(2,),(3,4,5,8)]))  # doctest: +NORMALIZE_WHITESPACE
     [[(8, 1)], [(1, 1), (2, 0), (3, 1), (4, 0), (5, 1)], [(2, 1)], [(3, 1), (4, 1), (5, 1), (6, 0), (7, 0), (8, 1)]]
     """
@@ -998,7 +1020,8 @@ def hist_from_values_list(values_list, fillers=(None,), normalize=False, cumulat
         # ignore all fillers and convert all floats to ints when doing counting
         counters = [Counter(int(value) for value in values_list if isinstance(value, (int, float)))]
     elif all(len(row) == 1 for row in values_list) and all(isinstance(row[0], value_types) for row in values_list):
-        return hist_from_values_list([values[0] for values in values_list], fillers=fillers, normalize=normalize, cumulative=cumulative,
+        return hist_from_values_list([values[0] for values in values_list], fillers=fillers,
+                                     normalize=normalize, cumulative=cumulative,
                                      to_str=to_str, sep=sep, min_bin=min_bin, max_bin=max_bin)
     else:  # assume it's a row-wise table (list of rows)
         return [
@@ -1010,19 +1033,21 @@ def hist_from_values_list(values_list, fillers=(None,), normalize=False, cumulat
     if not values_list:
         return []
 
-    intkeys_list = [[c for c in counts if (isinstance(c, int) or (isinstance(c, float) and int(c) == c))] for counts in counters]
+    intkeys_list = [[c for c in counts if (isinstance(c, int) or (isinstance(c, float) and int(c) == c))]
+                    for counts in counters]
     try:
         min_bin = int(min_bin)
-    except:
+    except (IndexError, ValueError, AttributeError, TypeError):
         min_bin = min(min(intkeys) for intkeys in intkeys_list)
     try:
         max_bin = int(max_bin)
-    except:
+    except (IndexError, ValueError, AttributeError, TypeError):
         max_bin = max(max(intkeys) for intkeys in intkeys_list)
 
     # FIXME: this looks slow and hazardous (like it's ignore min/max bin):
-    min_bin = max(min_bin, min((min(intkeys) if intkeys else 0) for intkeys in intkeys_list))  # TODO: reuse min(intkeys)
-    max_bin = min(max_bin, max((max(intkeys) if intkeys else 0) for intkeys in intkeys_list))  # TODO: reuse max(intkeys)
+    # TODO: reuse min(intkeys)
+    min_bin = max(min_bin, min((min(intkeys) if intkeys else 0) for intkeys in intkeys_list))
+    max_bin = min(max_bin, max((max(intkeys) if intkeys else 0) for intkeys in intkeys_list))
 
     histograms = []
     for intkeys, counts in zip(intkeys_list, counters):
@@ -1064,7 +1089,8 @@ def get_similar(obj, labels, default=None, min_similarity=0.5):
         `fuzzy_get`
 
     """
-    raise NotImplementedError("Unfinished implementation, needs to be incorporated into fuzzy_get where a list of scores and keywords is sorted.")
+    raise NotImplementedError(
+        "Unfinished implementation, needs to be in fuzzy_get where list of scores & keywords is sorted.")
     labels = listify(labels)
 
     def not_found(*args, **kwargs):
@@ -1089,8 +1115,11 @@ def get_similar(obj, labels, default=None, min_similarity=0.5):
                 return result
 
 
-def normalize_column_labels(obj, labels):
-    """Like `get_similar` but returns the matched labels/keys rather than the values and 1 key for each label in labels"""
+# def normalize_column_labels(obj, labels):
+#     """Like `get_similar` but returns the matched labels/keys rather than the values
+
+#     1 key for each label in labels"""
+#     pass
 
 
 def update_dict(d, u=None, depth=-1, take_new=True, default_mapping_type=dict, prefer_update_type=False, copy=False):
@@ -1110,14 +1139,16 @@ def update_dict(d, u=None, depth=-1, take_new=True, default_mapping_type=dict, p
     >>> updated2 = update_dict(orig, {'new_key2': 'new_value2'})
     >>> updated2 == orig
     True
-    >>> update_dict({'k1': {'k2': {'k3': 3}}, 'k4': 4}, {'k1': {'k2': 2}}, depth=1, take_new=False) == {'k1': {'k2': 2}, 'k4': 4}
+    >>> update_dict({'k1': {'k2': {'k3': 3}}, 'k4': 4}, {'k1': {'k2': 2}},
+    ...             depth=1, take_new=False) == {'k1': {'k2': 2}, 'k4': 4}
     True
     >>> update_dict({'k1': {'k2': {'k3': 3}}, 'k4': 4}, None) == {'k1': {'k2': {'k3': 3}}, 'k4': 4}
     True
     >>> update_dict({'k1': {'k2': {'k3': 3}}, 'k4': 4}, {'k1': ()}) == {'k1': (), 'k4': 4}
     True
     >>> # FIXME: this result is unexpected the same as for `take_new=False`
-    >>> update_dict({'k1': {'k2': {'k3': 3}}, 'k4': 4}, {'k1': {'k2': 2}}, depth=1, take_new=True) == {'k4': 4, 'k1': {'k2': 2}}
+    >>> update_dict({'k1': {'k2': {'k3': 3}}, 'k4': 4}, {'k1': {'k2': 2}},
+    ...             depth=1, take_new=True) == {'k4': 4, 'k1': {'k2': 2}}
     True
     """
     u = u or {}
@@ -1152,10 +1183,10 @@ def update_dict(d, u=None, depth=-1, take_new=True, default_mapping_type=dict, p
 #     Replaces any zeros or Nones with default value.
 
 #     Examples:
-#     >>> l = mapped_transposed_lists([range(4), [4,5]], None)
-#     >>> l
+#     >>> x = mapped_transposed_lists([range(4), [4,5]], None)
+#     >>> x
 #     [[0, 4], [1, 5], [2, None], [3, None]]
-#     >>> mapped_transposed_lists(l)
+#     >>> mapped_transposed_lists(x)
 #     [[0, 1, 2, 3], [4, 5, None, None]]
 #     """
 #     if not lists:
@@ -1228,6 +1259,8 @@ def make_name(s, camel=None, lower=None, space='_', remove_prefix=None, language
         if space:
             s = re.sub('[' + space_escape + space + ']{2,}', space, s)
     return s
+
+
 make_name.DJANGO_FIELD = {'camel': False, 'lower': True, 'space': '_'}
 make_name.DJANGO_MODEL = {'camel': True, 'lower': False, 'space': '', 'remove_prefix': 'models'}
 
@@ -1270,7 +1303,8 @@ def make_filename(s, space=None, language='msdos', strict=False, max_len=None, r
         elif not space:
             space = ''
     if not filename:
-        if language.lower().strip() in ('posix', 'unix', 'linux', 'centos', 'ubuntu', 'fedora', 'redhat', 'rhel', 'debian', 'deb'):
+        if language.lower().strip() in ('posix', 'unix', 'linux', 'centos', 'ubuntu', 'fedora',
+                                        'redhat', 'rhel', 'debian', 'deb'):
             filename = re.sub(r'[^0-9A-Za-z._-]' + '\{1,{0}\}'.format(repeats), space, s)
         else:
             filename = re.sub(r'[ :\\/?*&"<>|~`!]{' + ('1,{0}'.format(repeats)) + r'}', space, s)
@@ -1321,10 +1355,10 @@ def tryconvert(value, desired_types=SCALAR_TYPES, default=None, empty='', strip=
     'None'
     """
     if value in tryconvert.EMPTY:
-        if isinstance(value, basestring):
+        if isinstance(value, (str, bytes)):
             return type(value)(empty)
         return empty
-    if isinstance(value, basestring):
+    if isinstance(value, (str, bytes)):
         # there may not be any "empty" strings that won't be caught by the `is ''` check above, but just in case
         if not value:
             return type(value)(empty)
@@ -1335,7 +1369,9 @@ def tryconvert(value, desired_types=SCALAR_TYPES, default=None, empty='', strip=
     if desired_types is not None and len(desired_types) == 0:
         desired_types = tryconvert.SCALAR
     if len(desired_types):
-        if isinstance(desired_types, (list, tuple)) and len(desired_types) and isinstance(desired_types[0], (list, tuple)):
+        if (isinstance(desired_types, (list, tuple)) and
+                len(desired_types) and
+                isinstance(desired_types[0], (list, tuple))):
             desired_types = desired_types[0]
         elif isinstance(desired_types, type):
             desired_types = [desired_types]
@@ -1348,6 +1384,8 @@ def tryconvert(value, desired_types=SCALAR_TYPES, default=None, empty='', strip=
         return default
     # if no conversions happened successfully then return the default value requested
     return default
+
+
 tryconvert.EMPTY = ('', None, float('nan'))
 tryconvert.SCALAR = SCALAR_TYPES
 
@@ -1384,18 +1422,18 @@ def strip_br(s):
     ('one element',)
     """
 
-    if isinstance(s, basestring):
+    if isinstance(s, (str, bytes)):
         return re.sub(r'\s*<\s*[Bb][Rr]\s*[/]?\s*>\s*$', '', s)
     elif isinstance(s, (tuple, list)):
         # strip just the last element in a list or tuple
         try:
             return type(s)(list(s)[:-1] + [strip_br(s[-1])])
-        except:  # len(s) == 0
+        except (IndexError, ValueError, AttributeError, TypeError):  # len(s) == 0
             return s
     else:
         try:
             return type(s)(strip_br(str(s)))
-        except:  # s is None
+        except (IndexError, ValueError, AttributeError, TypeError):  # s is None
             return s
 
 
@@ -1411,21 +1449,23 @@ def read_csv(csv_file, ext='.csv', format=None, delete_empty_keys=False,
     TODO:
         merge with `nlp.util.make_dataframe` function
 
-    Handles unquoted and quoted strings, quoted commas, quoted newlines (EOLs), complex numbers, times, dates, datetimes,
+    Handles unquoted and quoted strings, quoted commas, quoted newlines (EOLs), complex numbers,
+        times, dates, datetimes
+
     >>> read_csv('"name\r\n",rank,"serial\nnumber",date <BR />\t\n"McCain, John","1","123456789",9/11/2001\n' +
     ...          'Bob,big cheese,1-23,1/1/2001 12:00 GMT', format='header+values list', numbers=True)
     [['name', 'rank', 'serial\nnumber', 'date'], ['McCain, John', 1.0, 123456789.0, '9/11/2001'],
-     ['Bob', 'big cheese', '1-23', '1/1/2001 12:00 GMT']]
+    ['Bob', 'big cheese', '1-23', '1/1/2001 12:00 GMT']]
     """
     if not csv_file:
         return
-    if isinstance(csv_file, basestring):
+    if isinstance(csv_file, (str, bytes)):
         # truncate `csv_file` in case it is a string buffer containing GBs of data
         path = csv_file[:1025]
         try:
             # see http://stackoverflow.com/a/4169762/623735 before trying 'rU'
             fpin = open(path, 'rUb')  # U = universal EOL reader, b = binary
-        except:
+        except (IOError, FileNotFoundError):
             # truncate path more, in case path is used later as a file description:
             path = csv_file[:128]
             fpin = StringIO(str(csv_file))
@@ -1433,7 +1473,7 @@ def read_csv(csv_file, ext='.csv', format=None, delete_empty_keys=False,
         fpin = csv_file
         try:
             path = csv_file.name
-        except:
+        except (IndexError, ValueError, AttributeError, TypeError):
             path = 'unknown file buffer path'
 
     format = format or 'h'
@@ -1473,7 +1513,8 @@ def read_csv(csv_file, ext='.csv', format=None, delete_empty_keys=False,
     fpin.seek(start_seek_pos)
 
     if verbosity > 1:
-        print('There appear to be {} bytes remaining in the file buffer. Resetting (seek) to starting position in file.'.format(file_len))
+        print(('There appear to be {} bytes remaining in the file buffer.' +
+               'Resetting (seek) to starting position in file.').format(file_len))
     # if verbosity > 0:
     #     pbar = progressbar.ProgressBar(maxval=file_len)
     #     pbar.start()
@@ -1494,7 +1535,7 @@ def read_csv(csv_file, ext='.csv', format=None, delete_empty_keys=False,
                 break
         if eof:
             break
-        if len(row) and isinstance(row[-1], basestring) and len(row[-1]):
+        if len(row) and isinstance(row[-1], (str, bytes)) and len(row[-1]):
             row = strip_br(row)
         if numbers:
             # try to convert the type to a numerical scalar type (int, float etc)
@@ -1509,7 +1550,8 @@ def read_csv(csv_file, ext='.csv', format=None, delete_empty_keys=False,
             if format in 'dj':  # django json format
                 recs += [{"pk": rownum, "model": model_name, "fields": row_dict}]
             elif format in 'vhl':  # list of lists of values, with header row (list of str)
-                recs += [[value for field_name, value in viewitems(row_dict) if (field_name.strip() or delete_empty_keys is False)]]
+                recs += [[value for field_name, value in viewitems(row_dict)
+                          if (field_name.strip() or delete_empty_keys is False)]]
             elif format in 'c':  # columnwise dict of lists
                 for field_name in row_dict:
                     recs[field_name] += [row_dict[field_name]]
@@ -1634,11 +1676,11 @@ def make_series(x, *args, **kwargs):
             x = list(x)
         try:
             return pd.Series(x, **kwargs)
-        except:
+        except (IndexError, ValueError, AttributeError, TypeError):
             logger.debug(format_exc())
             try:
                 return pd.Series(np.array(x), **kwargs)
-            except:
+            except (IndexError, ValueError, AttributeError, TypeError):
                 logger.debug(format_exc())
                 return pd.Series(x, **kwargs)
 
@@ -1662,20 +1704,22 @@ def encode(obj):
         return str('').join([c for c in obj if c < MAX_CHR])
     # TODO: encode sequences of strings and dataframes of strings
     return obj
+
+
 encode.encoding = 'utf8'
 
 
 def try_int(x):
     try:
         return int(x)
-    except:
+    except (IndexError, ValueError, AttributeError, TypeError):
         return x
 
 
 def try_float_int(x):
     try:
         x = float(x)
-    except:
+    except (IndexError, ValueError, AttributeError, TypeError):
         return x
     if round(x) == x:
         return int(round(x))
@@ -1693,14 +1737,14 @@ def clean_series(series, *args, **kwargs):
     dtype: object
     >>> clean_series(pd.Series([datetime.datetime(1, 1, 1), datetime.datetime(3000, 10, 23)]))
     0             1677-09-22 00:12:44+00:00
-    1   2262-04-11 23:47:16.854775807+00:00
+    1   2262-04-11 23:47:16.854775+00:00
     dtype: datetime64[ns, UTC]
     """
     if not series.dtype == np.dtype('O'):
         return series
     if any_generated((isinstance(v, datetime.datetime) for v in series)):
         series = series.apply(clip_datetime)
-    if any_generated((isinstance(v, basestring) for v in series)):
+    if any_generated((isinstance(v, (str, bytes)) for v in series)):
         series = series.apply(encode)
     series = series.apply(try_float_int)
     return series
@@ -1723,21 +1767,21 @@ def make_dataframe(table, clean=True, verbose=False, **kwargs):
     1  4  5
     >>> make_dataframe([[dt(2700, 1, 1), dt(2015, 11, 2)], [(2700 - 2015) * 365.25 + 60, 1]]).T
                                          0       1
-    0  2262-04-11 23:47:16.854775807+00:00  250256
+    0  2262-04-11 23:47:16.854775+00:00  250256
     1            2015-11-02 00:00:00+00:00       1
     """
     if hasattr(table, 'objects') and not callable(table.objects):
         table = table.objects
     if hasattr(table, 'filter') and callable(table.values):
         table = pd.DataFrame.from_records(list(table.values()).all())
-    elif isinstance(table, basestring) and os.path.isfile(table):
+    elif isinstance(table, (str, bytes)) and os.path.isfile(table):
         table = pd.DataFrame.from_csv(table)
     # elif isinstance(table, ValuesQuerySet) or (isinstance(table, (list, tuple)) and
     #                                            len(table) and all(isinstance(v, Mapping) for v in table)):
     #     table = pd.DataFrame.from_records(table)
     try:
         table = pd.DataFrame(table, **kwargs)
-    except:
+    except (IndexError, ValueError, AttributeError, TypeError):
         table = pd.DataFrame(table)
     if clean and len(table) and isinstance(table, pd.DataFrame):
         if verbose:
@@ -1762,12 +1806,13 @@ def column_name_to_date(name):
     >>> column_name_to_date('apr_10')
     datetime.date(10, 4, 1)
     """
-    month_nums = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
+    month_nums = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7,
+                  'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
     year_month = re.split(r'[^0-9a-zA-Z]{1}', name.strip().strip('_-/*=:+'))
     try:
         year = int(year_month[0])
         month = year_month[-1]
-    except:
+    except (ValueError, IndexError):
         year = int(year_month[-1])
         month = year_month[0]
     month = int(month_nums.get(str(month).lower().title(), month or 0))
@@ -1776,14 +1821,14 @@ def column_name_to_date(name):
     try:
         year = int(year_month[1])
         month = int(year_month[0])
-    except:
+    except (ValueError, IndexError):
         year. month = 0, 0
     if 0 <= year <= 2100 and 1 <= month <= 12:
         return datetime.date(year, month, 1)
     try:
         month = int(year_month[1])
         year = int(year_month[0])
-    except:
+    except (ValueError, IndexError):
         year. month = 0, 0
     if 0 <= year <= 2100 and 1 <= month <= 12:
         return datetime.date(year, month, 1)
@@ -1868,11 +1913,11 @@ def make_float(s, default='', ignore_commas=True):
     >>> make_float(float('-INF'))
     -inf
     """
-    if ignore_commas and isinstance(s, basestring):
+    if ignore_commas and isinstance(s, (str, bytes)):
         s = s.replace(',', '')
     try:
         return float(s)
-    except:
+    except (IndexError, ValueError, AttributeError, TypeError):
         try:
             return float(str(s))
         except ValueError:
@@ -1902,11 +1947,11 @@ def make_int(s, default='', ignore_commas=True):
     >>> make_int(' \t\n123,450,00\n')
     12345000
     """
-    if ignore_commas and isinstance(s, basestring):
+    if ignore_commas and isinstance(s, (str, bytes)):
         s = s.replace(',', '')
     try:
         return int(s)
-    except:
+    except (IndexError, ValueError, AttributeError, TypeError):
         pass
     try:
         return int(re.split(str(s), '[^-0-9,.Ee]')[0])
@@ -1946,12 +1991,12 @@ def normalize_scientific_notation(s, ignore_commas=True, verbosity=1):
         return None
     try:
         s = str(eval(s.strip().lstrip('0')))
-    except:
+    except (IndexError, ValueError, AttributeError, TypeError):
         if verbosity > 1:
             print('Unable to evaluate %s' % repr(s))
         try:
             s = str(float(s))
-        except:
+        except (IndexError, ValueError, AttributeError, TypeError):
             print('Unable to float %s' % repr(s))
             s = ''
     # print s
@@ -1966,14 +2011,14 @@ def normalize_scientific_notation(s, ignore_commas=True, verbosity=1):
 
 def normalize_names(names):
     """Coerce a string or nested list of strings into a flat list of strings."""
-    if isinstance(names, basestring):
+    if isinstance(names, (str, bytes)):
         names = names.split(',')
     names = listify(names)
     return [str(name).strip() for name in names]
 
 
 def string_stats(strs, valid_chars='012346789', left_pad='0', right_pad='', strip=True):
-    """Count the occurrence of a category of valid characters within an iterable of serial numbers, model numbers, or other strings"""
+    """ Count the occurrence of a category of valid characters within an iterable of serial/model no, etc """
     if left_pad is None:
         left_pad = ''.join(c for c in rex.ASCII_CHARACTERS if c not in valid_chars)
     if right_pad is None:
@@ -1998,7 +2043,7 @@ def string_stats(strs, valid_chars='012346789', left_pad='0', right_pad='', stri
             if i < len(s):
                 counts[i] = counts.get(i, 0) + int(s[i] in valid_chars)
                 counts[-i - 1] = counts.get(-i - 1, 0) + int(s[-i - 1] in valid_chars)
-        long_enough_strings = float(sum(c for l, c in list(lengths.items()) if l >= i))
+        long_enough_strings = float(sum(c for n, c in list(lengths.items()) if n >= i))
         counts[i] = counts[i] / long_enough_strings
         counts[-i - 1] = counts[-i - 1] / long_enough_strings
 
@@ -2115,6 +2160,8 @@ def normalize_serial_number(sn,
     if right_fill:
         sn = sn + right_fill * (max_length - len(sn) / len(right_fill))
     return sn
+
+
 normalize_serial_number.max_length = 10
 normalize_serial_number.left_fill = '0'
 normalize_serial_number.right_fill = ''
@@ -2138,7 +2185,8 @@ def multisplit(s, seps=list(string.punctuation) + list(string.whitespace), blank
     ['1C 234567890']
     """
     seps = str().join(seps)
-    return [s2 for s2 in s.translate(str().join([(chr(i) if chr(i) not in seps else seps[0]) for i in range(256)])).split(seps[0]) if (blank or s2)]
+    return [s2 for s2 in s.translate(str().join([(chr(i) if chr(i) not in seps else seps[0])
+                                                 for i in range(256)])).split(seps[0]) if (blank or s2)]
 
 
 def make_real(list_of_lists):
@@ -2216,22 +2264,26 @@ def strip_edge_punc(s, punc=None, lower=None, str_type=str):
         punc = strip_edge_punc.punc
     if lower:
         s = s.lower()
-    if not isinstance(s, basestring):
+    if not isinstance(s, (str, bytes)):
         return [strip_edge_punc(str_type(s0), punc) for s0 in s]
     return s.strip(punc)
+
+
 strip_edge_punc.lower = False
 strip_edge_punc.punc = PUNC
 
 
 def get_sentences(s, regex=rex.sentence_sep):
-    if isinstance(regex, basestring):
+    if isinstance(regex, (str, bytes)):
         regex = re.compile(regex)
     return [sent for sent in regex.split(s) if sent]
 
 
-# this regex assumes "s' " is the end of a possessive word and not the end of an inner quotation, e.g. He said, "She called me 'Hoss'!"
+# this regex assumes "s' " is the end of a possessive word and not the end of an inner quotation,
+# e.g. He said, "She called me 'Hoss'!"
 def get_words(s, splitter_regex=rex.word_sep_except_external_appostrophe,
-              preprocessor=strip_HTML, postprocessor=strip_edge_punc, min_len=None, max_len=None, blacklist=None, whitelist=None, lower=False,
+              preprocessor=strip_HTML, postprocessor=strip_edge_punc, min_len=None,
+              max_len=None, blacklist=None, whitelist=None, lower=False,
               filter_fun=None, str_type=str):
     r"""Segment words (tokens), returning a list of all tokens
 
@@ -2249,7 +2301,8 @@ def get_words(s, splitter_regex=rex.word_sep_except_external_appostrophe,
       max_len (int): delete all words longer than this number of characters
       blacklist and whitelist (list of str): words to delete or preserve
       lower (bool): whether to convert all words to lowercase
-      str_type (type): typically `str` or `unicode`, any type constructor that should can be applied to all words before returning the list
+      str_type (type): typically `str` or `unicode`, any type constructor that should can be applied
+        to all words before returning the list
 
     Returns:
       list of str: list of tokens
@@ -2273,29 +2326,33 @@ def get_words(s, splitter_regex=rex.word_sep_except_external_appostrophe,
     lower = lower or get_words.lower
     try:
         s = open(s, 'r')
-    except:
+    except (IOError, FileNotFoundError):
         pass
     try:
         s = s.read()
-    except:
+    except (IOError, AttributeError, TypeError):
         pass
-    if not isinstance(s, basestring):
+    if not isinstance(s, (str, bytes)):
         try:
             # flatten the list of lists of words from each obj (file or string)
             return [word for obj in s for word in get_words(obj)]
-        except:
+        except (IOError, IndexError, ValueError, AttributeError, TypeError):
             pass
     try:
         s = preprocessor(s)
-    except:
+    except (IndexError, ValueError, AttributeError, TypeError):
         pass
-    if isinstance(splitter_regex, basestring):
+    if isinstance(splitter_regex, (str, bytes)):
         splitter_regex = re.compile(splitter_regex)
     s = list(map(postprocessor, splitter_regex.split(s)))
     s = list(map(str_type, s))
     if not filter_fun:
         return s
-    return [word for word in s if filter_fun(word, min_len=min_len, max_len=max_len, blacklist=blacklist, whitelist=whitelist, lower=lower)]
+    return [word for word in s if
+            filter_fun(word, min_len=min_len, max_len=max_len,
+                       blacklist=blacklist, whitelist=whitelist, lower=lower)]
+
+
 get_words.blacklist = ('', None, '\'', '.', '_', '-')
 get_words.whitelist = None
 get_words.min_len = 1
@@ -2307,7 +2364,7 @@ get_words.filter_fun = minmax_len_and_blackwhite_list
 def pluralize_field_name(names=None, retain_prefix=False):
     if not names:
         return ''
-    elif isinstance(names, basestring):
+    elif isinstance(names, (str, bytes)):
         if retain_prefix:
             split_name = names
         else:
@@ -2320,6 +2377,8 @@ def pluralize_field_name(names=None, retain_prefix=False):
             return split_name + 's'
     else:
         return [pluralize_field_name(name) for name in names]
+
+
 pluralize_field_names = pluralize_field_name
 
 
@@ -2356,7 +2415,7 @@ def intify(obj, str_fun=str, use_ord=True, use_hash=True, use_len=True):
     """
     try:
         return int(obj)
-    except:
+    except (IndexError, ValueError, AttributeError, TypeError):
         pass
     try:
         float_obj = float(obj)
@@ -2364,7 +2423,7 @@ def intify(obj, str_fun=str, use_ord=True, use_hash=True, use_len=True):
             # WARN: This will increment sys.maxint by +1 and decrement sys.maxint by -1!!!!
             #       But hopefully these cases will be dealt with as expected, above
             return int(float_obj)
-    except:
+    except (IndexError, ValueError, AttributeError, TypeError):
         pass
     if not str_fun:
         def str_fun(x):
@@ -2372,21 +2431,21 @@ def intify(obj, str_fun=str, use_ord=True, use_hash=True, use_len=True):
     if use_ord:
         try:
             return ord(str_fun(obj)[0].lower())
-        except:
+        except (IndexError, ValueError, AttributeError, TypeError):
             pass
     if use_hash:
         try:
             return hash(str_fun(obj))
-        except:
+        except (IndexError, ValueError, AttributeError, TypeError):
             pass
     if use_len:
         try:
             return len(obj)
-        except:
+        except (IndexError, ValueError, AttributeError, TypeError):
             pass
         try:
             return len(str_fun(obj))
-        except:
+        except (IndexError, ValueError, AttributeError, TypeError):
             pass
     return None
 
@@ -2422,14 +2481,14 @@ def listify(values, N=1, delim=None):
     ans = [] if values is None else values
 
     # convert non-string non-list iterables into a list
-    if hasattr(ans, '__iter__') and not isinstance(ans, basestring):
+    if hasattr(ans, '__iter__') and not isinstance(ans, (str, bytes)):
         ans = list(ans)
     else:
         # split the string (if possible)
-        if isinstance(delim, basestring) and isinstance(ans, basestring):
+        if isinstance(delim, (str, bytes)) and isinstance(ans, (str, bytes)):
             try:
                 ans = ans.split(delim)
-            except:
+            except (IndexError, ValueError, AttributeError, TypeError):
                 ans = [ans]
         else:
             ans = [ans]
@@ -2449,7 +2508,7 @@ def tuplify(values, N=1, delim=None):
     return tuple(listify(values, N=N, delim=delim))
 
 
-def unlistify(l, depth=1, typ=list, get=None):
+def unlistify(n, depth=1, typ=list, get=None):
     """Return the desired element in a list ignoring the rest.
 
     >>> unlistify([1,2,3])
@@ -2469,14 +2528,14 @@ def unlistify(l, depth=1, typ=list, get=None):
     if depth is None:
         depth = 1
     index_desired = get or 0
-    while i < depth and isinstance(l, typ):
-        if len(l):
-            if len(l) > index_desired:
-                l = l[index_desired]
+    while i < depth and isinstance(n, typ):
+        if len(n):
+            if len(n) > index_desired:
+                n = n[index_desired]
                 i += 1
         else:
-            return l
-    return l
+            return n
+    return n
 
 
 def is_ignorable_str(s, ignorable_strings=(), lower=True, filename=True, startswith=True):
@@ -2503,7 +2562,8 @@ def strip_keys(d, nones=False, depth=0):
     >>> strip_keys({' a': ' a', ' b\t c ': {'d e  ': 'd e  '}}, depth=100) == {'a': ' a', 'b\t c': {'d e': 'd e  '}}
     True
     """
-    ans = type(d)((str(k).strip(), v) for (k, v) in viewitems(OrderedDict(d)) if (not nones or (str(k).strip() and str(k).strip() != 'None')))
+    ans = type(d)((str(k).strip(), v) for (k, v) in viewitems(OrderedDict(d))
+                  if (not nones or (str(k).strip() and str(k).strip() != 'None')))
     if int(depth) < 1:
         return ans
     if int(depth) > strip_keys.MAX_DEPTH:
@@ -2512,6 +2572,8 @@ def strip_keys(d, nones=False, depth=0):
         if isinstance(v, Mapping):
             ans[k] = strip_keys(v, nones=nones, depth=int(depth) - 1)
     return ans
+
+
 strip_keys.MAX_DEPTH = 1e6
 
 
@@ -2574,6 +2636,8 @@ def abbreviate(s):
     TODO: load a large dictionary of abbreviations from NLTK, etc
     """
     return abbreviate.words.get(s, s)
+
+
 abbreviate.words = {'account': 'acct', 'number': 'num', 'customer': 'cust', 'member': 'membr',
                     'building': 'bldg', 'serial number': 'SN', 'social security number': 'SSN'}
 
@@ -2592,7 +2656,7 @@ def truncate(s, max_len=20, ellipsis='...'):
     """
     if s is None:
         return None
-    elif isinstance(s, basestring):
+    elif isinstance(s, (str, bytes)):
         return s[:min(len(s), max_len)] + ellipsis if len(s) > max_len else ''
     elif isinstance(s, Mapping):
         truncated_str = str(dict(islice(viewitems(s), max_len)))
@@ -2618,7 +2682,7 @@ def normalize_year(y):
     y = rex.not_digit_list.sub('', str(y))
     try:
         y = int(y)
-    except:
+    except ValueError:
         y = None
     if 0 <= y < 70:
         y += 2000
@@ -2644,9 +2708,9 @@ def generate_kmers(seq, k=4):
     Default k = 4 because that's the length of a gene base-pair?
 
     >>> ' '.join(generate_kmers('AGATAGATAGACACAGAAATGGGACCACAC'))
-    'AGAT GATA ATAG TAGA AGAT GATA ATAG TAGA AGAC GACA ACAC CACA ACAG CAGA AGAA GAAA AAAT AATG ATGG TGGG GGGA GGAC GACC ACCA CCAC CACA ACAC'
+    'AGAT GATA ATAG TAGA AGAT GATA ATAG TAGA AGAC GACA ACAC CACA ACAG ... CCAC CACA ACAC'
     """
-    if isinstance(seq, basestring):
+    if isinstance(seq, (str, bytes)):
         for i in range(len(seq) - k + 1):
             yield seq[i:i + k]
     elif isinstance(seq, (int, float, Decimal)):
@@ -2684,7 +2748,7 @@ def kmer_tuple(seq, k=4):
         #  ('ACAC', 'CACA', 'ACAG', 'CAGA', 'AGAA', 'GAAA', 'AAAT'),
         #  ('GGGA', 'GGAC', 'GACC', 'ACCA', 'CCAC', 'CACA', 'ACAC'))
         >>> ' '.join(kmer_tuple('AGATAGATAGACACAGAAATGGGACCACAC'))
-        'AAAT AATG ACAC ACAC ACAG ACCA AGAA AGAC AGAT AGAT ATAG ATAG ATGG CACA CACA CAGA CCAC GAAA GACA GACC GATA GATA GGAC GGGA TAGA TAGA TGGG'
+        'AAAT AATG ACAC ACAC ACAG ACCA AGAA AGAC AGAT AGAT ATAG ATAG ATGG CACA ... GGGA TAGA TAGA TGGG'
     """
     return tuple(sorted(generate_kmers(seq, k=k)))
 
@@ -2707,7 +2771,7 @@ def kmer_counter(seq, k=4):
     ...     'ACCA': 1, 'GGAC': 1, 'CCAC': 1, 'CAGA': 1, 'GAAA': 1, 'GGGA': 1, 'GACA': 1, 'GACC': 1, 'AATG': 1})
     True
     """
-    if isinstance(seq, basestring):
+    if isinstance(seq, (str, bytes)):
         return Counter(generate_kmers(seq, k))
 
 
@@ -2721,7 +2785,7 @@ def kmer_set(seq, k=4):
     >>> sorted(kmer_set('AGATAGATAGACACAGAAATGGGACCACAC'))  # doctest: +NORMALIZE_WHITESPACE, +ELLIPSIS
     ['AAAT', 'AATG', 'ACAC', 'ACAG', 'ACCA', 'AGAA', 'AGAC', 'AGAT', 'ATAG', 'ATGG', 'CACA', 'CAGA', 'CCAC', 'GAAA', ...
     """
-    if isinstance(seq, basestring):
+    if isinstance(seq, (str, bytes)):
         return set(generate_kmers(seq, k))
 
 
@@ -2736,7 +2800,7 @@ def kmer_set(seq, k=4):
 #     >>> kmer_frequency(['AGATAGATAG', 'ACACAGAAAT', 'GGGACCACAC'], km=4)
 
 #     """
-#     if km and isinstance(km, basestring):
+#     if km and isinstance(km, (str, bytes)):
 #         return sum(km in counter for counter in kmer_counter(seq_of_seq, len(km)))
 #     km = int(km)
 #     counter = Counter()
@@ -2758,20 +2822,21 @@ def kmer_set(seq, k=4):
 #     uk(s, S) = "the UniqTag, the lexicographically minimal k-mer of those k-mers of s that are least frequent in S."
 
 #     the "k-mers of s" can be found with kmer_set()
-#     the frequencies of those k-mers in other_stirngs, S, should be provided by kmer_frequency(other_strings, km) for km in kmer_set(s)
+#     the frequencies of those k-mers in other_stirngs, S, should be provided by
+#        kmer_frequency(other_strings, km) for km in kmer_set(s)
 
 #     >>> uniq_tag('Hello World')
 
 #     """
 #     # FIXME: UNTESTED!
 #     if not other_strings:
-#         if isinstance(seq, basestring):
+#         if isinstance(seq, (str, bytes)):
 #             other_strings = (seq,)
 #         else:
 #             other_strings = tuple(seq)
 #         return uniq_tag(other_strings[0], other_strings)
 #     other_strings = set(other_strings)
-#     if isinstance(seq, basestring):
+#     if isinstance(seq, (str, bytes)):
 #         kms = kmer_set(seq)
 #         km_frequencies = ((sum(km in kmer_set(s, k), s) for s in other_strings) for km in kms)
 #         print min(km_frequencies)
@@ -2822,7 +2887,8 @@ def slug_from_iter(it, max_len=128, delim='-'):
     """
 
     nonnull_values = [str(v) for v in it if v or ((isinstance(v, (int, float, Decimal)) and str(v)))]
-    return slugify(delim.join(shorten(v, max_len=int(float(max_len) / len(nonnull_values))) for v in nonnull_values), word_boundary=True)
+    return slugify(delim.join(shorten(v, max_len=int(float(max_len) / len(nonnull_values)))
+                              for v in nonnull_values), word_boundary=True)
 
 
 def tfidf(corpus):
@@ -2844,7 +2910,8 @@ def slash_product(string_or_seq, slash='/', space=' '):
         - Simplify by removing one of the recursive calls?
         - Simplify by using a list comprehension?
 
-    >>> slash_product("The challenging/confusing interview didn't end with success/offer")  # doctest: +NORMALIZE_WHITESPACE
+    # doctest: +NORMALIZE_WHITESPACE
+    >>> slash_product("The challenging/confusing interview didn't end with success/offer")
     ["The challenging interview didn't end with success",
      "The challenging interview didn't end with offer",
      "The confusing interview didn't end with success",
@@ -2866,7 +2933,7 @@ def slash_product(string_or_seq, slash='/', space=' '):
      'I say bonjour world']
     """
     # Terminating case is a sequence of strings without any slashes
-    if not isinstance(string_or_seq, basestring):
+    if not isinstance(string_or_seq, (str, bytes)):
         # If it's not a string and has no slashes, we're done
         if not any(slash in s for s in string_or_seq):
             return list(string_or_seq)
@@ -2946,12 +3013,14 @@ class PrettyDict(OrderedDict):
       "btfd": 1445...
     }
 
-    >> PrettyDict([('scif', datetime.datetime(3015, 10, 21, tzinfo=utc)), ('same', datetime.datetime(4015, 10, 21))], clip=True, indent=0)
+    >> PrettyDict([('scif', datetime.datetime(3015, 10, 21, tzinfo=utc)),
+    ..             ('same', datetime.datetime(4015, 10, 21))], clip=True, indent=0)
     {
     "scif": 9223400836,
     "same": 9223400836
     }
-    >> PrettyDict([('scif', datetime.datetime(3015, 10, 23, tzinfo=utc)), ('same', datetime.datetime(4015, 10, 23))], clip=True, indent=None)
+    >> PrettyDict([('scif', datetime.datetime(3015, 10, 23, tzinfo=utc)),
+    ..             ('same', datetime.datetime(4015, 10, 23))], clip=True, indent=None)
     {"scif": 9223400836, "same": 9223400836}
     """
 
@@ -2982,7 +3051,8 @@ class PrettyDict(OrderedDict):
             self.encoder.clip = self.clip
             # FIXME: will fail on unserializable objects like django.db.models.base.ModelState
             #        so need to optionally ignore '_state' keys in django models __dict__ attr
-            return json.dumps(PrettyDict([(k, float(roundf(v, self.precision)) if (self.precision and isinstance(v, FLOAT_TYPES)) else v)
-                              for k, v in viewitems(self)]), indent=self.indent, cls=self.encoder)
+            return json.dumps(PrettyDict([(k, float(roundf(v, self.precision))
+                                           if (self.precision and isinstance(v, FLOAT_TYPES)) else v)
+                                          for k, v in viewitems(self)]), indent=self.indent, cls=self.encoder)
         finally:
             del _repr_running[call_key]

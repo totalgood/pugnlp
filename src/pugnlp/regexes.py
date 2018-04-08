@@ -9,14 +9,23 @@ RE_YEAR
 >>> re.compile(RE_YEAR).findall("In '1970' and 2000, or 2015 '27 78 1886 with $1980 in my pocket")
 ['1970', '2000', '2015', '27', '78', '1980']
 >>> doc = r"In '1970-2000\1', 2015/16, and 27, many not-so-wealthy people's banks had $1980 more than Gates' or Jobs'."
->>> [((s, LIST_RE_TOKEN_NAMED[i].lower()[3:]) for i, s in enumerate(groups) if s).next() for groups in re.compile(RE_TOKEN_NAMED).findall(doc)]
-[('In', 'unhyphenated_contracted_alpha'), ("'", 'nonword'), ('1970', 'year'), ('-', 'nonword'), ('2000', 'year'), ('\\', 'nonword'),
-('1', 'float'), ("',", 'nonword'), ('2015', 'year'), ('/', 'nonword'), ('16', 'year'), (',', 'nonword'), ('and', 'unhyphenated_contracted_alpha'),
-('27', 'year'), (',', 'nonword'), ('many', 'unhyphenated_contracted_alpha'), ('not-so', 'hyphenated_alpha'), ('-', 'nonword'),
-('wealthy', 'unhyphenated_contracted_alpha'), ("people's", 'unhyphenated_contracted_alpha'), ('banks', 'unhyphenated_contracted_alpha'),
-('had', 'unhyphenated_contracted_alpha'), ('$1980', 'usd'), ('more', 'unhyphenated_contracted_alpha'), ('than', 'unhyphenated_contracted_alpha'),
-('Gates', 'unhyphenated_contracted_alpha'), ("'", 'nonword'), ('or', 'unhyphenated_contracted_alpha'), ('Jobs', 'unhyphenated_contracted_alpha'),
-("'.", 'nonword')]
+>>> ans = [next((s, LIST_RE_TOKEN_NAMED[i].lower()[3:]) for (i, s) in enumerate(groups) if s)
+...        for groups in re.compile(RE_TOKEN_NAMED).findall(doc)]
+>>> truth = [('In', 'unhyphenated_contracted_alpha'), ("'", 'nonword'), ('1970', 'year'),
+... ('-', 'nonword'),('2000', 'year'), ('\\', 'nonword'),
+... ('1', 'float'), ("',", 'nonword'), ('2015', 'year'), ('/', 'nonword'),
+... ('16', 'year'), (',', 'nonword'), ('and', 'unhyphenated_contracted_alpha'),
+... ('27', 'year'), (',', 'nonword'), ('many', 'unhyphenated_contracted_alpha'),
+... ('not-so', 'hyphenated_alpha'), ('-', 'nonword'),
+... ('wealthy', 'unhyphenated_contracted_alpha'), ("people's", 'unhyphenated_contracted_alpha'),
+... ('banks', 'unhyphenated_contracted_alpha'),
+... ('had', 'unhyphenated_contracted_alpha'), ('$1980', 'usd'), ('more', 'unhyphenated_contracted_alpha'),
+... ('than', 'unhyphenated_contracted_alpha'),
+... ('Gates', 'unhyphenated_contracted_alpha'), ("'", 'nonword'), ('or', 'unhyphenated_contracted_alpha'),
+... ('Jobs', 'unhyphenated_contracted_alpha'),
+... ("'.", 'nonword')]
+>>> all([a == t for (a, t) in zip(ans, truth)])
+True
 
 
 RE_WORD_BASIC
@@ -96,22 +105,21 @@ RE_CAMEL_BASIC_B, RE_CAMEL_NORMAL_B, RE_CAMEL_LIBERAL_B
 (None, '0', '0', '.18', '18', None, None)
 >>> tweet = "Play the [postiive sum game](http://totalgood.com/a/b?c=42) of life instead of svn://us.gov."
 >>> cre_url.findall(tweet)
-[('http://totalgood.com/a/b?c=42', 'http://', 'http', 'totalgood.com', 'om', '/a/b?c=42'),
+[('http://totalgood.com/a/b?c=42', 'http://', 'http', 'totalgood.com', 'com', '/a/b?c=42'),
  ('svn://us.gov', 'svn://', 'svn', 'us.gov', 'gov', '')]
 >>> cre_url_popular.findall(tweet)
-[('http://totalgood.com/a/b?c=42', 'http://', 'http', 'totalgood.com', 'om', '/a/b?c=42'),
+[('http://totalgood.com/a/b?c=42', 'http://', 'http', 'totalgood.com', '.com', '/a/b?c=42'),
  ('svn://us.gov', 'svn://', 'svn', 'us.gov', 'gov', '')]
+>>> list(match.groups()[0] for match in cre_url.finditer(tweet))
+['http://totalgood.com/a/b?c=42', 'svn://us.gov']
+>>> list(match.groups()[0] for match in re.finditer(url_popular, tweet))
+['http://totalgood.com/a/b?c=42', 'svn://us.gov']
 
 >>> tweet = "That site http://totalgood.com is awesome! don't you think? try.this.com? .Net ?"
 >>> cre_url.findall(tweet)
 [('http://totalgood.com', 'http://', 'http', 'totalgood.com', 'com', ''),
  ('try.this.com', '', '', 'try.this.com', 'com', '')]
 
-
->>> list(match.groups()[0] for match in cre_url.finditer(tweet))
-['http://totalgood.com/a/b?c=42', 'svn://us.gov']
->>> list(match.groups()[0] for match in re.finditer(url_popular, tweet))
-['http://totalgood.com/a/b?c=42', 'svn://us.gov']
 >>> tweet = "Reach out to sombody.me (at) python.org if you like email@addresses.easy.com."
 >>> list(match.groups()[0] for match in re.finditer(email_popular_obfuscated, tweet))
 ['sombody.me (at) python.org', 'email@addresses.easy.com']
@@ -132,11 +140,8 @@ RE_CAMEL_BASIC_B, RE_CAMEL_NORMAL_B, RE_CAMEL_LIBERAL_B
 'hobson _.DOT._ lane'
 """
 from __future__ import division, print_function, absolute_import, unicode_literals
-from builtins import (  # noqa
-         bytes, dict, int, list, object, range, str,
-         ascii, chr, hex, input, next, oct, open,
-         pow, round, super,
-         filter, map, zip)
+from builtins import (bytes, dict, int, list, object, range, str,  # noqa
+    ascii, chr, hex, input, next, oct, open, pow, round, super, filter, map, zip)
 
 import re
 import string
@@ -151,7 +156,7 @@ nondigit = re.compile(r"[^0-9]")
 nonphrase = re.compile(r"[^-\w\s/&']")
 parenthetical_time = re.compile(r'([^(]*)\(\s*(\d+)\s*(?:min)?\s*\)([^(]*)', re.IGNORECASE)
 
-fqdn         = r'(\b[a-zA-Z0-9-.]+\b([.]' + r'|'.join(constants.tld_iana) + r'\b)\b)'  # noqa
+fqdn = r'(\b[a-zA-Z0-9-.]+\b([.]' + r'|'.join(constants.tld_iana) + r'\b)\b)'  # noqa
 fqdn_popular = r'(\b[a-zA-Z0-9-.]+\b([.]' + r'|'.join(constants.tld_popular) + r'\b)\b)'
 username = r'(\b[a-zA-Z0-9-.!#$%&*+-/=?^_`{|}~]+\b)'
 
@@ -174,8 +179,8 @@ url_path = r'(\b[^\s"\'>]+)'  # doesn't allow for unescaped query strings like ?
 url_scheme = r'(\b(' + '|'.join(constants.uri_schemes_iana) + r')[:][/]{2})'
 url_scheme_popular = r'(\b(' + '|'.join(constants.uri_schemes_popular) + r')[:][/]{2})'
 
-url_strict  = r'(\b' + url_scheme        + fqdn         + url_path + r'?\b)'  # noqa
-url_liberal = r'(\b' + url_scheme + r'?' + fqdn         + url_path + r'?\b)'  # noqa
+url_strict = r'(\b' + url_scheme + fqdn + url_path + r'?\b)'  # noqa
+url_liberal = r'(\b' + url_scheme + r'?' + fqdn + url_path + r'?\b)'  # noqa
 
 url_popular_strict = r'(\b' + url_scheme + fqdn_popular + url_path + r'?\b)'
 url_popular = r'(\b' + url_scheme + r'?' + fqdn_popular + url_path + r'?\b)'
@@ -221,7 +226,9 @@ js_name = re.compile(u'^[_$a-zA-Z\xA0-\uFFFF][_$a-zA-Z0-9\xA0-\uFFFF]*$')
 # avoids special wikipedia URLs like ambiguity resolution pages
 wikipedia_special = re.compile(r'.*wikipedia[.]org/wiki/[^:]+[:].*')
 
-nones = re.compile(r'^Unk[n]?own|unk[n]?own|UNK|Unk|UNK[N]?OWN|[.]+|[-]+|[=]+|[_]+|[*]+|[?]+|N[/]A|n[/]a|None|none|NONE|Null|null|NULL|NaN$')
+nones = re.compile(
+    r'^Unk[n]?own|unk[n]?own|UNK|Unk|UNK[N]?OWN|[.]+|[-]+|[=]+|[_]+|[*]+|[?]+|N[/]A|n[/]a'
+    r'|None|none|NONE|Null|null|NULL|NaN$')
 
 # Unary NOT operator and its operand returned in match.groups() 2-tuple
 not_symbol = re.compile(r'[Nn][Oo][Tt]|[\~\-\!\^]')
@@ -235,7 +242,8 @@ zero_pad_4_10_digit = re.compile(r'[0]{0,6}[1-9][0-9]{3,9}')
 serial_number = zero_pad_4_10_digit
 account_number = zero_pad_4_10_digit
 
-optionally_notted_zero_pad_4_10_digit = re.compile(r'\s*(' + not_symbol.pattern + r')?\s*(' + zero_pad_4_10_digit.pattern + r')\s*')
+optionally_notted_zero_pad_4_10_digit = re.compile(
+    r'\s*(' + not_symbol.pattern + r')?\s*(' + zero_pad_4_10_digit.pattern + r')\s*')
 
 # python package version number specification (PEP 440: [N!]N(.N)*[{a|b|rc}N][.postN][.devN] )
 re_ver = re.compile(r"^\s*[_]{0,2}version[_]{0,2}\s*=\s*\'(\d*!)?(\d+)\.(\d+)(\.(\d+))?((a|b|rc)\d*)?\'")
@@ -270,7 +278,7 @@ def iter_finds(regex_obj, s):
 
 def try_next(it, default=None):
     try:
-        return it.next()
+        return next(it)
     except StopIteration:
         return default
 
@@ -292,7 +300,8 @@ def wrap(s, prefix=r'\b', suffix=r'\b', grouper='()'):
     >>> wrap(r'middle', prefix=None)
     '(middle)\\b'
     """
-    return (prefix or '') + try_get(grouper, 0, '') + (s or '') + try_get(grouper, 1, try_get(grouper, 0, '')) + (suffix or '')
+    return ((prefix or '') + try_get(grouper, 0, '') + (s or '') +
+            try_get(grouper, 1, try_get(grouper, 0, '')) + (suffix or ''))
 
 
 # Sequence getters/iterators/wrapeers
@@ -437,7 +446,8 @@ RE_DOTTED_ACRONYM_B = r"\b[A-Z][.][A-Z][.][A-Z][.][A-Z][.]\b|\b[A-Z][.][A-Z][.][
 #     locals()[name + '_B'] = r'(' + locals()[name] + r')\b'
 
 # RE_CAMEL_CASE = ('(((' + RE_WORD_CAPITALIZED_B + ')|(' + RE_WORD_LOWERCASE + '))' + '(' + RE_ACRONYM + '))|' +
-#                  '((' + RE_ACRONYM + '|' + RE_WORD_CAPITALIZED + '|' + RE_WORD_LOWERCASE + ')+(' + RE_WORD_CAPITALIZED + ')+)' + r'\b')
+#                  '((' + RE_ACRONYM + '|' + RE_WORD_CAPITALIZED + '|' + RE_WORD_LOWERCASE + ')(' +
+#                  RE_WORD_CAPITALIZED + ')+)' + r'\b')
 # RE_CAMEL_CASE = CRE_CAMEL_CASE = re.compile(RE_CAMEL_CASE)
 
 # always list RE's from most greedy to least greedy []+, []*, []?, then [], supersets before subsets in char groups []
@@ -455,7 +465,7 @@ RE_TOKEN = r'|'.join([RE_DOUBLEQUOTE,
                       RE_DECADE_B, RE_YEAR_B,
                       RE_ACRONYM_B,
                       RE_FLOAT_E_B, RE_FLOAT_B,
-                     '[.]' + RE_HYPHENATED_ALPHANUM_B,
+                      '[.]' + RE_HYPHENATED_ALPHANUM_B,
                       RE_HYPHENATED_POSESSIVE_ALPHA_B,
                       RE_HYPHENATED_DOTTED_ALPHANUM_B,
                       # FIXME: Plural words at end single quotes around plural words to be interpretted as possessive

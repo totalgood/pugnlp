@@ -12,10 +12,8 @@ True
 False
 >>> '+' in ascii_nondigit
 True
->>> all_ascii  # notice that the `all()` builtin has NOT been overridden
-'\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a
-\x1b\x1c\x1d\x1e\x1f !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`
-abcdefghijklmnopqrstuvwxyz{|}~\x7f'
+>>> ascii_all == ''.join(chr(i) for i in range(128))
+True
 """
 from __future__ import division, print_function, absolute_import, unicode_literals
 from builtins import *  # noqa
@@ -31,21 +29,21 @@ whitespace = string.whitespace
 
 printable_uppercase = digits + uppercase + '!"#$%&\'()*+,-./:;<= >?@[\\]^_`{|}~ \t\n\r\x0b\x0c'
 ascii_all = ('\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17' +
-             '\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&\'()*+,-./0123456789:;<= >' +
+             '\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&\'()*+,-./0123456789:;<=>' +
              '?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7f')
 ascii_nonlowercase = ('\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15' +
-                      '\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&\'()*+,-./0123456789:;<= >' +
+                      '\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&\'()*+,-./0123456789:;<=>' +
                       '?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`{|}~\x7f')
 # ascii_uppercase = ascii_nonlowercase
 ascii_nonletter = ('\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16' +
-                   '\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !' +
-                   '"#$%&\'()*+,-./0123456789:;<= >?@[\\]^_`{|}~\x7f')
+                   '\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f' +
+                   '!"#$%&\'()*+,-./0123456789:;<= >?@[\\]^_`{|}~\x7f')
 # letters and digits removed from ascii_all
 ascii_nonalphanum = ('\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16' +
                      '\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !' +
                      '"#$%&\'()*+,-./:;<= >?@[\\]^_`{|}~\x7f')
 # letters, digits and underscore removed from ascii_all
-ascii_nonword = ('\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16'
+ascii_nonword = ('\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16' +
                  '\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !' +
                  '"#$%&\'()*+,-./:;<= >?@[\\]^`{|}~\x7f')
 

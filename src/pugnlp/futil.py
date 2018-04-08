@@ -97,7 +97,7 @@ def get_stat(full_path):
     status['size'] = os.path.getsize(full_path)
     status['accessed'] = datetime.datetime.fromtimestamp(os.path.getatime(full_path))
     status['modified'] = datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
-    status['changed'] = datetime.datetime.fromtimestamp(os.path.getctime(full_path))
+    status['changed_any'] = datetime.datetime.fromtimestamp(os.path.getctime(full_path))
     # first 3 digits are User, Group, Other permissions: 1=execute,2=write,4=read
     status['mode'] = os.stat(full_path).st_mode
     status['type'] = get_type(full_path)
@@ -113,7 +113,7 @@ def path_status(path, filename='', status=None, deep=False, verbosity=0):
         try_open (bool): whether to try to open the file to get its encoding and openability
 
     Returns:
-        dict: {'size': bytes (int), 'accessed': (datetime), 'modified': (datetime), 'created': (datetime)}
+        dict: {'size': bytes (int), 'accessed': (datetime), 'modified': (datetime), 'changed_any': (datetime)}
 
     >>> stat = path_status(__file__)
     >>> stat['path'] == __file__
@@ -179,8 +179,8 @@ def find_files(path='', ext='', level=None, typ=list, dirs=False, files=True, ve
     Examples:
         >>> 'util.py' in [d['name'] for d in find_files(os.path.dirname(__file__), ext='.py', level=0)]
         True
-        >>> (d for d in find_files(os.path.dirname(__file__), ext='.py')
-        ...  if d['name'] == 'util.py').next()['size'] > 1000
+        >>> next(d for d in find_files(os.path.dirname(__file__), ext='.py')
+        ...      if d['name'] == 'util.py')['size'] > 1000
         True
 
         There should be an __init__ file in the same directory as this script.
@@ -230,8 +230,8 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
         path (str): Full, absolute paths to file beneath the indicated directory and ending with `ext`
         name (str): File name only (everythin after the last slash in the path)
         size (int): File size in bytes
-        created (datetime): File creation timestamp from file system
-        modified (datetime): File modification timestamp from file system
+        changed_any (datetime): Timestamp for modification of either metadata (e.g. permissions) or content
+        modified (datetime): File content modification timestamp from file system
         accessed (datetime): File access timestamp from file system
         permissions (int): File permissions bytes as a chown-style integer with a maximum of 4 digits
         type (str): One of 'file', 'dir', 'symlink->file', 'symlink->dir', 'symlink->broken'
@@ -240,11 +240,11 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
     Examples:
         >>> 'util.py' in [d['name'] for d in generate_files(os.path.dirname(__file__), ext='.py', level=0)]
         True
-        >>> (d for d in generate_files(os.path.dirname(__file__), ext='.py')
-        ...  if d['name'] == 'util.py').next()['size'] > 1000
+        >>> next(d for d in generate_files(os.path.dirname(__file__), ext='.py')
+        ...      if d['name'] == 'util.py')['size'] > 1000
         True
-        >>> sorted(generate_files().next().keys())
-        ['accessed', 'created', 'dir', 'mode', 'modified', 'name', 'path', 'size', 'type']
+        >>> sorted(next(generate_files()).keys())
+        ['accessed', 'changed_any', 'dir', 'mode', 'modified', 'name', 'path', 'size', 'type']
 
         There should be an __init__ file in the same directory as this script.
         And it should be at the top of the list.
@@ -253,13 +253,12 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
         >>> list(generate_files(__file__))[0]['name'] == os.path.basename(__file__)
         True
         >>> sorted(list(generate_files())[0].keys())
-        ['accessed', 'created', 'dir', 'mode', 'modified', 'name', 'path', 'size', 'type']
+        ['accessed', 'changed_any', 'dir', 'mode', 'modified', 'name', 'path', 'size', 'type']
         >>> all(d['type'] in ('file', 'dir',
         ...                   'symlink->file', 'symlink->dir', 'symlink->broken',
         ...                   'mount-point->file', 'mount-point->dir',
         ...                   'block-device', 'pipe', 'special', 'socket', 'unknown')
-        ...     for d in find_files(level=1, files=True, dirs=True))
-        ... for d in generate_files(level=1, files=True, dirs=True))
+        ...     for d in generate_files(level=1, files=True, dirs=True))
         True
     """
     path = expand_path(path or '.')

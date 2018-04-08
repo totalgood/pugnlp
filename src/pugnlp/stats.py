@@ -3,7 +3,8 @@
 """Stats functions and classes useful in DOX, like `Confusion` and `cosine_distance`"""
 from __future__ import print_function, division, absolute_import
 from future.utils import viewitems
-# from past.builtins import basestring
+from builtins import (bytes, dict, int, list, object, range, str, ascii, chr, hex, input,  # noqa
+    next, oct, open, pow, round, super, filter, map, zip)
 
 import json
 import logging
@@ -31,6 +32,8 @@ logger = logging.getLogger(__name__)
 
 def mcc_chi(mcc, num_samples):
     return np.sqrt(mcc ** 2 * num_samples) if mcc is not None and num_samples else 0
+
+
 phi2chi = mcc_chi
 
 
@@ -82,17 +85,24 @@ def safe_div(a, b, inf=INF):
     >>> safe_div(42, object())
     <object object at 0x...>
     """
-    try:
-        return 1. * a / b
-    except ZeroDivisionError:
-        return inf
-    except TypeError:
+    with np.errstate(divide='raise', invalid='raise'):
         try:
-            1. / b
+            return 1. * a / b
+        except (ZeroDivisionError, FloatingPointError):
+            return inf
         except TypeError:
-            return b
-        return a
-    return 1. * a / b
+            try:
+                1. / b
+            except TypeError:
+                return b
+            return a
+        except RuntimeWarning:
+            try:
+                1. / b
+            except RuntimeWarning:
+                return b
+            return a
+        return 1. * a / b
 
 
 def mcc_chi(mcc, num_samples):
@@ -101,6 +111,8 @@ def mcc_chi(mcc, num_samples):
     5.0
     """
     return np.sqrt(mcc ** 2. * num_samples) if mcc is not None and num_samples else 0.
+
+
 phi2chi = mcc_chi
 
 
@@ -271,41 +283,42 @@ class Confusion(pd.DataFrame):
     >>> c.stats_dict
     {
       "tpr": 0.625,
-      "fpr": 0.105263157894737,
-      "tnr": 0.736842105263158,
+      "fpr": 0.1052631578...,
+      "tnr": 0.7368421052...,
       "fnr": 0.75,
       "plr": 5.9375,
-      "nlr": 1.01785714285714,
+      "nlr": 1.0178571428...,
       "accuracy": {
-        "Cat": 0.18518518518518517,
-        "Dog": 0.1111111111111111,
-        "Rabbit": 0.40740740740740738
+        "Cat": 0.1851851851...,
+        "Dog": 0.11111111111...,
+        "Rabbit": 0.407407407...
       },
       "sensitivity": {
         "Cat": 0.625,
         "Dog": 0.5,
-        "Rabbit": 0.84615384615384615
+        "Rabbit": 0.846153846...
       },
       "specificity": {
         "Cat": 0.875,
-        "Dog": 0.76190476190476186,
-        "Rabbit": 0.88888888888888884
+        "Dog": 0.76190476190...,
+        "Rabbit": 0.888888888...
       },
       "mcc": {
-        "Cat": 0.54155339089324317,
-        "Dog": 0.23845524161913301,
-        "Rabbit": 0.77901741435486016
+        "Cat": 0.54155339089...,
+        "Dog": 0.23845524161...,
+        "Rabbit": 0.779017414...
       },
       "chi_squared": {
-        "Cat": 7.9185620300751856,
-        "Dog": 1.5352443609022557,
-        "Rabbit": 16.385439560439561
+        "Cat": 7.918562030075...,
+        "Dog": 1.535244360902...,
+        "Rabbit": 16.385439560...
       }
     }
 
     TODO: to_data() should output 2-column DataFrame with ["Pred", "True"] columns
           constructor should allow columns and index kwargs to override category labels when values are ints
-    >>> df = pd.DataFrame(zip(list('PN'*3 + 'NNNN'), list('PNNPPNNPNPPNNN')), columns=['True', 'Pred'])
+    >>> df = pd.DataFrame(list(zip(list('PN'*3 + 'NNNN'), list('PNNPPNNPNPPNNN'))),
+    ...                   columns=['True', 'Pred'])
     >>> c = Confusion(df, sort=False)
     >>> c.get_false_positive(scalar=False)
     P    0.333333
@@ -351,7 +364,8 @@ class Confusion(pd.DataFrame):
     1    0.25
     2    0.50
     dtype: float64
-    >>> df = pd.DataFrame(zip(list('ABC'*5 + 'CCC'), list('ABCBCACABCACCBCCCC')), columns=['True', 'Pred'])
+    >>> df = pd.DataFrame(list(zip(list('ABC'*5 + 'CCC'), list('ABCBCACABCACCBCCCC'))),
+    ...                   columns=['True', 'Pred'])
     >>> c = Confusion(df)
     >>> c
     Pred  A  B  C
@@ -439,17 +453,18 @@ class Confusion(pd.DataFrame):
         #    "Negative", "-1", "0", "Healthy", "N/A", etc
 
         try:
-            self._neg_label = (label for label in self.columns if unicode(label).strip().lower()[0] in ('-nh0')).next()
+            self._neg_label = next(label for label in self.columns if str(label).strip().lower()[0] in ('-nh0'))
         except StopIteration:
             self._neg_label = self.columns[-1]
         try:
-            self._pos_label = (label for label in self.columns if label != self._neg_label).next()
+            self._pos_label = next(label for label in self.columns if label != self._neg_label)
         except StopIteration:
             self._pos_label = infer_pos_label(self._neg_label)
 
         logger.debug('true class samples: {}'.format(df[columns[0]].values[:5]))
         for p_class in index:
-            self[p_class] = pd.Series([len(df[(df[columns[0]] == t_class) & (df[columns[1]] == p_class)]) for t_class in index],
+            self[p_class] = pd.Series([len(df[(df[columns[0]] == t_class) &
+                                              (df[columns[1]] == p_class)]) for t_class in index],
                                       index=index, dtype=int)
         self.refresh_meta()
 
@@ -476,11 +491,11 @@ class Confusion(pd.DataFrame):
         self._num_classes = len(self.index)
         self._colnums = np.arange(0, self._num_classes)
         try:
-            self._neg_label = (label for label in self.columns if unicode(label).strip().lower()[0] in ('-nh0')).next()
+            self._neg_label = next(label for label in self.columns if str(label).strip().lower()[0] in ('-nh0'))
         except StopIteration:
             self._neg_label = self.columns[-1]
         try:
-            self._pos_label = (label for label in self.columns if label != self._neg_label).next()
+            self._pos_label = next(label for label in self.columns if label != self._neg_label)
         except StopIteration:
             self._pos_label = infer_pos_label(self._neg_label)
 
@@ -585,7 +600,8 @@ class Confusion(pd.DataFrame):
     def get_phi(self, scalar=None):
         """Phi (φ) Coefficient -- lack of confusion
         Arguments:
-          scalar (bool or None): Whether to return a scalar Phi coefficient (assume binary classification) rather than a multiclass vector
+          scalar (bool or None): Whether to return a scalar Phi coefficient
+          (assume binary classification) rather than a multiclass vector
         Measure of the lack of confusion in a single value
         References:
           [MCC on wikipedia](https://en.wikipedia.org/wiki/Matthews_correlation_coefficient)
@@ -593,7 +609,8 @@ class Confusion(pd.DataFrame):
         φ =   (TP*TN - FP*FN) / sqrt((TP+FP) * (TP+FN) * (TN+FP) * (TN+FN))
         mcc = (tp*tn - fp*fn) / sqrt((tp+fp) * (tp+fn) * (tn+fp) * (tn+fn))
         """
-        # If requested, compute the phi coeffients for all possible 'positive' and 'negative' class labels (multiclass problem)
+        # If requested, compute the phi coeffients for all possible 'positive' and 'negative' class labels
+        # (multiclass problem)
         if ((not self._scalar_stats and not scalar and self._num_classes > 2) or
                 ((scalar is False or self._scalar_stats is False) and self._num_classes > 1)):
             phi = PrettyDict()
@@ -629,8 +646,9 @@ class Confusion(pd.DataFrame):
 
     def get_false_positive(self, scalar=True):
         """Normalized false positive rate (0 <= fp <= 1)"""
-        ans = pd.Series(PrettyDict([(k, safe_div(np.sum(self.loc[k][[j for j in self.columns if j != k]]), np.sum(self.loc[k])))
-                                   for k in self.columns]))
+        ans = pd.Series(PrettyDict([(k, safe_div(np.sum(self.loc[k][[j for j in self.columns if j != k]]),
+                                                 np.sum(self.loc[k])))
+                                    for k in self.columns]))
         if (not self._scalar_stats and not scalar) or self._num_classes != 2:
             return ans
         return ans[self._pos_label]
@@ -639,7 +657,8 @@ class Confusion(pd.DataFrame):
 
     def get_false_negative(self, scalar=True):
         """Normalized false positive rate (0 <= fp <= 1)"""
-        ans = pd.Series(PrettyDict([(k, safe_div(np.sum(self.loc[k]) - self[k][k], np.sum(self.sum() - self.loc[k]))) for k in self.columns]))
+        ans = pd.Series(PrettyDict([(k, safe_div(np.sum(self.loc[k]) - self[k][k],
+                                                 np.sum(self.sum() - self.loc[k]))) for k in self.columns]))
         if (not self._scalar_stats and not scalar) or self._num_classes != 2:
             return ans
         return ans[self._pos_label]
@@ -650,19 +669,19 @@ class Confusion(pd.DataFrame):
         # TPR and TNR, etc should be vectors so each set of stats can be a column in a DataFrame
         # TPDO: make this a PrettyDict around a list comprehension over the attribute names
         d = PrettyDict([
-                       ('tpr',         self._tpr if isinstance(self._tpr, NUMERIC_TYPES) else PrettyDict(self._tpr)),
-                       ('fpr',         self._fpr if isinstance(self._fpr, NUMERIC_TYPES) else PrettyDict(self._fpr)),
-                       ('tnr',         self._tnr if isinstance(self._tnr, NUMERIC_TYPES) else PrettyDict(self._tnr)),
-                       ('fnr',         self._fnr if isinstance(self._fnr, NUMERIC_TYPES) else PrettyDict(self._fnr)),
-                       ('plr',         self._plr if isinstance(self._plr, NUMERIC_TYPES) else PrettyDict(self._plr)),
-                       ('nlr',         self._nlr if isinstance(self._nlr, NUMERIC_TYPES) else PrettyDict(self._nlr)),
-                       ('accuracy',    self.accuracy if isinstance(self.accuracy, NUMERIC_TYPES) else
+                       ('tpr', self._tpr if isinstance(self._tpr, NUMERIC_TYPES) else PrettyDict(self._tpr)),
+                       ('fpr', self._fpr if isinstance(self._fpr, NUMERIC_TYPES) else PrettyDict(self._fpr)),
+                       ('tnr', self._tnr if isinstance(self._tnr, NUMERIC_TYPES) else PrettyDict(self._tnr)),
+                       ('fnr', self._fnr if isinstance(self._fnr, NUMERIC_TYPES) else PrettyDict(self._fnr)),
+                       ('plr', self._plr if isinstance(self._plr, NUMERIC_TYPES) else PrettyDict(self._plr)),
+                       ('nlr', self._nlr if isinstance(self._nlr, NUMERIC_TYPES) else PrettyDict(self._nlr)),
+                       ('accuracy', self.accuracy if isinstance(self.accuracy, NUMERIC_TYPES) else
                         PrettyDict([(label, self.accuracy[label]) for label in self.columns])),
                        ('sensitivity', self.sensitivity if isinstance(self.sensitivity, NUMERIC_TYPES) else
                         PrettyDict([(label, self.sensitivity[label]) for label in self.columns])),
                        ('specificity', self.specificity if isinstance(self.specificity, NUMERIC_TYPES) else
                         PrettyDict([(label, self.specificity[label]) for label in self.columns])),
-                       ('mcc',         self.mcc if isinstance(self.mcc, NUMERIC_TYPES) else
+                       ('mcc', self.mcc if isinstance(self.mcc, NUMERIC_TYPES) else
                         PrettyDict([(label, self.mcc[label]) for label in self.columns])),
                        ('chi_squared', self.chi_squared if isinstance(self.chi_squared, NUMERIC_TYPES) else
                         PrettyDict([(label, self.chi_squared[label]) for label in self.columns])),
@@ -723,9 +742,9 @@ def infer_pos_label(neg_label=None):
         if neg_label < 0:
             return typ(-neg_label)
         return typ(neg_label + 1)
-    except:
+    except (ValueError, TypeError):
         neg_label = stringify(neg_label).strip()
-    for xform, label_dict in zip((lambda x: x, lambda x: x,       str.lower,        str.lower,),
+    for xform, label_dict in zip((lambda x: x, lambda x: x, str.lower, str.lower,),
                                  (POS_LABELS, POS_LABELS_INVERSE, POS_LABELS_LOWER, POS_LABELS_LOWER_INVERSE)):
         try:
             return typ(label_dict[xform(neg_label)])
@@ -793,7 +812,7 @@ def spec_from_thresh(thresh, labels, scores, *args, **kwargs):
     >>> spec_from_thresh(0.5, labels=(scores > .9).astype(int), scores=scores)
     0.6
     """
-    df = pd.DataFrame(zip(labels, np.array(scores > thresh).astype(int)))
+    df = pd.DataFrame(list(zip(labels, np.array(scores > thresh).astype(int))))
     c = Confusion(df, *args, **kwargs)
     return c._binary_specificity
 
@@ -807,7 +826,7 @@ def sens_from_thresh(thresh, labels, scores, *args, **kwargs):
     >>> sens_from_thresh(0.5, labels=(scores > .4).astype(int), scores=scores)
     0.8
     """
-    df = pd.DataFrame(zip(labels, np.array(scores > thresh).astype(int)))
+    df = pd.DataFrame(list(zip(labels, np.array(scores > thresh).astype(int))))
     c = Confusion(df, *args, **kwargs)
     return c._binary_sensitivity
 
@@ -818,7 +837,7 @@ def sens_from_spec(spec, labels, scores, *args, **kwargs):
     specificity = Num_True_Negative / (Num_True_Negative + Num_False_Positive)
     """
     thresh = thresh_from_spec(spec, labels, scores)
-    df = pd.DataFrame(zip(labels, scores[scores > thresh.astype(int)]))
+    df = pd.DataFrame(list(zip(labels, scores[scores > thresh].astype(int))))
     c = Confusion(df, *args, **kwargs)
     return c._binary_sensitivity
 
@@ -853,6 +872,8 @@ def cost_fun(x, *args, **kwargs):
         print("x, target = {}, {} => delta = {} - {} => cost = abs({}) + abs({}) = {}".format(
             x, target, target, fun(x, *args), delta, x, cost))
     return cost
+
+
 cost_fun.fun = spec_from_thresh
 cost_fun.target = 0
 cost_fun.verbose = False

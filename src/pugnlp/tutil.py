@@ -8,11 +8,9 @@ from builtins import *  # noqa
 
 from future.utils import viewitems  # noqa
 from past.builtins import basestring
-# from builtins import (
-#          bytes, dict, int, list, object, range, str,
-#          ascii, chr, hex, input, next, oct, open,
-#          pow, round, super,
-#          filter, map, zip)
+from builtins import (bytes, dict, int, list, object, range, str, ascii, chr, hex, input,  # noqa
+    next, oct, open, pow, round, super, filter, map, zip)
+
 import re
 # try:  # python 3.5+
 #    from io import StringIO
@@ -185,9 +183,9 @@ def make_datetime(dt, date_parser=parse_date):
             if 0 < len(dt) < 7:
                 try:
                     return datetime.datetime(*dt[:7])
-                except ValueError:
+                except (TypeError, IndexError, ValueError):
                     pass
-        except (ValueError, AttributeError):  # TypeError
+        except (TypeError, IndexError, ValueError, AttributeError):
             # dt is not iterable
             return dt
 
@@ -381,24 +379,24 @@ def make_tz_aware(dt, tz='UTC', is_dst=None):
     # TODO: deal with sequence of timezones
     try:
         tz = dt.tzinfo or tz
-    except AttributeError:
+    except (ValueError, AttributeError, TypeError):
         pass
     try:
         tzstr = str(tz).strip().upper()
         if tzstr in TZ_ABBREV_NAME:
             is_dst = is_dst or tzstr.endswith('DT')
             tz = TZ_ABBREV_NAME.get(tzstr, tz)
-    except ValueError:
+    except (ValueError, AttributeError, TypeError):
         pass
     try:
         tz = pytz.timezone(tz)
-    except AttributeError:
+    except (ValueError, AttributeError, TypeError):
         # from traceback import print_exc
         # print_exc()
         pass
     try:
         return tz.localize(dt, is_dst=is_dst)
-    except (AttributeError, TypeError):
+    except (ValueError, AttributeError, TypeError):
         # from traceback import print_exc
         # print_exc()  # TypeError: unsupported operand type(s) for +: 'datetime.time' and 'datetime.timedelta'
         pass
@@ -480,10 +478,10 @@ def clean_wiki_datetime(dt, squelch=True):
 def clip_datetime(dt, tz=DEFAULT_TZ, is_dst=None):
     """Limit a datetime to a valid range for datetime, datetime64, and Timestamp objects
     >>> from datetime import timedelta
-    >>> clip_datetime(MAX_DATETIME + timedelta(100)) == pd.Timestamp(MAX_DATETIME64, tz='utc') == MAX_TIMESTAMP
+    >>> clip_datetime(MAX_DATETIME + timedelta(100)) == pd.Timestamp(MAX_DATETIME, tz='utc') == MAX_TIMESTAMP
     True
     >>> MAX_TIMESTAMP
-    Timestamp('2262-04-11 23:47:16.854775807+0000', tz='UTC')
+    Timestamp('2262-04-11 23:47:16.854775+0000', tz='UTC')
     """
     if isinstance(dt, datetime.datetime):
         # TODO: this gives up a day of datetime range due to assumptions about timezone

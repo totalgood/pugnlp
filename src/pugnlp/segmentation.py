@@ -2,18 +2,20 @@
 # -*- coding: utf-8 -*-
 """Sentence and token/word segmentation utilities like Tokenizer"""
 from __future__ import division, print_function, absolute_import  # , unicode_literals
+from future import standard_library
+standard_library.install_aliases()  # noqa
 from builtins import (  # noqa
     bytes, dict, int, list, object, range, str,
     ascii, chr, hex, input, next, oct, open,
     pow, round, super,
     filter, map, zip)
-# from future import standard_library
-# standard_library.install_aliases()  # noqa
-from past.builtins import basestring
+# from past.builtins import basestring
 
 import os
 import re
 from itertools import chain
+
+import nltk.stem
 
 from pugnlp.detector_morse import Detector
 from pugnlp.detector_morse import slurp
@@ -108,7 +110,7 @@ def list_ngrams(token_list, n=1, join=' '):
     join = ' ' if join is True else join
     if isinstance(join, str):
         return [join.join(ng) for ng in list_ngrams(token_list, n=n, join=False)]
-    return zip(*[token_list[i:] for i in range(n)])
+    return list(zip(*[token_list[i:] for i in range(n)]))
 
 
 def list_ngram_range(token_list, *args, **kwargs):
@@ -196,7 +198,7 @@ class Tokenizer(object):
            Is it at all pythonic to make a class callable and iterable?
            Is it pythonic to have to instantiate a TokenizerI instance and then call that instance's `tokenize` method?
 
-    >>> abc = (chr(ord('a') + (i % 26)) for i in xrange(1000))
+    >>> abc = (chr(ord('a') + (i % 26)) for i in list(range(1000)))
     >>> tokenize = Tokenizer(ngrams=5)
     >>> ans = list(tokenize(' '.join(abc)))
     >>> ans[:7]
@@ -208,16 +210,16 @@ class Tokenizer(object):
     >>> tokenize = Tokenizer(stem='Porter')
     >>> doc = "Here're some stemmable words provided to you for your stemming pleasure."
     >>> sorted(set(tokenize(doc)) - set(Tokenizer(doc, stem='Lancaster')))
-    [u"Here'r", u'pleasur', u'some', u'stemmabl', u'your']
+    ['pleasur', 'some', 'stemmabl', 'your']
     >>> sorted(set(Tokenizer(doc, stem='WordNet')) - set(Tokenizer(doc, stem='Lancaster')))
-    ["Here're", 'pleasure', 'provided', 'some', 'stemmable', 'stemming', 'your']
+    ["Here're", 'pleasure', 'provided', 'some', 'stemmable', 'stemming', 'words', 'your']
     """
 
     def __init__(self, doc=None, regex=CRE_TOKEN, strip=True, nonwords=False, nonwords_set=None,
                  nonwords_regex=RE_NONWORD, lower=None, stem=None, ngrams=1):
         # specific set of characters to strip
         self.strip_chars = None
-        if isinstance(strip, basestring):
+        if isinstance(strip, (str, bytes)):
             self.strip_chars = strip
             # strip_chars takes care of the stripping config, so no need for strip function anymore
             self.strip = None
@@ -227,17 +229,33 @@ class Tokenizer(object):
         # strip whitespace, overrides strip() method
         self.strip = strip if callable(strip) else (str.strip if strip else None)
         self.doc = stringify(doc)
-        self.regex = regex
-        if isinstance(self.regex, basestring):
-            self.regex = re.compile(self.regex)
+        if isinstance(regex, (str, bytes)):
+            self.regex = re.compile(stringify(regex))
+        else:
+            self.regex = regex
         self.nonwords = nonwords  # whether to use the default REGEX for nonwords
         self.nonwords_set = nonwords_set or set()
         self.nonwords_regex = nonwords_regex
         self.lower = lower if callable(lower) else (str.lower if lower else None)
         # stem can be a callable Stemmer instance or just a function
-        self.stemmer_name, self.stem = 'passthrough', passthrough
+        if isinstance(stem, (str, bytes)):
+            self.stemmer_name = stem
+            stem = stringify(stem).strip().title()
+            self.stem = getattr(nltk.stem, stem + 'Stemmer', None)
+        else:
+            self.stem = stem
+        if self.stem is None:
+            self.stem = passthrough
+            self.stemmer_name = 'passthrough'
+        elif self.stem.__class__.__name__ == 'function':
+            self.stemmer_name = self.stem.__name__
+        else:
+            self.stem = self.stem()
+            self.stemmer_name = stem.__class__.__name__
+        if hasattr(self.stem, 'stem'):
+            self.stem = self.stem.stem
         self.ngrams = ngrams or 1  # ngram degree, numger of ngrams per token
-        if isinstance(self.nonwords_regex, basestring):
+        if isinstance(self.nonwords_regex, (str, bytes)):
             self.nonwords_regex = re.compile(self.nonwords_regex)
         elif self.nonwords:
             try:
@@ -310,8 +328,8 @@ class Tokenizer(object):
         >>> doc += "\n\nSummary: \n\tSoftware Architect"
         >>> doc += (" who has gone through several full product-delivery life cycles from requirements " +
         ...         "gathering to deployment / production, and")
-        >>> doc += " skilled in all areas of software development from client-side JavaScript to " +
-        ...        "database modeling. With strong experiences in:"
+        >>> doc += (" skilled in all areas of software development from client-side JavaScript to " +
+        ...         "database modeling. With strong experiences in:")
         >>> doc += " \n\tRequirements gathering and analysis."
 
         The python splitter will produce 2 tokens that are only punctuation ("/")

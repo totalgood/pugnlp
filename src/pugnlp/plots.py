@@ -179,7 +179,7 @@ def regression_and_plot(x, y=None):
     ...        38000, 267000, 15600, 1800, 17000, 45000, 31000, 5000, 8000, 43000, 103000, 45000, 8800, 26000, 47000,
     ...        40000, 8000]
     >>> # Udacity data shows that people earn $1.8K more for each year of age and start with a $21K deficit
-    >>> regressionplot(age, wage)   # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+    >>> regression_and_plot(age, wage)   # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
     (1768.275..., -21991.9...)
     >>> # Gainseville, FL census data shows 14 more new homes are built each year, starting with 517 completed in 1991
     >>> regression_and_plot([483, 576, 529, 551, 529, 551, 663, 639, 704, 675, 601, 621, 630, 778, 831, 610])
