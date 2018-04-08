@@ -205,13 +205,17 @@ def regressionplot(x, y, fit=None):
     if not isinstance(x[0], (float, int, np.float64, np.float32)):
         x = [row[0] for row in x]
     poly = fit[0][0], fit[0][-1]
-    plt.ion()
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    plt.plot(x, poly[0] * np.array(x) + poly[-1], 'r-', x, y, 'o', markersize=5)
-    plt.legend(['%+.2g * x + %.2g' % poly, 'Samples'])
-    ax.grid(True)
-    plt.draw()
+    y_regression = poly[0] * np.array(x) + poly[-1]
+    try:
+        plt.ion()
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        plt.plot(x, y_regression, 'r-', x, y, 'o', markersize=5)
+        plt.legend(['%+.2g * x + %.2g' % poly, 'Samples'])
+        ax.grid(True)
+        plt.draw()
+    except plt:
+        logger.warn('No display available')
     return poly
 
 

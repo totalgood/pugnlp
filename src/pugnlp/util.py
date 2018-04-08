@@ -1761,7 +1761,7 @@ def make_dataframe(table, clean=True, verbose=False, **kwargs):
     Empty DataFrame
     Columns: []
     Index: []
-    >>> make_dataframe([{'a': 2, 'b': 3}, PrettyDict([('a', 4), ('b', 5)])])
+    >>> make_dataframe([OrderedDict([('a', 2), ('b', 3)]), PrettyDict([('a', 4), ('b', 5)])])
        a  b
     0  2  3
     1  4  5
