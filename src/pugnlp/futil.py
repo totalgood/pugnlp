@@ -317,7 +317,12 @@ def mkdir_p(path):
 
 
 def touch(filepath, times=None, mkdir=False):
-    """ Update the modify (modify) and change (ctime) timestamps of a file, create if necessary """
+    """ Update the modify (modify) and change (ctime) timestamps of a file, create if necessary
+
+    >>> filepath = os.path.join(DATA_PATH, 'tmpdirfortouch', 'tmpfilefortouch.txt')
+    >>> touch_p(filepath)
+    >>> os.path.isfile(filepath)
+    """
     if mkdir:
         mkdir_p(filepath)
     with open(fname, 'a'):
