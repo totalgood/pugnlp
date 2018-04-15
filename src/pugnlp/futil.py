@@ -316,6 +316,27 @@ def mkdir_p(path):
     return 'new'
 
 
+def touch(filepath, times=None, mkdir=False):
+    """ Update the modify (modify) and change (ctime) timestamps of a file, create if necessary """
+    if mkdir:
+        mkdir_p(filepath)
+    with open(fname, 'a'):
+        if times or times is None:
+            os.utime(fname, times)
+    return filepath
+
+
+def touch_p(filepath, times=None, mkdir=True):
+    """ mkdir_p(filepath) then touch(filepath)
+
+    >>> filepath = os.path.join(DATA_PATH, 'tmpdir', 'tmpfilefortouch_p.txt')
+    >>> touch_p(filepath)
+    >>> os.path.isfile(filepath)
+    True
+    """
+    return touch(filepath=filepath, times=times, mkdir=mkdir)
+
+
 def sudo_yield_file_lines(file_path='/etc/NetworkManager/system-connections/*'):
     r"""Cat a file iterating/yielding one line at a time,
 
