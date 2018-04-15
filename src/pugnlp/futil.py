@@ -322,6 +322,7 @@ def touch(filepath, times=None, mkdir=False):
     >>> filepath = os.path.join(DATA_PATH, 'tmpdirfortouch', 'tmpfilefortouch.txt')
     >>> touch_p(filepath)
     >>> os.path.isfile(filepath)
+    True
     """
     if mkdir:
         mkdir_p(filepath)
