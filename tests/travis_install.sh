@@ -26,6 +26,7 @@ if [[ "$DISTRIB" == "conda" ]]; then
         rm -r -d -f $DOWNLOAD_DIR
     export PATH=$HOME/miniconda/bin:$PATH
     conda update --yes conda
+    conda install --yes pip
 
     # Configure the conda environment and put it in the path using the
     # provided versions
