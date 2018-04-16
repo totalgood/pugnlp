@@ -310,34 +310,39 @@ def mkdir_p(path):
         os.makedirs(path)
     except OSError as exception:
         if exception.errno == errno.EEXIST and os.path.isdir(path):
-            return 'pre-existing'
+            return 'pre-existing: ' + path
         else:
             raise
-    return 'new'
+    return 'new: ' + path
 
 
 def touch(filepath, times=None, mkdir=False):
     """ Update the modify (modify) and change (ctime) timestamps of a file, create if necessary
 
+    >>> from pugnlp.constants import DATA_PATH
     >>> filepath = os.path.join(DATA_PATH, 'tmpfilefortouch.txt')
     >>> touch(filepath)
+    '/Users/hobs/src/pugnlp/src/pugnlp/data/tmpfilefortouch.txt'
     >>> os.path.isfile(filepath)
     True
     >>> os.remove(filepath)
     """
+    filepath = expand_path(filepath)
     if mkdir:
-        mkdir_p(filepath)
-    with open(fname, 'a'):
+        mkdir_p(os.path.dirname(filepath))
+    with open(filepath, 'a'):
         if times or times is None:
-            os.utime(fname, times)
+            os.utime(filepath, times)
     return filepath
 
 
 def touch_p(filepath, times=None, mkdir=True):
     """ mkdir_p(filepath) then touch(filepath)
 
+    >>> from pugnlp.constants import DATA_PATH
     >>> filepath = os.path.join(DATA_PATH, 'tmpdirfortouch', 'tmpfilefortouch.txt')
     >>> touch_p(filepath)
+    '/Users/hobs/src/pugnlp/src/pugnlp/data/tmpdirfortouch/tmpfilefortouch.txt'
     >>> os.path.isfile(filepath)
     True
     >>> os.remove(filepath)

@@ -109,7 +109,7 @@ def regress(x, y=None):
     if not isinstance(x[0], (float, int, np.float64, np.float32)):
         x = [row[0] for row in x]
     A = np.vstack([np.array(x), np.ones(len(x))]).T
-    fit = np.linalg.lstsq(A, y)
+    fit = np.linalg.lstsq(A, y, rcond=None)
     # if fit is None:
     #     fit = [(1, 0), None, None, None]
     poly = fit[0][0], fit[0][-1]
@@ -201,9 +201,10 @@ def regression_and_plot(x, y=None):
     ...        40000, 8000]
     >>> # Udacity data shows that people earn $1.8K more for each year of age and start with a $21K deficit
     >>> regress(age, wage)   # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-    (1768.275..., -21991.9...)
-    >>> # Gainseville, FL census data shows 14 more new homes are built each year, starting with 517 completed in 1991
-    >>> poly = regress([483, 576, 529, 551, 529, 551, 663, 639, 704, 675, 601, 621, 630, 778, 831, 610])
+    array([22214.93338944, ...)
+
+    >> # Gainseville, FL census data shows 14 more new homes are built each year, starting with 517 completed in 1991
+    >> poly = regress([483, 576, 529, 551, 529, 551, 663, 639, 704, 675, 601, 621, 630, 778, 831, 610])
     """
     if y is None:
         y = x
@@ -211,7 +212,7 @@ def regression_and_plot(x, y=None):
     if not isinstance(x[0], (float, int, np.float64, np.float32)):
         x = [row[0] for row in x]
     A = np.vstack([np.array(x), np.ones(len(x))]).T
-    fit = np.linalg.lstsq(A, y)
+    fit = np.linalg.lstsq(A, y, rcond=None)
     # if fit is None:
     #     fit = [(1, 0), None, None, None]
     poly = fit[0][0], fit[0][-1]
