@@ -11,8 +11,8 @@ env:
     # - DISTRIB="ubuntu" PYTHON_VERSION="2.7" COVERAGE="true" COVERALLS="false"
     # - DISTRIB="conda" PYTHON_VERSION="2.7" COVERAGE="false" COVERALLS="false"
     # - DISTRIB="conda" PYTHON_VERSION="3.4" COVERAGE="false" COVERALLS="false"
-    - DISTRIB="conda" PYTHON_VERSION="3.5" COVERAGE="true" COVERALLS="false"
-    - DISTRIB="ubuntu" PYTHON_VERSION="3.5" COVERAGE="true" COVERALLS="true"
+    - DISTRIB="conda" PYTHON_VERSION="3.6" COVERAGE="true" COVERALLS="true"
+    # - DISTRIB="ubuntu" PYTHON_VERSION="3.5" COVERAGE="true" COVERALLS="true"
 addons:
   apt:
     packages:
