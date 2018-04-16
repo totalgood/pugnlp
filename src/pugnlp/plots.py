@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 """Constants and discovered values, like path to current installation of pug-nlp."""
 from __future__ import division, print_function, absolute_import, unicode_literals
-from builtins import *
+from builtins import (bytes, dict, int, list, object, range, str,  # noqa
+    ascii, chr, hex, input, next, oct, open, pow, round, super, filter, map, zip)
 import os
+import logging
 
 import seaborn as sb
 import pandas as pd
@@ -19,6 +21,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from plotly import offline
 import plotly.graph_objs as go
 
+logger = logging.getLogger(__name__)
 np = pd.np
 
 
@@ -296,7 +299,7 @@ def scatmat(df, category=None, colors='rgob',
     FIXME: empty plots that dont go away, Plot and/save scatter matrix in groups of num_columns topics"""
     if category is None:
         category = list(df.columns)[-1]
-    if isinstance(category, (str, bytes, basestring, int)) and category in df.columns:
+    if isinstance(category, (str, bytes, int)) and category in df.columns:
         category = df[category]
     else:
         category = pd.Series(category)

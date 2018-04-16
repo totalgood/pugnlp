@@ -4,7 +4,8 @@ r"""file utils"""
 from __future__ import print_function, unicode_literals, division, absolute_import
 from future import standard_library
 standard_library.install_aliases()  # noqa
-from builtins import *  # noqa
+from builtins import (bytes, dict, int, list, object, range, str,  # noqa
+    ascii, chr, hex, input, next, oct, open, pow, round, super, filter, map, zip)
 
 from io import StringIO
 from configparser import ConfigParser
@@ -321,8 +322,8 @@ def touch(filepath, times=None, mkdir=False):
 
     >>> from pugnlp.constants import DATA_PATH
     >>> filepath = os.path.join(DATA_PATH, 'tmpfilefortouch.txt')
-    >>> touch(filepath)
-    '/Users/hobs/src/pugnlp/src/pugnlp/data/tmpfilefortouch.txt'
+    >>> touch(filepath).endswith('tmpfilefortouch.txt')
+    True
     >>> os.path.isfile(filepath)
     True
     >>> os.remove(filepath)
@@ -341,8 +342,8 @@ def touch_p(filepath, times=None, mkdir=True):
 
     >>> from pugnlp.constants import DATA_PATH
     >>> filepath = os.path.join(DATA_PATH, 'tmpdirfortouch', 'tmpfilefortouch.txt')
-    >>> touch_p(filepath)
-    '/Users/hobs/src/pugnlp/src/pugnlp/data/tmpdirfortouch/tmpfilefortouch.txt'
+    >>> touch_p(filepath).endswith(os.path.join('tmpdirfortouch', 'tmpfilefortouch.txt'))
+    True
     >>> os.path.isfile(filepath)
     True
     >>> os.remove(filepath)

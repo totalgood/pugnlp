@@ -26,13 +26,11 @@ Thin wrappers by Hobson Lane
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from __future__ import division, print_function, absolute_import  # , unicode_literals
 from builtins import (  # noqa
-    bytes, dict, int, list, object, range, str,
-    ascii, chr, hex, input, next, oct, open,
-    pow, round, super,
-    filter, map, zip)
+    bytes, dict, int, list, object, range, str, ascii, chr, hex, input, next, oct, open,
+    pow, round, super, filter, map, zip)
 # from future import standard_library
 # standard_library.install_aliases()  # noqa
-from past.builtins import basestring
+# from past.builtins import basestring
 
 import logging
 from re import finditer, match, search
@@ -41,6 +39,7 @@ from collections import namedtuple
 from nlup import case_feature, isnumberlike, listify, BinaryAveragedPerceptron, BinaryConfusion, IO, JSONable
 
 from .penn_treebank_tokenizer import word_tokenize
+logger = logging.getLogger(__name__)
 # FIXME(kbg) can surely avoid full-blown tokenization
 
 
@@ -177,18 +176,16 @@ class Detector(JSONable):
     # actual detector operations
 
     def fit(self, text, epochs=EPOCHS):
+        """ Given a string `text`, use it to train the segmentation classifier for `epochs` iterations.
         """
-        Given a string `text`, use it to train the segmentation classifier
-        for `epochs` iterations.
-        """
-        logging.debug("Extracting features and classifications.")
+        logger.debug("Extracting features and classifications.")
         Phi = []
         Y = []
         for (L, P, R, gold, _) in Detector.candidates(text):
             Phi.append(self.extract_one(L, P, R))
             Y.append(gold)
         self.classifier.fit(Y, Phi, epochs)
-        logging.debug("Fitting complete.")
+        logger.debug("Fitting complete.")
 
     def predict(self, L, P, R):
         """
@@ -225,7 +222,7 @@ class Detector(JSONable):
             guess = self.predict(L, P, R)
             cx.update(gold, guess)
             if not gold and guess:
-                logging.debug("False pos.: L='{}', R='{}'.".format(L, R))
+                logger.debug("False pos.: L='{}', R='{}'.".format(L, R))
             elif gold and not guess:
-                logging.debug("False neg.: L='{}', R='{}'.".format(L, R))
+                logger.debug("False neg.: L='{}', R='{}'.".format(L, R))
         return cx

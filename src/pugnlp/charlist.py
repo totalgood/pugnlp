@@ -16,7 +16,8 @@ True
 True
 """
 from __future__ import division, print_function, absolute_import, unicode_literals
-from builtins import *  # noqa
+from builtins import (bytes, dict, int, list, object, range, str,  # noqa
+    ascii, chr, hex, input, next, oct, open, pow, round, super, filter, map, zip)
 import string
 
 printable = string.printable

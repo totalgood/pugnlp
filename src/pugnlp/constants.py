@@ -4,7 +4,8 @@
 from __future__ import print_function, unicode_literals, division, absolute_import
 from future import standard_library
 standard_library.install_aliases()  # noqa
-from builtins import *  # noqa
+from builtins import (bytes, dict, int, list, object, range, str,  # noqa
+    ascii, chr, hex, input, next, oct, open, pow, round, super, filter, map, zip)
 
 from future.utils import viewitems  # noqa
 from past.builtins import basestring  # noqa
@@ -45,10 +46,10 @@ PUNC = str(string.punctuation)
 COUNT_NAMES = ['count', 'cnt', 'number', 'num', '#', 'frequency', 'probability', 'prob', 'occurences']
 # 4 types of "histograms" and their canonical name/label
 HIST_NAME = {
-    'hist': 'hist',  'ff': 'hist',  'fd': 'hist', 'dff':  'hist', 'dfd': 'hist', 'gfd': 'hist', 'gff': 'hist', 'bfd': 'hist', 'bff': 'hist', # noqa
-    'pmf':  'pmf',  'pdf': 'pmf',   'pd': 'pmf',  # noqa  prob. mass/density function, prob. density
-    'cmf':  'cmf',  'cdf': 'cmf',  # noqa
-    'cfd':  'cfd',  'cff': 'cfd',   'cdf': 'cfd',  # noqa
+    'hist': 'hist', 'ff': 'hist', 'fd': 'hist', 'dff': 'hist', 'dfd': 'hist', 'gfd': 'hist', 'gff': 'hist', 'bfd': 'hist', 'bff': 'hist',  # noqa
+    'pmf': 'pmf', 'pdf': 'pmf', 'pd': 'pmf',  # noqa  prob. mass/density function, prob. density
+    'cmf': 'cmf', 'cdf': 'cmf',  # noqa
+    'cfd': 'cfd', 'cff': 'cfd', 'cdf': 'cfd',  # noqa
 }
 HIST_CONFIG = {
     'hist': {
@@ -101,21 +102,21 @@ tld_popular = OrderedDict(sorted([
     ('org', ('Noncommercial', 1950000000)),
     ('edu', ('US accredited postsecondary institutions', 1550000000)),
     ('gov', ('United States Government', 1060000000)),
-    ('uk',  ('United Kingdom', 473000000)),  # noqa
+    ('uk', ('United Kingdom', 473000000)),  # noqa
     ('net', ('Network services', 206000000)),
-    ('ca',  ('Canada', 165000000)),  # noqa
-    ('de',  ('Germany', 145000000)),  # noqa
-    ('jp',  ('Japan', 139000000)),  # noqa
-    ('fr',  ('France', 96700000)),  # noqa
-    ('au',  ('Australia', 91000000)),  # noqa
-    ('us',  ('United States', 68300000)),  # noqa
-    ('ru',  ('Russian Federation', 67900000)),  # noqa
-    ('ch',  ('Switzerland', 62100000)),  # noqa
-    ('it',  ('Italy', 55200000)),  # noqa
-    ('nl',  ('Netherlands', 45700000)),  # noqa
-    ('se',  ('Sweden', 39000000)),  # noqa
-    ('no',  ('Norway', 32300000)),  # noqa
-    ('es',  ('Spain', 31000000)),  # noqa
+    ('ca', ('Canada', 165000000)),  # noqa
+    ('de', ('Germany', 145000000)),  # noqa
+    ('jp', ('Japan', 139000000)),  # noqa
+    ('fr', ('France', 96700000)),  # noqa
+    ('au', ('Australia', 91000000)),  # noqa
+    ('us', ('United States', 68300000)),  # noqa
+    ('ru', ('Russian Federation', 67900000)),  # noqa
+    ('ch', ('Switzerland', 62100000)),  # noqa
+    ('it', ('Italy', 55200000)),  # noqa
+    ('nl', ('Netherlands', 45700000)),  # noqa
+    ('se', ('Sweden', 39000000)),  # noqa
+    ('no', ('Norway', 32300000)),  # noqa
+    ('es', ('Spain', 31000000)),  # noqa
     ('mil', ('US Military', 28400000)),
     ], key=lambda x: len(x[0]), reverse=True))
 
