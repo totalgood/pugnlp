@@ -5,11 +5,9 @@ from __future__ import division, print_function, absolute_import  # , unicode_li
 from future import standard_library
 standard_library.install_aliases()  # noqa
 from builtins import (  # noqa
-    bytes, dict, int, list, object, range, str,
-    ascii, chr, hex, input, next, oct, open,
-    pow, round, super,
-    filter, map, zip)
-# from past.builtins import basestring
+    bytes, dict, int, list, object, range, str, ascii, chr, hex, input, next, oct, open,
+    pow, round, super, filter, map, zip)
+from past.builtins import basestring
 
 import os
 import re
@@ -55,7 +53,7 @@ def generate_lines(text, ext=['.txt', '.md', '.rst', '.asciidoc', '.asc']):
     ['Hello crazy\r\n', 'MS/Apple world\r', 'of EOLS.\n']
     """
 
-    if isinstance(text, (str, bytes)):
+    if isinstance(text, basestring):
         if len(text) <= 256:
             if os.path.isfile(text) and os.path.splitext(text)[-1].lower() in ext:
                 return open(text)
@@ -152,8 +150,8 @@ def generate_sentences(text='', train_path=None, case_sensitive=True, ext=['.md'
       epochs (int): number of epochs (iterations for classifier training)
 
     """
-    ext = [ext] if isinstance(ext, (str, bytes)) else ext
-    if isinstance(text, (str, bytes)) and len(text) <= 256:
+    ext = [ext] if isinstance(ext, basestring) else ext
+    if isinstance(text, basestring) and len(text) <= 256:
         if os.path.isfile(text) and os.path.splitext(text)[-1].lower() in ext:
             text = open(text)
         elif os.path.isdir(text):
@@ -163,7 +161,7 @@ def generate_sentences(text='', train_path=None, case_sensitive=True, ext=['.md'
                                    normalize_sentence_boundaries=normalize_sentence_boundaries,
                                    epochs=epochs, classifier=classifier, re_eol=re_eol, **kwargs)
                 for stat in find_files(text, ext=ext)))
-    if isinstance(text, (str, bytes)):
+    if isinstance(text, basestring):
         texts = Split(text=text, re_delim=re_eol)
     else:
         texts = chain.from_iterable(Split(text=doc, re_delm=re_eol) for doc in text)
@@ -219,7 +217,7 @@ class Tokenizer(object):
                  nonwords_regex=RE_NONWORD, lower=None, stem=None, ngrams=1):
         # specific set of characters to strip
         self.strip_chars = None
-        if isinstance(strip, (str, bytes)):
+        if isinstance(strip, basestring):
             self.strip_chars = strip
             # strip_chars takes care of the stripping config, so no need for strip function anymore
             self.strip = None
@@ -229,7 +227,7 @@ class Tokenizer(object):
         # strip whitespace, overrides strip() method
         self.strip = strip if callable(strip) else (str.strip if strip else None)
         self.doc = stringify(doc)
-        if isinstance(regex, (str, bytes)):
+        if isinstance(regex, basestring):
             self.regex = re.compile(stringify(regex))
         else:
             self.regex = regex
@@ -238,7 +236,7 @@ class Tokenizer(object):
         self.nonwords_regex = nonwords_regex
         self.lower = lower if callable(lower) else (str.lower if lower else None)
         # stem can be a callable Stemmer instance or just a function
-        if isinstance(stem, (str, bytes)):
+        if isinstance(stem, basestring):
             self.stemmer_name = stem
             stem = stringify(stem).strip().title()
             self.stem = getattr(nltk.stem, stem + 'Stemmer', None)
@@ -255,7 +253,7 @@ class Tokenizer(object):
         if hasattr(self.stem, 'stem'):
             self.stem = self.stem.stem
         self.ngrams = ngrams or 1  # ngram degree, numger of ngrams per token
-        if isinstance(self.nonwords_regex, (str, bytes)):
+        if isinstance(self.nonwords_regex, basestring):
             self.nonwords_regex = re.compile(self.nonwords_regex)
         elif self.nonwords:
             try:

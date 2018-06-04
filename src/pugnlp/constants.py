@@ -8,7 +8,6 @@ from builtins import (bytes, dict, int, list, object, range, str,  # noqa
     ascii, chr, hex, input, next, oct, open, pow, round, super, filter, map, zip)
 
 from future.utils import viewitems  # noqa
-from past.builtins import basestring  # noqa
 
 import os
 import string

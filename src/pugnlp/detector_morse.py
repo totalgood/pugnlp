@@ -28,9 +28,8 @@ from __future__ import division, print_function, absolute_import  # , unicode_li
 from builtins import (  # noqa
     bytes, dict, int, list, object, range, str, ascii, chr, hex, input, next, oct, open,
     pow, round, super, filter, map, zip)
-# from future import standard_library
-# standard_library.install_aliases()  # noqa
-# from past.builtins import basestring
+from future import standard_library
+standard_library.install_aliases()  # noqa
 
 import logging
 from re import finditer, match, search

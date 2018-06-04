@@ -4,9 +4,9 @@ r"""file utils"""
 from __future__ import print_function, unicode_literals, division, absolute_import
 from future import standard_library
 standard_library.install_aliases()  # noqa
-basestring = basestring  # noqa
 from builtins import (bytes, dict, int, list, object, range, str,  # noqa
     ascii, chr, hex, input, next, oct, open, pow, round, super, filter, map, zip)
+from past.builtins import basestring
 
 from io import StringIO
 from configparser import ConfigParser

@@ -24,6 +24,7 @@ standard_library.install_aliases()  # noqa
 from builtins import (bytes, dict, int, list, object, range, str, ascii, chr, hex, input,  # noqa
     next, oct, open, pow, round, super, filter, map, zip)
 from future.utils import viewitems
+from past.builtins import basestring
 
 try:  # python 3.5+
     from io import StringIO
@@ -240,7 +241,7 @@ def clean_field_dict(field_dict, cleaner=str.strip, time_zone=None):
     for k, v in viewitems(field_dict):
         if k == '_state':
             continue
-        if isinstance(v, (str, bytes)):
+        if isinstance(v, basestring):
             d[k] = cleaner(str(v))
         elif isinstance(v, (datetime.datetime, datetime.date)):
             d[k] = tz.localize(v)
@@ -806,7 +807,7 @@ def joined_seq(seq, sep=None):
     (1, 2, 3)
     """
     joined_seq = tuple(seq)
-    if isinstance(sep, (str, bytes)):
+    if isinstance(sep, basestring):
         joined_seq = sep.join(str(item) for item in joined_seq)
     return joined_seq
 
@@ -846,7 +847,7 @@ def dos_from_table(table, header=None):
         header = table[0]
         start_row = 1
     header_list = header
-    if header and isinstance(header, (str, bytes)):
+    if header and isinstance(header, basestring):
         header_list = header.split('\t')
         if len(header_list) != len(table[0]):
             header_list = header.split(',')
@@ -1355,10 +1356,10 @@ def tryconvert(value, desired_types=SCALAR_TYPES, default=None, empty='', strip=
     'None'
     """
     if value in tryconvert.EMPTY:
-        if isinstance(value, (str, bytes)):
+        if isinstance(value, basestring):
             return type(value)(empty)
         return empty
-    if isinstance(value, (str, bytes)):
+    if isinstance(value, basestring):
         # there may not be any "empty" strings that won't be caught by the `is ''` check above, but just in case
         if not value:
             return type(value)(empty)
@@ -1422,7 +1423,7 @@ def strip_br(s):
     ('one element',)
     """
 
-    if isinstance(s, (str, bytes)):
+    if isinstance(s, basestring):
         return re.sub(r'\s*<\s*[Bb][Rr]\s*[/]?\s*>\s*$', '', s)
     elif isinstance(s, (tuple, list)):
         # strip just the last element in a list or tuple
@@ -1459,7 +1460,7 @@ def read_csv(csv_file, ext='.csv', format=None, delete_empty_keys=False,
     """
     if not csv_file:
         return
-    if isinstance(csv_file, (str, bytes)):
+    if isinstance(csv_file, basestring):
         # truncate `csv_file` in case it is a string buffer containing GBs of data
         path = csv_file[:1025]
         try:
@@ -1535,7 +1536,7 @@ def read_csv(csv_file, ext='.csv', format=None, delete_empty_keys=False,
                 break
         if eof:
             break
-        if len(row) and isinstance(row[-1], (str, bytes)) and len(row[-1]):
+        if len(row) and isinstance(row[-1], basestring) and len(row[-1]):
             row = strip_br(row)
         if numbers:
             # try to convert the type to a numerical scalar type (int, float etc)
@@ -1744,7 +1745,7 @@ def clean_series(series, *args, **kwargs):
         return series
     if any_generated((isinstance(v, datetime.datetime) for v in series)):
         series = series.apply(clip_datetime)
-    if any_generated((isinstance(v, (str, bytes)) for v in series)):
+    if any_generated((isinstance(v, basestring) for v in series)):
         series = series.apply(encode)
     series = series.apply(try_float_int)
     return series
@@ -1774,7 +1775,7 @@ def make_dataframe(table, clean=True, verbose=False, **kwargs):
         table = table.objects
     if hasattr(table, 'filter') and callable(table.values):
         table = pd.DataFrame.from_records(list(table.values()).all())
-    elif isinstance(table, (str, bytes)) and os.path.isfile(table):
+    elif isinstance(table, basestring) and os.path.isfile(table):
         table = pd.DataFrame.from_csv(table)
     # elif isinstance(table, ValuesQuerySet) or (isinstance(table, (list, tuple)) and
     #                                            len(table) and all(isinstance(v, Mapping) for v in table)):
@@ -1913,7 +1914,7 @@ def make_float(s, default='', ignore_commas=True):
     >>> make_float(float('-INF'))
     -inf
     """
-    if ignore_commas and isinstance(s, (str, bytes)):
+    if ignore_commas and isinstance(s, basestring):
         s = s.replace(',', '')
     try:
         return float(s)
@@ -1947,7 +1948,7 @@ def make_int(s, default='', ignore_commas=True):
     >>> make_int(' \t\n123,450,00\n')
     12345000
     """
-    if ignore_commas and isinstance(s, (str, bytes)):
+    if ignore_commas and isinstance(s, basestring):
         s = s.replace(',', '')
     try:
         return int(s)
@@ -2011,7 +2012,7 @@ def normalize_scientific_notation(s, ignore_commas=True, verbosity=1):
 
 def normalize_names(names):
     """Coerce a string or nested list of strings into a flat list of strings."""
-    if isinstance(names, (str, bytes)):
+    if isinstance(names, basestring):
         names = names.split(',')
     names = listify(names)
     return [str(name).strip() for name in names]
@@ -2264,7 +2265,7 @@ def strip_edge_punc(s, punc=None, lower=None, str_type=str):
         punc = strip_edge_punc.punc
     if lower:
         s = s.lower()
-    if not isinstance(s, (str, bytes)):
+    if not isinstance(s, basestring):
         return [strip_edge_punc(str_type(s0), punc) for s0 in s]
     return s.strip(punc)
 
@@ -2274,7 +2275,7 @@ strip_edge_punc.punc = PUNC
 
 
 def get_sentences(s, regex=rex.sentence_sep):
-    if isinstance(regex, (str, bytes)):
+    if isinstance(regex, basestring):
         regex = re.compile(regex)
     return [sent for sent in regex.split(s) if sent]
 
@@ -2332,7 +2333,7 @@ def get_words(s, splitter_regex=rex.word_sep_except_external_appostrophe,
         s = s.read()
     except (IOError, AttributeError, TypeError):
         pass
-    if not isinstance(s, (str, bytes)):
+    if not isinstance(s, basestring):
         try:
             # flatten the list of lists of words from each obj (file or string)
             return [word for obj in s for word in get_words(obj)]
@@ -2342,7 +2343,7 @@ def get_words(s, splitter_regex=rex.word_sep_except_external_appostrophe,
         s = preprocessor(s)
     except (IndexError, ValueError, AttributeError, TypeError):
         pass
-    if isinstance(splitter_regex, (str, bytes)):
+    if isinstance(splitter_regex, basestring):
         splitter_regex = re.compile(splitter_regex)
     s = list(map(postprocessor, splitter_regex.split(s)))
     s = list(map(str_type, s))
@@ -2364,7 +2365,7 @@ get_words.filter_fun = minmax_len_and_blackwhite_list
 def pluralize_field_name(names=None, retain_prefix=False):
     if not names:
         return ''
-    elif isinstance(names, (str, bytes)):
+    elif isinstance(names, basestring):
         if retain_prefix:
             split_name = names
         else:
@@ -2481,11 +2482,11 @@ def listify(values, N=1, delim=None):
     ans = [] if values is None else values
 
     # convert non-string non-list iterables into a list
-    if hasattr(ans, '__iter__') and not isinstance(ans, (str, bytes)):
+    if hasattr(ans, '__iter__') and not isinstance(ans, basestring):
         ans = list(ans)
     else:
         # split the string (if possible)
-        if isinstance(delim, (str, bytes)) and isinstance(ans, (str, bytes)):
+        if isinstance(delim, basestring) and isinstance(ans, basestring):
             try:
                 ans = ans.split(delim)
             except (IndexError, ValueError, AttributeError, TypeError):
@@ -2656,7 +2657,7 @@ def truncate(s, max_len=20, ellipsis='...'):
     """
     if s is None:
         return None
-    elif isinstance(s, (str, bytes)):
+    elif isinstance(s, basestring):
         return s[:min(len(s), max_len)] + ellipsis if len(s) > max_len else ''
     elif isinstance(s, Mapping):
         truncated_str = str(dict(islice(viewitems(s), max_len)))
@@ -2710,7 +2711,7 @@ def generate_kmers(seq, k=4):
     >>> ' '.join(generate_kmers('AGATAGATAGACACAGAAATGGGACCACAC'))
     'AGAT GATA ATAG TAGA AGAT GATA ATAG TAGA AGAC GACA ACAC CACA ACAG ... CCAC CACA ACAC'
     """
-    if isinstance(seq, (str, bytes)):
+    if isinstance(seq, basestring):
         for i in range(len(seq) - k + 1):
             yield seq[i:i + k]
     elif isinstance(seq, (int, float, Decimal)):
@@ -2771,7 +2772,7 @@ def kmer_counter(seq, k=4):
     ...     'ACCA': 1, 'GGAC': 1, 'CCAC': 1, 'CAGA': 1, 'GAAA': 1, 'GGGA': 1, 'GACA': 1, 'GACC': 1, 'AATG': 1})
     True
     """
-    if isinstance(seq, (str, bytes)):
+    if isinstance(seq, basestring):
         return Counter(generate_kmers(seq, k))
 
 
@@ -2785,7 +2786,7 @@ def kmer_set(seq, k=4):
     >>> sorted(kmer_set('AGATAGATAGACACAGAAATGGGACCACAC'))  # doctest: +NORMALIZE_WHITESPACE, +ELLIPSIS
     ['AAAT', 'AATG', 'ACAC', 'ACAG', 'ACCA', 'AGAA', 'AGAC', 'AGAT', 'ATAG', 'ATGG', 'CACA', 'CAGA', 'CCAC', 'GAAA', ...
     """
-    if isinstance(seq, (str, bytes)):
+    if isinstance(seq, basestring):
         return set(generate_kmers(seq, k))
 
 
@@ -2800,7 +2801,7 @@ def kmer_set(seq, k=4):
 #     >>> kmer_frequency(['AGATAGATAG', 'ACACAGAAAT', 'GGGACCACAC'], km=4)
 
 #     """
-#     if km and isinstance(km, (str, bytes)):
+#     if km and isinstance(km, basestring):
 #         return sum(km in counter for counter in kmer_counter(seq_of_seq, len(km)))
 #     km = int(km)
 #     counter = Counter()
@@ -2830,13 +2831,13 @@ def kmer_set(seq, k=4):
 #     """
 #     # FIXME: UNTESTED!
 #     if not other_strings:
-#         if isinstance(seq, (str, bytes)):
+#         if isinstance(seq, basestring):
 #             other_strings = (seq,)
 #         else:
 #             other_strings = tuple(seq)
 #         return uniq_tag(other_strings[0], other_strings)
 #     other_strings = set(other_strings)
-#     if isinstance(seq, (str, bytes)):
+#     if isinstance(seq, basestring):
 #         kms = kmer_set(seq)
 #         km_frequencies = ((sum(km in kmer_set(s, k), s) for s in other_strings) for km in kms)
 #         print min(km_frequencies)
@@ -2933,7 +2934,7 @@ def slash_product(string_or_seq, slash='/', space=' '):
      'I say bonjour world']
     """
     # Terminating case is a sequence of strings without any slashes
-    if not isinstance(string_or_seq, (str, bytes)):
+    if not isinstance(string_or_seq, basestring):
         # If it's not a string and has no slashes, we're done
         if not any(slash in s for s in string_or_seq):
             return list(string_or_seq)

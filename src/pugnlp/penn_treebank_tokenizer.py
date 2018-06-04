@@ -39,9 +39,9 @@ from builtins import (  # noqa
     ascii, chr, hex, input, next, oct, open,
     pow, round, super,
     filter, map, zip)
-# from future import standard_library
-# standard_library.install_aliases()  # noqa
-from past.builtins import basestring
+from future import standard_library
+standard_library.install_aliases()  # noqa
+
 
 from re import sub
 

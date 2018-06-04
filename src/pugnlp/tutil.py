@@ -5,9 +5,9 @@ from __future__ import print_function, unicode_literals, division, absolute_impo
 from future import standard_library
 standard_library.install_aliases()  # noqa
 from builtins import *  # noqa
+from past.builtins import basestring
 
 from future.utils import viewitems  # noqa
-from past.builtins import basestring
 from builtins import (bytes, dict, int, list, object, range, str, ascii, chr, hex, input,  # noqa
     next, oct, open, pow, round, super, filter, map, zip)
 
