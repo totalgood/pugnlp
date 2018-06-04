@@ -4,6 +4,7 @@ r"""file utils"""
 from __future__ import print_function, unicode_literals, division, absolute_import
 from future import standard_library
 standard_library.install_aliases()  # noqa
+basestring = basestring  # noqa
 from builtins import (bytes, dict, int, list, object, range, str,  # noqa
     ascii, chr, hex, input, next, oct, open, pow, round, super, filter, map, zip)
 
@@ -251,7 +252,13 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
         And it should be at the top of the list.
         >>> sorted(d['name'] for d in generate_files(os.path.dirname(__file__), ext='.py', level=0))[0]
         '__init__.py'
-        >>> list(generate_files(__file__))[0]['name'] == os.path.basename(__file__)
+        >>> len(list(generate_files(__file__, ext='.')))
+        0
+        >>> len(list(generate_files(__file__, ext=['invalidexttesting123', False])))
+        0
+        >>> len(list(generate_files(__file__, ext=['.py', '.pyc', 'invalidexttesting123', False]))) > 0
+        True
+        >>> sorted(generate_files(__file__))[0]['name'] == os.path.basename(__file__)
         True
         >>> sorted(list(generate_files())[0].keys())
         ['accessed', 'changed_any', 'dir', 'mode', 'modified', 'name', 'path', 'size', 'type']
@@ -263,25 +270,32 @@ def generate_files(path='', ext='', level=None, dirs=False, files=True, verbosit
         True
     """
     path = expand_path(path or '.')
+    # None interpreted as '', False is interpreted as '.' (no ext will be accepted)
+    ext = '.' if ext is False else ext
     # multiple extensions can be specified in a list or tuple
-    ext = ext if isinstance(ext, (list, tuple)) else [ext]
-    # case-insensitive extensions
-    ext = set(x.lower() for x in ext)
+    ext = ext if ext and isinstance(ext, (list, tuple)) else [ext]
+    # case-insensitive extensions, '.' ext means only no-extensions are accepted
+    ext = set(x.lower() if x else '.' if x is False else '' for x in ext)
 
-    if os.path.isfile(path) and any(path.lower().endswith(x) for x in ext):
-        yield path_status(os.path.dirname(path), os.path.basename(path), verbosity=verbosity)
+    if os.path.isfile(path):
+        fn = os.path.basename(path)
+        # only yield the stat dict if the extension is among those that match or files without any ext are desired
+        if not ext or any(path.lower().endswith(x) or (x == '.' and '.' not in fn) for x in ext):
+            yield path_status(os.path.dirname(path), os.path.basename(path), verbosity=verbosity)
     else:
         for dir_path, dir_names, filenames in walk_level(path, level=level):
             if verbosity > 0:
                 print('Checking path "{}"'.format(dir_path))
             if files:
                 for fn in filenames:  # itertools.chain(filenames, dir_names)
-                    if ext and not any((fn.lower().endswith(x) for x in ext)):
+                    if ext and not any((fn.lower().endswith(x) or (x == '.' and x not in fn) for x in ext)):
                         continue
-                    yield path_status(dir_path, fn, verbosity=verbosity)
+                    stat = path_status(dir_path, fn, verbosity=verbosity)
+                    if stat and stat['name'] and stat['path']:
+                        yield stat
             if dirs:
                 for fn in dir_names:
-                    if ext and not any((fn.lower().endswith(x) for x in ext)):
+                    if ext and not any((fn.lower().endswith(x) or (x == '.' and x not in fn) for x in ext)):
                         continue
                     yield path_status(dir_path, fn, verbosity=verbosity)
 
@@ -386,7 +400,7 @@ def sudo_iter_file_lines(file_path):
             # __iter__ returns an `iterator` instance. having an __iter__ make this class `iterable`
             return self
 
-        def next(self):
+        def next(self):  # noqa
             # substitute your Windoze/DOS/PowerlessShell command here:
             return self.process.stdout.readline()
             # raise StopIteration()
