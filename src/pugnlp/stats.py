@@ -442,24 +442,24 @@ class Confusion(pd.DataFrame):
         super(Confusion, self).__init__(index=pd.Index(index, name=columns[0]), columns=pd.Index(index, name=columns[1]))
 
         # metadata to speed other operations
-        self._verbose = verbose
-        self._infer = _infer
-        self._scalar_stats = kwargs.pop('scalar', kwargs.pop('scalar_stats', None))
-        self._sort_classes = _sort_classes
-        self._num_classes = len(index)
-        self._num_samples = len(df)
-        self._colnums = np.arange(0, self._num_classes)
+        self.__setattr__('_verbose', verbose)
+        self.__setattr__('_infer', _infer)
+        setattr(self, '_scalar_stats', kwargs.pop('scalar', kwargs.pop('scalar_stats', None)))
+        setattr(self, '_sort_classes', _sort_classes)
+        setattr(self, '_num_classes', len(index))
+        setattr(self, '_num_samples', len(df))
+        setattr(self, '_colnums', np.arange(0, self._num_classes))
         # look for Positive and Negative column labels by first finding columns labeled
         #    "Negative", "-1", "0", "Healthy", "N/A", etc
 
         try:
-            self._neg_label = next(label for label in self.columns if str(label).strip().lower()[0] in ('-nh0'))
+            setattr(self, '_neg_label', next(label for label in self.columns if str(label).strip().lower()[0] in ('-nh0')))
         except StopIteration:
-            self._neg_label = self.columns[-1]
+            setattr(self, '_neg_label', self.columns[-1])
         try:
-            self._pos_label = next(label for label in self.columns if label != self._neg_label)
+            setattr(self, '_pos_label', next(label for label in self.columns if label != self._neg_label))
         except StopIteration:
-            self._pos_label = infer_pos_label(self._neg_label)
+            setattr(self, '_pos_label', infer_pos_label(self._neg_label))
 
         logger.debug('true class samples: {}'.format(df[columns[0]].values[:5]))
         for p_class in index:
@@ -488,43 +488,45 @@ class Confusion(pd.DataFrame):
         """Calculations that only depend on aggregate counts in Confusion Matrix go here"""
 
         # these calcs are duplicated in __init__()
-        self._num_classes = len(self.index)
-        self._colnums = np.arange(0, self._num_classes)
+        setattr(self, '_num_classes', len(self.index))
+        setattr(self, '_colnums', np.arange(0, self._num_classes))
         try:
-            self._neg_label = next(label for label in self.columns if str(label).strip().lower()[0] in ('-nh0'))
+            setattr(self, '_neg_label',
+                    next(label for label in self.columns if str(label).strip().lower()[0] in ('-nh0')))
         except StopIteration:
-            self._neg_label = self.columns[-1]
+            setattr(self, '_neg_label', self.columns[-1])
         try:
-            self._pos_label = next(label for label in self.columns if label != self._neg_label)
+            setattr(self, '_pos_label', next(label for label in self.columns if label != self._neg_label))
         except StopIteration:
-            self._pos_label = infer_pos_label(self._neg_label)
+            setattr(self, '_pos_label', infer_pos_label(self._neg_label))
 
         # TODO: reorder columns with newly guessed pos and neg class labels first
 
         # TODO: gather up additional meta calculations here so
         #       a Confusion matrix can be build from an existing DataFrame that contains confusion counts
         #       rather than just two columns of labels.
-        self._hist_labels = self.sum().astype(int)
-        self._num_total = self._hist_labels.sum()
+        self.__setattr__('_hist_labels', self.sum().astype(int))
+        self.__setattr__('_num_total', self._hist_labels.sum())
         assert(self._num_total == self.sum().sum())
-        self._num_pos_labels = self._hist_labels.get(self._pos_label, 0)
-        self._num_neg_labels = self._num_total - self._num_pos_labels  # everything that isn't positive is negative
-        self._hist_classes = self.T.sum()
-        self._num_pos = self._hist_classes.get(self._pos_label, 0)
-        self._num_neg = self._hist_classes.sum() - self._num_pos  # everything that isn't positive is negative
-        self._tp = self.get(self._pos_label, pd.Series()).get(self._pos_label, 0)
-        self._tpr = safe_div(float(self._tp), self._num_pos)
-        self._tn = np.diag(self).sum() - self._tp
-        self._tnr = safe_div(float(self._tn), self._num_neg)
-        self._fp = self.get(self._pos_label, pd.Series()).sum() - self._tp
-        self._fpr = safe_div(float(self._fp), self._num_neg)
-        self._fn = self._num_neg_labels - self._tn
-        self._fnr = safe_div(float(self._fn), self._num_pos)
-        self._plr = safe_div(float(self._tpr), self._fpr)
-        self._nlr = safe_div(float(self._fnr), self._tnr)
-        self._binary_accuracy = safe_div(self._tp + self._tn, self._num_samples)
-        self._binary_sensitivity = safe_div(self._tp, self._tp + self._fn)
-        self._binary_specificity = safe_div(self._tn, self._tn + self._fp)
+        setattr(self, '_num_pos_labels', self._hist_labels.get(self._pos_label, 0))
+        # everything that isn't positive is negative
+        setattr(self, '_num_neg_labels', self._num_total - self._num_pos_labels)
+        setattr(self, '_hist_classes', self.T.sum())
+        setattr(self, '_num_pos', self._hist_classes.get(self._pos_label, 0))
+        setattr(self, '_num_neg', self._hist_classes.sum() - self._num_pos)  # everything that isn't positive is negative
+        setattr(self, '_tp', self.get(self._pos_label, pd.Series()).get(self._pos_label, 0))
+        setattr(self, '_tpr', safe_div(float(self._tp), self._num_pos))
+        setattr(self, '_tn', np.diag(self).sum() - self._tp)
+        setattr(self, '_tnr', safe_div(float(self._tn), self._num_neg))
+        setattr(self, '_fp', self.get(self._pos_label, pd.Series()).sum() - self._tp)
+        setattr(self, '_fpr', safe_div(float(self._fp), self._num_neg))
+        setattr(self, '_fn', self._num_neg_labels - self._tn)
+        setattr(self, '_fnr', safe_div(float(self._fn), self._num_pos))
+        setattr(self, '_plr', safe_div(float(self._tpr), self._fpr))
+        setattr(self, '_nlr', safe_div(float(self._fnr), self._tnr))
+        setattr(self, '_binary_accuracy', safe_div(self._tp + self._tn, self._num_samples))
+        setattr(self, '_binary_sensitivity', safe_div(self._tp, self._tp + self._fn))
+        setattr(self, '_binary_specificity', safe_div(self._tn, self._tn + self._fp))
         # # These asserts intentionally commented out. They are just developer FYI.
         # # May fail due to platform-dependent floating point rounding implementations
         # assert self._binary_sensitivity == self._tpr
