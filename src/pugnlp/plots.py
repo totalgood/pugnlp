@@ -7,6 +7,8 @@ from builtins import (bytes, dict, int, list, object, range, str,  # noqa
 import os
 import logging
 
+import matplotlib
+matplotlib.use('TkAgg')  # noqa
 import seaborn as sb
 import pandas as pd
 from matplotlib import pyplot as plt
