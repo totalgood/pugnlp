@@ -100,18 +100,28 @@ def remove_invalid_chars(str_or_seq, valid_regex=r'\w'):
     return seq[0] if isinstance(str_or_seq, str) else seq
 
 
-def clean_columns(columns, valid_regex=r'\w', lower=True):
+def clean_columns(columns, valid_regex=r'\w', lower=True, max_len=32):
+    """ Ensure all column name strings are valid python variable/attribute names 
+
+    >>> df = pd.DataFrame(np.zeros((2, 3)), columns=['WAT??', "Don't do th!s, way too long. ya-think????", 'ok-this123.456'])
+    >>> df.columns = clean_columns(df.columns, max_len=12)
+    >>> df.head()
+       wat  dont_do_ths_  okthis123456
+    0  0.0           0.0           0.0
+    1  0.0           0.0           0.0
+    """
     rettype = None
     if isinstance(columns, str):
         rettype = type(columns)
         columns = [columns]
 
     columns = [c.strip() for c in columns]
-    # # unneccessary because these are invalid characters removed below
+    # # unnecessary because these are invalid characters removed below
     # columns = [(c[1:-1] if c[0] in '\'"' and c[-1] == c[0] else c) for c in columns]
     # columns = [(c[1:-1] if c[0] in '{([<' and c[-1] in '})]>' else c) for c in columns]
-    columns = [re.sub('\s', '_', c).lower() for c in columns]
+    columns = [re.sub('\s+', '_', c).lower() for c in columns]
     columns = remove_invalid_chars(columns, valid_regex=r'\w')
+    columns = [c[:max_len] for c in columns]
     columns = np.array(columns) if rettype is None else rettype(columns[0])
     return columns
 

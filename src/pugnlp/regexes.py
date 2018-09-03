@@ -156,9 +156,9 @@ nondigit = re.compile(r"[^0-9]")
 nonphrase = re.compile(r"[^-\w\s/&']")
 parenthetical_time = re.compile(r'([^(]*)\(\s*(\d+)\s*(?:min)?\s*\)([^(]*)', re.IGNORECASE)
 
-fqdn = r'(\b[a-zA-Z0-9-.]+\b([.]' + r'|'.join(constants.tld_iana) + r'\b)\b)'  # noqa
-fqdn_popular = r'(\b[a-zA-Z0-9-.]+\b([.]' + r'|'.join(constants.tld_popular) + r'\b)\b)'
-username = r'(\b[a-zA-Z0-9-.!#$%&*+-/=?^_`{|}~]+\b)'
+fqdn = r'(\b[-.a-zA-Z0-9]+\b([.]' + r'|'.join(constants.tld_iana) + r'\b)\b)'  # noqa
+fqdn_popular = r'(\b[-.a-zA-Z0-9]+\b([.]' + r'|'.join(constants.tld_popular) + r'\b)\b)'
+username = r'(\b[-.a-zA-Z0-9!#$%&*+/=?^_`{|}~]+\b)'
 
 email = re.compile(r'(\b' + username + r'\b@\b' + fqdn + r'\b)')
 email_popular = re.compile(r'(\b' + username + r'\b@\b' + fqdn_popular + r'\b)')
@@ -166,8 +166,8 @@ email_popular = re.compile(r'(\b' + username + r'\b@\b' + fqdn_popular + r'\b)')
 # TODO: unmatched surrounding symbols are accepted/consumed, likewise for multiple dots/ats
 at = r'(([-@="_(\[{\|\s]+(at|At|AT)[-@="_)\]\}\|\s]+)|[@])'
 dot = r'(([-.="_(\[{\|\s]+(dot|dt|Dot|DOT)[-.="_)\]\}\|\s]+)|[.])'
-fqdn_obfuscated = r'(\b(([a-zA-Z0-9-]+' + dot + r'){1,7})(' + r'|'.join(constants.tld_iana) + r')\b)'
-fqdn_popular_obfuscated = r'(\b(([a-zA-Z0-9-]+' + dot + r'){1,7})(' + r'|'.join(constants.tld_popular) + r')\b)'
+fqdn_obfuscated = r'(\b(([-a-zA-Z0-9]+' + dot + r'){1,7})(' + r'|'.join(constants.tld_iana) + r')\b)'
+fqdn_popular_obfuscated = r'(\b(([-a-zA-Z0-9]+' + dot + r'){1,7})(' + r'|'.join(constants.tld_popular) + r')\b)'
 username_obfuscated = r'(([a-zA-Z0-9!#$%&*+/?^`~]+' + dot + r'?){1,7})'
 email_obfuscated = re.compile(r'(\b' + username_obfuscated + at + fqdn_obfuscated + r'\b)')
 email_popular_obfuscated = re.compile(r'(\b' + username_obfuscated + at + fqdn_popular_obfuscated + r'\b)')

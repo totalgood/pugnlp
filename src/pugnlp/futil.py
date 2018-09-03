@@ -369,7 +369,7 @@ def touch_p(filepath, times=None, mkdir=True):
 def sudo_yield_file_lines(file_path='/etc/NetworkManager/system-connections/*'):
     r"""Cat a file iterating/yielding one line at a time,
 
-    shell will exeucte: `sudo cat $file_path` so if your shell doesn't have sudo or cat, no joy
+    shell will execute: `sudo cat $file_path` so if your shell doesn't have sudo or cat, no joy
     Input:
                     file_path(str): glob stars are fine
 
