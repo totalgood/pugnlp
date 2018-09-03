@@ -181,11 +181,13 @@ url_path = r'(/[^\s"\'>]*/?)'  # doesn't allow for unescaped quoted query string
 url_scheme = r'(\b(' + '|'.join(constants.uri_schemes_iana) + r')[:][/]{2})'
 url_scheme_popular = r'(\b(' + '|'.join(constants.uri_schemes_popular) + r')[:][/]{2})'
 
-url_strict = r'(\b' + url_scheme + fqdn + url_path + r'?\b)'  # noqa
-url_liberal = r'(\b' + url_scheme + r'?' + fqdn + url_path + r'?\b)'  # noqa
+# allows paths to stop before trailing sentence period like: example.com/file. or example.com/file!
+break_path_lookahead = r'(?:\b|(?=[\s"\'>\].?!\)\]))'
+url_strict = r'(\b' + url_scheme + fqdn + url_path + r'?)' + break_path_lookahead  # noqa
+url_liberal = r'(\b' + url_scheme + r'?' + fqdn + url_path + r'?)' + break_path_lookahead  # noqa
 
-url_popular_strict = r'(\b' + url_scheme + fqdn_popular + r'[/]?' + url_path + r'?\b)'
-url_popular = r'(\b' + url_scheme + r'?' + fqdn_popular + url_path + r'?)'
+url_popular_strict = r'(\b' + url_scheme + fqdn_popular + r'[/]?' + url_path + r'?)' + break_path_lookahead
+url_popular = r'(\b' + url_scheme + r'?' + fqdn_popular + url_path + r'?)' + break_path_lookahead
 
 cre_url_strict = re.compile(url_strict)
 cre_url_liberal = re.compile(url_liberal)
