@@ -104,6 +104,8 @@ RE_CAMEL_BASIC_B, RE_CAMEL_NORMAL_B, RE_CAMEL_LIBERAL_B
 >>> re_ver.match("__version__ = '0.0.18'").groups()
 (None, '0', '0', '.18', '18', None, None)
 >>> tweet = "Play the [postiive sum game](http://totalgood.com/a/b?c=42) of life instead of svn://us.gov."
+>>> re.findall(url_popular, 'hello (hello.com/123/) whatever?')
+[('hello.com/123/)', '', '', 'hello.com', '.com', '/123/)')]
 >>> cre_url.findall(tweet)
 [('http://totalgood.com/a/b?c=42', 'http://', 'http', 'totalgood.com', 'com', '/a/b?c=42'),
  ('svn://us.gov', 'svn://', 'svn', 'us.gov', 'gov', '')]
@@ -156,8 +158,8 @@ nondigit = re.compile(r"[^0-9]")
 nonphrase = re.compile(r"[^-\w\s/&']")
 parenthetical_time = re.compile(r'([^(]*)\(\s*(\d+)\s*(?:min)?\s*\)([^(]*)', re.IGNORECASE)
 
-fqdn = r'(\b[-.a-zA-Z0-9]+\b([.]' + r'|'.join(constants.tld_iana) + r'\b)\b)'  # noqa
-fqdn_popular = r'(\b[-.a-zA-Z0-9]+\b([.]' + r'|'.join(constants.tld_popular) + r'\b)\b)'
+fqdn = r'(\b[-.a-zA-Z0-9]+\b([.]' + r'|'.join(constants.tld_iana) + r')[/]?\b)'  # noqa
+fqdn_popular = r'(\b[-.a-zA-Z0-9]+\b([.]' + r'|'.join(constants.tld_popular) + r')\b)'
 username = r'(\b[-.a-zA-Z0-9!#$%&*+/=?^_`{|}~]+\b)'
 
 email = re.compile(r'(\b' + username + r'\b@\b' + fqdn + r'\b)')
@@ -175,15 +177,15 @@ email_popular_obfuscated = re.compile(r'(\b' + username_obfuscated + at + fqdn_p
 href = r'([Hh][Rr][Ee][Ff]\s?=\s?["\'])([^"\']+)'
 cre_href = re.compile(href)
 
-url_path = r'(\b[^\s"\'>]+)'  # doesn't allow for unescaped query strings like ?param="value"
+url_path = r'(/[^\s"\'>]*/?)'  # doesn't allow for unescaped quoted query strings like ?x="A" or ?x='A'
 url_scheme = r'(\b(' + '|'.join(constants.uri_schemes_iana) + r')[:][/]{2})'
 url_scheme_popular = r'(\b(' + '|'.join(constants.uri_schemes_popular) + r')[:][/]{2})'
 
 url_strict = r'(\b' + url_scheme + fqdn + url_path + r'?\b)'  # noqa
 url_liberal = r'(\b' + url_scheme + r'?' + fqdn + url_path + r'?\b)'  # noqa
 
-url_popular_strict = r'(\b' + url_scheme + fqdn_popular + url_path + r'?\b)'
-url_popular = r'(\b' + url_scheme + r'?' + fqdn_popular + url_path + r'?\b)'
+url_popular_strict = r'(\b' + url_scheme + fqdn_popular + r'[/]?' + url_path + r'?\b)'
+url_popular = r'(\b' + url_scheme + r'?' + fqdn_popular + url_path + r'?)'
 
 cre_url_strict = re.compile(url_strict)
 cre_url_liberal = re.compile(url_liberal)
@@ -504,3 +506,4 @@ CRE_WHITESPACE = re.compile(r'\s')
 
 # Find redefinitions of the same regex in the same file
 RE_REDEF = r'(\n[C]?RE_[A-Z_]+[ ])[\w\W]*\1'
+
