@@ -105,7 +105,17 @@ RE_CAMEL_BASIC_B, RE_CAMEL_NORMAL_B, RE_CAMEL_LIBERAL_B
 (None, '0', '0', '.18', '18', None, None)
 >>> tweet = "Play the [postiive sum game](http://totalgood.com/a/b?c=42) of life instead of svn://us.gov."
 >>> re.findall(url_popular, 'hello (hello.com/123/) whatever?')
-[('hello.com/123/)', '', '', 'hello.com', '.com', '/123/)')]
+[('hello.com/123/', '', '', 'hello.com', '.com', '/123/')]
+>>> re.findall(url, 'hello (https://hello.com/123) whatever.?')
+[('https://hello.com/123', 'https://', 'https', 'hello.com', 'com', '/123')]
+>>> re.findall(url, 'hello (https://hello.com/123. whatever?')
+[('https://hello.com/123.', 'https://', 'https', 'hello.com', 'com', '/123.')]
+>>> re.findall(url, 'hello (https://hello.com/123/) whatever?')
+[('https://hello.com/123/', 'https://', 'https', 'hello.com', 'com', '/123/')]
+>>> re.findall(url, 'hello hello.com/123/. whatever?')
+[('hello.com/123/.', '', '', 'hello.com', 'com', '/123/.')]
+>>> re.findall(url, "What's this hello.com/123/? a url?")
+[('hello.com/123/?', '', '', 'hello.com', 'com', '/123/?')]
 >>> cre_url.findall(tweet)
 [('http://totalgood.com/a/b?c=42', 'http://', 'http', 'totalgood.com', 'com', '/a/b?c=42'),
  ('svn://us.gov', 'svn://', 'svn', 'us.gov', 'gov', '')]
@@ -158,8 +168,13 @@ nondigit = re.compile(r"[^0-9]")
 nonphrase = re.compile(r"[^-\w\s/&']")
 parenthetical_time = re.compile(r'([^(]*)\(\s*(\d+)\s*(?:min)?\s*\)([^(]*)', re.IGNORECASE)
 
-fqdn = r'(\b[-.a-zA-Z0-9]+\b([.]' + r'|'.join(constants.tld_iana) + r')[/]?\b)'  # noqa
+break_path_lookahead = r'(?:\b|(?=[\s"\'>\].?!\)]))'
+# break_path_lookahead = ''
+fqdn_liberal = r'(\b[-.a-zA-Z0-9]+\b([.]' + r'|'.join(constants.tld_iana) + r')\b)'
+# fqdn_liberal += break_path_lookahead
+fqdn = fqdn_liberal
 fqdn_popular = r'(\b[-.a-zA-Z0-9]+\b([.]' + r'|'.join(constants.tld_popular) + r')\b)'
+# fqdn_popular += break_path_lookahead
 username = r'(\b[-.a-zA-Z0-9!#$%&*+/=?^_`{|}~]+\b)'
 
 email = re.compile(r'(\b' + username + r'\b@\b' + fqdn + r'\b)')
@@ -168,8 +183,10 @@ email_popular = re.compile(r'(\b' + username + r'\b@\b' + fqdn_popular + r'\b)')
 # TODO: unmatched surrounding symbols are accepted/consumed, likewise for multiple dots/ats
 at = r'(([-@="_(\[{\|\s]+(at|At|AT)[-@="_)\]\}\|\s]+)|[@])'
 dot = r'(([-.="_(\[{\|\s]+(dot|dt|Dot|DOT)[-.="_)\]\}\|\s]+)|[.])'
-fqdn_obfuscated = r'(\b(([-a-zA-Z0-9]+' + dot + r'){1,7})(' + r'|'.join(constants.tld_iana) + r')\b)'
-fqdn_popular_obfuscated = r'(\b(([-a-zA-Z0-9]+' + dot + r'){1,7})(' + r'|'.join(constants.tld_popular) + r')\b)'
+tld_iana = r'(' + r'|'.join(constants.tld_iana) + r')'
+tld_popular = r'(' + r'|'.join(constants.tld_popular) + r')'
+fqdn_obfuscated = r'(\b(([-a-zA-Z0-9]+' + dot + r'){1,7})' + tld_iana + r'\b)'
+fqdn_popular_obfuscated = r'(\b(([-a-zA-Z0-9]+' + dot + r'){1,7})' + tld_popular + r'\b)'
 username_obfuscated = r'(([a-zA-Z0-9!#$%&*+/?^`~]+' + dot + r'?){1,7})'
 email_obfuscated = re.compile(r'(\b' + username_obfuscated + at + fqdn_obfuscated + r'\b)')
 email_popular_obfuscated = re.compile(r'(\b' + username_obfuscated + at + fqdn_popular_obfuscated + r'\b)')
@@ -177,17 +194,19 @@ email_popular_obfuscated = re.compile(r'(\b' + username_obfuscated + at + fqdn_p
 href = r'([Hh][Rr][Ee][Ff]\s?=\s?["\'])([^"\']+)'
 cre_href = re.compile(href)
 
-url_path = r'(/[^\s"\'>]*/?)'  # doesn't allow for unescaped quoted query strings like ?x="A" or ?x='A'
+# doesn't allow for unescaped quoted or parenthesized query strings like:
+#   ?x="1" ?x='1' ?x=(1) and ?x=[1]
+url_path = r'(?:[/][^\s"\'>\]\)]*' + break_path_lookahead + ')+'
+url_path = r'(' + url_path + break_path_lookahead + r')'
 url_scheme = r'(\b(' + '|'.join(constants.uri_schemes_iana) + r')[:][/]{2})'
 url_scheme_popular = r'(\b(' + '|'.join(constants.uri_schemes_popular) + r')[:][/]{2})'
 
 # allows paths to stop before trailing sentence period like: example.com/file. or example.com/file!
-break_path_lookahead = r'(?:\b|(?=[\s"\'>\].?!\)\]))'
-url_strict = r'(\b' + url_scheme + fqdn + url_path + r'?)' + break_path_lookahead  # noqa
-url_liberal = r'(\b' + url_scheme + r'?' + fqdn + url_path + r'?)' + break_path_lookahead  # noqa
+url_strict = r'(\b' + url_scheme + fqdn + url_path + r'?)' + break_path_lookahead
 
-url_popular_strict = r'(\b' + url_scheme + fqdn_popular + r'[/]?' + url_path + r'?)' + break_path_lookahead
+url_popular_strict = r'(\b' + url_scheme + fqdn_popular + url_path + r'?)' + break_path_lookahead
 url_popular = r'(\b' + url_scheme + r'?' + fqdn_popular + url_path + r'?)' + break_path_lookahead
+url_liberal = r'(\b' + url_scheme + r'?' + fqdn_liberal + url_path + r'?)' + break_path_lookahead
 
 cre_url_strict = re.compile(url_strict)
 cre_url_liberal = re.compile(url_liberal)
