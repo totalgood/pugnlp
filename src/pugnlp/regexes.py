@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# ^-- This allows unicode characters to be copypastad from the web below
+# ^-- This allows unicode characters to be copypastaed from the web below
 r"""Compiled regular expressions for tokenization and parsing
 >>> list(m.group() for m in CRE_TOKEN.finditer("I'm sure \"Smiths'\" and \".net\" are easies; you?"))
 ["I'm", 'sure', '"', 'Smiths', '\'"', 'and', '"', '.', 'net', '"', 'are', 'easies', ';', 'you', '?']
@@ -117,7 +117,7 @@ RE_CAMEL_BASIC_B, RE_CAMEL_NORMAL_B, RE_CAMEL_LIBERAL_B
 >>> re.findall(url, "What's this hello.com/123/? a url?")
 [('hello.com/123/?', '', '', 'hello.com', 'com', '/123/?')]
 >>> cre_url.findall(tweet)
-[('http://totalgood.com/a/b?c=42', 'http://', 'http', 'totalgood.com', 'com', '/a/b?c=42'),
+[[('http://totalgood.com/a/b?c=42', 'http://', 'http', 'totalgood.com', 'com', '/a/b?c=42'),
  ('svn://us.gov', 'svn://', 'svn', 'us.gov', 'gov', '')]
 >>> cre_url_popular.findall(tweet)
 [('http://totalgood.com/a/b?c=42', 'http://', 'http', 'totalgood.com', '.com', '/a/b?c=42'),
@@ -196,7 +196,7 @@ cre_href = re.compile(href)
 
 # doesn't allow for unescaped quoted or parenthesized query strings like:
 #   ?x="1" ?x='1' ?x=(1) and ?x=[1]
-url_path = r'(?:[/][^\s"\'>\]\)]*' + break_path_lookahead + ')+'
+url_path = r'(?:[/][^\s"\'\]\)]*' + break_path_lookahead + ')+'
 url_path = r'(' + url_path + break_path_lookahead + r')'
 url_scheme = r'(\b(' + '|'.join(constants.uri_schemes_iana) + r')[:][/]{2})'
 url_scheme_popular = r'(\b(' + '|'.join(constants.uri_schemes_popular) + r')[:][/]{2})'
