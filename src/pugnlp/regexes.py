@@ -117,7 +117,7 @@ RE_CAMEL_BASIC_B, RE_CAMEL_NORMAL_B, RE_CAMEL_LIBERAL_B
 >>> re.findall(url, "What's this hello.com/123/? a url?")
 [('hello.com/123/?', '', '', 'hello.com', 'com', '/123/?')]
 >>> cre_url.findall(tweet)
-[[('http://totalgood.com/a/b?c=42', 'http://', 'http', 'totalgood.com', 'com', '/a/b?c=42'),
+[('http://totalgood.com/a/b?c=42', 'http://', 'http', 'totalgood.com', 'com', '/a/b?c=42'),
  ('svn://us.gov', 'svn://', 'svn', 'us.gov', 'gov', '')]
 >>> cre_url_popular.findall(tweet)
 [('http://totalgood.com/a/b?c=42', 'http://', 'http', 'totalgood.com', '.com', '/a/b?c=42'),
