@@ -129,14 +129,15 @@ uri_schemes_popular = ['chrome-extension', 'example', 'content', 'bitcoin',
                        'udp', 'ftp', 'ssh', 'git', 'apt', 'svn', 'cvs']
 
 # these may not all be the sames isinstance types, depending on the env
-FLOAT_TYPES = (float, np.float16, np.float32, np.float64, np.float128)
+FLOAT_TYPES = tuple([t for t in set(np.typeDict.values()) if t.__name__.startswith('float')] + [float])
 FLOAT_DTYPES = tuple(set(np.dtype(typ) for typ in FLOAT_TYPES))
-INT_TYPES = (int, np.int0, np.int8, np.int16, np.int32, np.int64)
+INT_TYPES = tuple([t for t in set(np.typeDict.values()) if t.__name__.startswith('int')] + [int]) 
 INT_DTYPES = tuple(set(np.dtype(typ) for typ in INT_TYPES))
 NUMERIC_TYPES = tuple(set(list(FLOAT_TYPES) + list(INT_TYPES)))
 NUMERIC_DTYPES = tuple(set(np.dtype(typ) for typ in NUMERIC_TYPES))
 
-DATETIME_TYPES = (datetime.datetime, pd.datetime, np.datetime64)
+DATETIME_TYPES = tuple([t for t in set(np.typeDict.values()) if t.__name__.startswith('datetime')] +
+                       [datetime.datetime, pd.datetime, pd.Timestamp])
 DATE_TYPES = (datetime.datetime, datetime.date)
 
 # matrices can be column or row vectors if they have a single col/row
