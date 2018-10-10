@@ -23,6 +23,19 @@ logger = logging.getLogger(__name__)
 
 
 def expand_path(path, follow_links=False):
+    """ Expand shell variables ("$VAR"), user directory symbols (~), and return absolute path
+
+    >>> path0 = '~/whatever.txt'
+    >>> path = expand_path(path0)
+    >>> path.endswith(path0[2:])
+    True
+    >>> len(path) > len(path0)
+    True
+    >>> '~' in path
+    False
+    >>> path.startswith(os.path.sep)
+    True
+    """ 
     path = os.path.expandvars(os.path.expanduser(path))
     if follow_links:
         return os.path.realpath(path)
