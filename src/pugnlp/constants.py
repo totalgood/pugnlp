@@ -20,14 +20,14 @@ import pandas as pd
 from decimal import Decimal
 
 # TZ constants
+DEFAULT_TZ = timezone('UTC')
 try:
     from django.conf import settings
     TIME_ZONE = timezone(settings.TIME_ZONE)
-except:
-    TIME_ZONE = timezone('UTC')
-DEFAULT_TZ = timezone('UTC')
+except:  # noqa
+    TIME_ZONE = DEFAULT_TZ
 
-BASE_PATH = os.path.dirname(__file__)
+BASE_DIR = BASE_PATH = os.path.dirname(__file__)
 DATA_PATH = os.path.join(BASE_PATH, 'data')
 
 ROUNDABLE_NUMERIC_TYPES = (float, int, Decimal, bool)
@@ -131,7 +131,7 @@ uri_schemes_popular = ['chrome-extension', 'example', 'content', 'bitcoin',
 # these may not all be the sames isinstance types, depending on the env
 FLOAT_TYPES = tuple([t for t in set(np.typeDict.values()) if t.__name__.startswith('float')] + [float])
 FLOAT_DTYPES = tuple(set(np.dtype(typ) for typ in FLOAT_TYPES))
-INT_TYPES = tuple([t for t in set(np.typeDict.values()) if t.__name__.startswith('int')] + [int]) 
+INT_TYPES = tuple([t for t in set(np.typeDict.values()) if t.__name__.startswith('int')] + [int])
 INT_DTYPES = tuple(set(np.dtype(typ) for typ in INT_TYPES))
 NUMERIC_TYPES = tuple(set(list(FLOAT_TYPES) + list(INT_TYPES)))
 NUMERIC_DTYPES = tuple(set(np.dtype(typ) for typ in NUMERIC_TYPES))

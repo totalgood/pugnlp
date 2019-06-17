@@ -8,7 +8,7 @@ from builtins import (bytes, dict, int, list, object, range, str,  # noqa
     ascii, chr, hex, input, next, oct, open, pow, round, super, filter, map, zip)
 from past.builtins import basestring
 
-from io import StringIO
+import io
 from configparser import ConfigParser
 
 import os
@@ -17,9 +17,110 @@ import subprocess
 from collections import Mapping
 import errno
 import json
+import gzip
 
+from pugnlp.constants import DATA_PATH, BASE_DIR, MAX_LEN_FILEPATH
 import logging
 logger = logging.getLogger(__name__)
+
+
+def expand_filepath(filepath):
+    """ Expand any '~', '.', '*' variables in filepath.
+
+    See also: pugnlp.futil.expand_path
+
+    >>> len(expand_filepath('~')) > 3
+    True
+    """
+    return os.path.abspath(os.path.expandvars(os.path.expanduser(filepath)))
+
+
+def ensure_open(f, mode='r'):
+    r""" Return a file pointer using gzip.open if filename ends with .gz otherwise open()
+
+    TODO: try to read a gzip rather than relying on gz extension, likewise for zip and other formats
+    TODO: monkey patch the file so that .write_bytes=.write and .write writes both str and bytes
+
+    >>> fn = os.path.join(DATA_PATH, 'pointcloud.csv.gz')
+    >>> fp = ensure_open(fn)
+    >>> fp
+    <gzip _io.BufferedReader name='...src/nlpia/data/pointcloud.csv.gz' 0x...>
+    >>> fp.closed
+    False
+    >>> with fp:
+    ...     print(len(fp.readlines()))
+    48485
+    >>> fp.read()
+    Traceback (most recent call last):
+      ...
+    ValueError: I/O operation on closed file
+    >>> len(ensure_open(fp).readlines())
+    48485
+    >>> fn = os.path.join(DATA_PATH, 'mavis-batey-greetings.txt')
+    >>> fp = ensure_open(fn)
+    >>> len(fp.read())
+    314
+    >>> len(fp.read())
+    0
+    >>> len(ensure_open(fp).read())
+    0
+    >>> fp.close()
+    >>> len(fp.read())
+    Traceback (most recent call last):
+      ...
+    ValueError: I/O operation on closed file.
+    """
+    fin = f
+    if isinstance(f, basestring):
+        if len(f) <= MAX_LEN_FILEPATH:
+            f = find_filepath(f) or f
+            if f and (not hasattr(f, 'seek') or not hasattr(f, 'readlines')):
+                if f.lower().endswith('.gz'):
+                    return gzip.open(f, mode=mode)
+                return open(f, mode=mode)
+            f = fin  # reset path in case it is the text that needs to be opened with StringIO
+        else:
+            f = io.StringIO(f)
+    elif f and getattr(f, 'closed', None):
+        if hasattr(f, '_write_gzip_header'):
+            return gzip.open(f.name, mode=mode)
+        else:
+            return open(f.name, mode=mode)
+    return f
+
+
+def update_dict_types(d, update_keys=True, update_values=True, typ=(int,)):
+    di = {}
+    if not isinstance(typ, tuple):
+        typ = (typ, )
+    for k, v in d.items():
+        ki, vi = k, v
+        for t in typ:  # stop coercing type when the first conversion works
+            if update_values and vi is v:
+                try:
+                    vi = t(v)
+                except ValueError:
+                    pass
+            if update_keys and ki is k:
+                try:
+                    ki = t(k)
+                except ValueError:
+                    pass
+        di[ki] = vi
+    d.update(di)
+    return d
+
+
+def read_json(filepath, intkeys=True, intvalues=True):
+    """ read text from filepath (`open(find_filepath(expand_filepath(fp)))`) then json.loads()
+
+    >>> read_json('HTTP_1.1  Status Code Definitions.html.json')
+    {'100': 'Continue',
+     '101': 'Switching Protocols',...
+    """
+    d = json.load(ensure_open(find_filepath(filepath), mode='rt'))
+    d = update_dict_types(d, update_keys=intkeys, update_values=intvalues)
+    return d
 
 
 def expand_path(path, follow_links=False):
@@ -35,11 +136,33 @@ def expand_path(path, follow_links=False):
     False
     >>> path.startswith(os.path.sep)
     True
-    """ 
+    """
     path = os.path.expandvars(os.path.expanduser(path))
     if follow_links:
         return os.path.realpath(path)
     return os.path.abspath(path)
+
+
+def find_filepath(
+        filename,
+        basepaths=(os.path.curdir, DATA_PATH, BASE_DIR, '~', '~/Downloads', os.path.join('/', 'tmp'), '..')):
+    """ Given a filename or path see if it exists in any of the common places datafiles might be
+
+    >>> p = find_filepath('iq_test.csv')
+    >>> p == expand_filepath(os.path.join(DATA_PATH, 'iq_test.csv'))
+    True
+    >>> p[-len('iq_test.csv'):]
+    'iq_test.csv'
+    >>> find_filepath('exponentially-crazy-filename-2.718281828459045.nonexistent')
+    False
+    """
+    if os.path.isfile(filename):
+        return filename
+    for basedir in basepaths:
+        fullpath = expand_filepath(os.path.join(basedir, filename))
+        if os.path.isfile(fullpath):
+            return fullpath
+    return False
 
 
 def walk_level(path, level=1):
@@ -437,14 +560,4 @@ def ssid_password(source='/etc/NetworkConnections/system-connections', ext=''):
             config.read(source)
         return ssid_password(config)
     elif isinstance(source, basestring):
-        return ssid_password(StringIO(source))
-
-
-def read_json(file_or_path):
-    """Parse json contents of string or file object or file path and return python nested dict/lists"""
-    try:
-        with (open(file_or_path, 'r') if isinstance(file_or_path, (str, bytes)) else file_or_path) as f:
-            obj = json.load(f)
-    except IOError:
-        obj = json.loads(file_or_path)
-    return obj
+        return ssid_password(io.StringIO(source))
