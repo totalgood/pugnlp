@@ -9,8 +9,7 @@ Like pug-nlp(https://github.com/totalgood/pug-nlp), but simpler and
 updated (python 2 and 3).
 
 |Latest Version| |Latest Release| |Requirements Status| |Build Status|
-|Documentation Status| |Coverage Status| |Code Climate| |Join the chat
-at https://gitter.im/chatter\_bot/Lobby|
+|Documentation Status| |Coverage Status| |Code Climate|
 
 PUG Natural Language Processing (NLP) Utilities
 -----------------------------------------------
@@ -92,5 +91,3 @@ I love merging PRs and adding contributors to the ``__authors__`` list:
    :target: https://coveralls.io/r/totalgood/pugnlp
 .. |Code Climate| image:: https://codeclimate.com/github/totalgood/pugnlp/badges/gpa.svg
    :target: https://codeclimate.com/github/totalgood/pugnlp
-.. |Join the chat at https://gitter.im/chatter\_bot/Lobby| image:: https://badges.gitter.im/chatter_bot/Lobby.svg
-   :target: https://gitter.im/chatter_bot/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
