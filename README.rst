@@ -60,7 +60,7 @@ most broken code
 
 ::
 
-    pip install git+git://github.com/hobsonlane/pug.git@master
+    pip install -e git+git://github.com/hobsonlane/pug.git@master
 
 Warning
 ~~~~~~~
@@ -76,7 +76,7 @@ I love merging PRs and adding contributors to the ``__authors__`` list:
 
 ::
 
-    git clone https://github.com/totalgood/pug-nlp.git
+    git clone https://github.com/totalgood/pugnlp.git
 
 .. |Latest Version| image:: https://img.shields.io/pypi/v/pugnlp.svg
    :target: https://pypi.python.org/pypi/pugnlp/
@@ -84,7 +84,7 @@ I love merging PRs and adding contributors to the ``__authors__`` list:
    :target: https://pypi.python.org/pypi/pugnlp/
 .. |Requirements Status| image:: https://requires.io/github/totalgood/pugnlp/requirements.svg?branch=master
    :target: https://requires.io/github/totalgood/pugnlp/requirements/?branch=master
-.. |Build Status| image:: https://travis-ci.org/totalgood/pug-nlp.svg?branch=master
+.. |Build Status| image:: https://api.travis-ci.org/totalgood/pugnlp.svg?branch=master
    :target: https://travis-ci.org/totalgood/pugnlp
 .. |Documentation Status| image:: https://readthedocs.org/projects/chatterbot/badge/?version=stable
    :target: http://chatterbot.readthedocs.io/en/stable/?badge=stable
