@@ -44,22 +44,22 @@ def ensure_open(f, mode='r'):
     >>> fn = os.path.join(DATA_PATH, 'tlds-from-iana.csv')
     >>> fp = ensure_open(fn)
     >>> fp
-    <gzip _io.BufferedReader name='...src/pugnlp/data/tlds-from-iana.csv' 0x...>
+    <gzip _io.BufferedReader name='...src/pugnlp/data/wsj_pugnlp.detector_morse.Detector.json.gz' 0x...>
     >>> fp.closed
     False
     >>> with fp:
     ...     print(len(fp.readlines()))
-    48485
+    7038854
     >>> fp.read()
     Traceback (most recent call last):
       ...
     ValueError: I/O operation on closed file
-    >>> len(ensure_open(fp).readlines())
-    48485
-    >>> fn = os.path.join(DATA_PATH, 'mavis-batey-greetings.txt')
+    >>> len(ensure_open(fp).read())
+    7038854
+    >>> fn = os.path.join(DATA_PATH, 'emoticons-from-wikipedia.csv')
     >>> fp = ensure_open(fn)
-    >>> len(fp.read())
-    314
+    >>> len(fp.readlines())
+    43
     >>> len(fp.read())
     0
     >>> len(ensure_open(fp).read())
@@ -148,11 +148,13 @@ def find_filepath(
         basepaths=(os.path.curdir, DATA_PATH, BASE_DIR, '~', '~/Downloads', os.path.join('/', 'tmp'), '..')):
     """ Given a filename or path see if it exists in any of the common places datafiles might be
 
-    >>> p = find_filepath('iq_test.csv')
-    >>> p == expand_filepath(os.path.join(DATA_PATH, 'iq_test.csv'))
+    >>> p = find_filepath('uri-schemes.csv')
+    >>> p == expand_filepath(os.path.join(DATA_PATH, 'uri-schemes.csv'))
     True
-    >>> p[-len('iq_test.csv'):]
-    'iq_test.csv'
+    >>> p.endswith(os.path.join('src', 'pugnlp', 'data', 'uri-schemes.csv')
+    True
+    >>> os.path.isfile(p)
+    True
     >>> find_filepath('exponentially-crazy-filename-2.718281828459045.nonexistent')
     False
     """
