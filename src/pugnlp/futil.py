@@ -41,7 +41,7 @@ def ensure_open(f, mode='r'):
     TODO: try to read a gzip rather than relying on gz extension, likewise for zip and other formats
     TODO: monkey patch the file so that .write_bytes=.write and .write writes both str and bytes
 
-    >>> fn = os.path.join(DATA_PATH, 'tlds-from-iana.csv')
+    >>> fn = os.path.join(DATA_PATH, 'wsj_pugnlp.detector_morse.Detector.json.gz')
     >>> fp = ensure_open(fn)
     >>> fp
     <gzip _io.BufferedReader name='...src/pugnlp/data/wsj_pugnlp.detector_morse.Detector.json.gz' 0x...>
