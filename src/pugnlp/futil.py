@@ -41,25 +41,25 @@ def ensure_open(f, mode='r'):
     TODO: try to read a gzip rather than relying on gz extension, likewise for zip and other formats
     TODO: monkey patch the file so that .write_bytes=.write and .write writes both str and bytes
 
-    >>> fn = os.path.join(DATA_PATH, 'pointcloud.csv.gz')
+    >>> fn = os.path.join(DATA_PATH, 'wsj_pugnlp.detector_morse.Detector.json.gz')
     >>> fp = ensure_open(fn)
     >>> fp
-    <gzip _io.BufferedReader name='...src/nlpia/data/pointcloud.csv.gz' 0x...>
+    <gzip _io.BufferedReader name='...src/pugnlp/data/wsj_pugnlp.detector_morse.Detector.json.gz' 0x...>
     >>> fp.closed
     False
     >>> with fp:
-    ...     print(len(fp.readlines()))
-    48485
+    ...     print(len(fp.read()))
+    7038854
     >>> fp.read()
     Traceback (most recent call last):
       ...
     ValueError: I/O operation on closed file
-    >>> len(ensure_open(fp).readlines())
-    48485
-    >>> fn = os.path.join(DATA_PATH, 'mavis-batey-greetings.txt')
+    >>> len(ensure_open(fp).read())
+    7038854
+    >>> fn = os.path.join(DATA_PATH, 'emoticons-from-wikipedia.csv')
     >>> fp = ensure_open(fn)
-    >>> len(fp.read())
-    314
+    >>> len(fp.readlines())
+    43
     >>> len(fp.read())
     0
     >>> len(ensure_open(fp).read())
@@ -90,6 +90,12 @@ def ensure_open(f, mode='r'):
 
 
 def update_dict_types(d, update_keys=True, update_values=True, typ=(int,)):
+    """Coerce dict keys and values into a new type (usually `int`)
+
+    Retains original key/value mappings and just add new mappings for new types
+    >>> update_dict_types({'1': '2', '3': {'4': 'five'}})
+    {'1': '2', '3': {'4': 'five', 4: 'five'}, 1: 2, 3: {'4': 'five', 4: 'five'}}
+    """
     di = {}
     if not isinstance(typ, tuple):
         typ = (typ, )
@@ -101,6 +107,9 @@ def update_dict_types(d, update_keys=True, update_values=True, typ=(int,)):
                     vi = t(v)
                 except ValueError:
                     pass
+                except TypeError:   # FIXME: nested dicts inside of dicts need to be dealt with here
+                    if isinstance(v, Mapping):
+                        vi = update_dict_types(v, update_keys=update_keys, update_values=update_values, typ=typ)
             if update_keys and ki is k:
                 try:
                     ki = t(k)
@@ -114,9 +123,9 @@ def update_dict_types(d, update_keys=True, update_values=True, typ=(int,)):
 def read_json(filepath, intkeys=True, intvalues=True):
     """ read text from filepath (`open(find_filepath(expand_filepath(fp)))`) then json.loads()
 
-    >>> read_json('HTTP_1.1  Status Code Definitions.html.json')
-    {'100': 'Continue',
-     '101': 'Switching Protocols',...
+    >>> js = read_json('wsj_pugnlp.detector_morse.Detector.json.gz', intvalues=False)
+    >>> list(js.keys())
+    ['py/object', 'classifier', 'nocase']
     """
     d = json.load(ensure_open(find_filepath(filepath), mode='rt'))
     d = update_dict_types(d, update_keys=intkeys, update_values=intvalues)
@@ -148,11 +157,13 @@ def find_filepath(
         basepaths=(os.path.curdir, DATA_PATH, BASE_DIR, '~', '~/Downloads', os.path.join('/', 'tmp'), '..')):
     """ Given a filename or path see if it exists in any of the common places datafiles might be
 
-    >>> p = find_filepath('iq_test.csv')
-    >>> p == expand_filepath(os.path.join(DATA_PATH, 'iq_test.csv'))
+    >>> p = find_filepath('uri-schemes.csv')
+    >>> p == expand_filepath(os.path.join(DATA_PATH, 'uri-schemes.csv'))
     True
-    >>> p[-len('iq_test.csv'):]
-    'iq_test.csv'
+    >>> p.endswith(os.path.join('src', 'pugnlp', 'data', 'uri-schemes.csv'))
+    True
+    >>> os.path.isfile(p)
+    True
     >>> find_filepath('exponentially-crazy-filename-2.718281828459045.nonexistent')
     False
     """

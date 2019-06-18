@@ -14,7 +14,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import bisect
 
-from pandas.tools.plotting import scatter_matrix
+from pandas.plotting import scatter_matrix
 
 from pugnlp.constants import DATA_PATH
 
