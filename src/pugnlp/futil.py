@@ -48,7 +48,7 @@ def ensure_open(f, mode='r'):
     >>> fp.closed
     False
     >>> with fp:
-    ...     print(len(fp.readlines()))
+    ...     print(len(fp.read()))
     7038854
     >>> fp.read()
     Traceback (most recent call last):
@@ -90,6 +90,12 @@ def ensure_open(f, mode='r'):
 
 
 def update_dict_types(d, update_keys=True, update_values=True, typ=(int,)):
+    """Coerce dict keys and values into a new type (usually `int`)
+
+    Retains original key/value mappings and just add new mappings for new types
+    >>> update_dict_types({'1': '2', '3': {'4': 'five'}})
+    {'1': '2', '3': {'4': 'five', 4: 'five'}, 1: 2, 3: {'4': 'five', 4: 'five'}}
+    """
     di = {}
     if not isinstance(typ, tuple):
         typ = (typ, )
@@ -101,6 +107,9 @@ def update_dict_types(d, update_keys=True, update_values=True, typ=(int,)):
                     vi = t(v)
                 except ValueError:
                     pass
+                except TypeError:   # FIXME: nested dicts inside of dicts need to be dealt with here
+                    if isinstance(v, Mapping):
+                        vi = update_dict_types(v, update_keys=update_keys, update_values=update_values, typ=typ)
             if update_keys and ki is k:
                 try:
                     ki = t(k)
@@ -114,7 +123,7 @@ def update_dict_types(d, update_keys=True, update_values=True, typ=(int,)):
 def read_json(filepath, intkeys=True, intvalues=True):
     """ read text from filepath (`open(find_filepath(expand_filepath(fp)))`) then json.loads()
 
-    >>> read_json('HTTP_1.1  Status Code Definitions.html.json')
+    >>> read_json('wsj_pugnlp.detector_morse.Detector.json.gz', intvalues=False)
     {'100': 'Continue',
      '101': 'Switching Protocols',...
     """
@@ -151,7 +160,7 @@ def find_filepath(
     >>> p = find_filepath('uri-schemes.csv')
     >>> p == expand_filepath(os.path.join(DATA_PATH, 'uri-schemes.csv'))
     True
-    >>> p.endswith(os.path.join('src', 'pugnlp', 'data', 'uri-schemes.csv')
+    >>> p.endswith(os.path.join('src', 'pugnlp', 'data', 'uri-schemes.csv'))
     True
     >>> os.path.isfile(p)
     True
