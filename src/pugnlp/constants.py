@@ -30,6 +30,8 @@ except:  # noqa
 BASE_DIR = BASE_PATH = os.path.dirname(__file__)
 DATA_PATH = os.path.join(BASE_PATH, 'data')
 
+MAX_LEN_FILEPATH = 1023  # on OSX `open(fn)` raises OSError('Filename too long') if len(fn)>=1024
+
 ROUNDABLE_NUMERIC_TYPES = (float, int, Decimal, bool)
 FLOATABLE_NUMERIC_TYPES = (float, int, Decimal, bool)
 BASIC_NUMERIC_TYPES = (float, int)
