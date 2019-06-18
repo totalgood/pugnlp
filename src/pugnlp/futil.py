@@ -123,9 +123,9 @@ def update_dict_types(d, update_keys=True, update_values=True, typ=(int,)):
 def read_json(filepath, intkeys=True, intvalues=True):
     """ read text from filepath (`open(find_filepath(expand_filepath(fp)))`) then json.loads()
 
-    >>> read_json('wsj_pugnlp.detector_morse.Detector.json.gz', intvalues=False)
-    {'100': 'Continue',
-     '101': 'Switching Protocols',...
+    >>> js = read_json('wsj_pugnlp.detector_morse.Detector.json.gz', intvalues=False)
+    >>> list(js.keys())
+    ['py/object', 'classifier', 'nocase']
     """
     d = json.load(ensure_open(find_filepath(filepath), mode='rt'))
     d = update_dict_types(d, update_keys=intkeys, update_values=intvalues)
