@@ -453,7 +453,7 @@ def find_dirs(*args, **kwargs):
     return find_files(*args, **kwargs)
 
 
-def mkdir_p(path):
+def mkdir_p(path, exist_ok=True):
     """`mkdir -p` functionality (don't raise exception if path exists)
 
     Make containing directory and parent directories in `path`, if they don't exist.
@@ -462,7 +462,7 @@ def mkdir_p(path):
                     path (str): Full or relative path to a directory to be created with mkdir -p
 
     Returns:
-                    str: 'pre-existing' or 'new'
+                    str: 'pre-existing: {path}' or 'new: {path}'
 
     References:
                     http://stackoverflow.com/a/600612/623735
@@ -471,7 +471,7 @@ def mkdir_p(path):
     try:
         os.makedirs(path)
     except OSError as exception:
-        if exception.errno == errno.EEXIST and os.path.isdir(path):
+        if exception.errno == errno.EEXIST and os.path.isdir(path) and exist_ok:
             return 'pre-existing: ' + path
         else:
             raise
