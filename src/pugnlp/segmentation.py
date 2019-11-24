@@ -12,20 +12,25 @@ from past.builtins import basestring
 import os
 import re
 from itertools import chain
+import logging
+
 
 import nltk.stem
-
-from pugnlp.detector_morse import Detector
-from pugnlp.detector_morse import slurp
-from pugnlp.futil import find_files
-# from .penn_treebank_tokenizer import word_tokenize
-import nlup
-
+from .detector_morse import Detector
+from .detector_morse import slurp
+from .futil import find_files
 from .constants import DATA_PATH
 from .futil import generate_files
 from .util import stringify, passthrough
+from .regexes import CRE_TOKEN, RE_NONWORD
 
-from pugnlp.regexes import CRE_TOKEN, RE_NONWORD
+# from .penn_treebank_tokenizer import word_tokenize
+
+logger = logging.getLogger(__name__)
+try:
+    import nlup
+except ImportError:
+    logger.error("detector_morse disabled because Kyle Gorman's nlup sentence boundary detector has not been installed.")
 
 
 class Split(object):

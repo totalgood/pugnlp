@@ -31,14 +31,17 @@ from builtins import (  # noqa
 from future import standard_library
 standard_library.install_aliases()  # noqa
 
+from collections import namedtuple
 import logging
 from re import finditer, match, search
-from collections import namedtuple
-
-from nlup import case_feature, isnumberlike, listify, BinaryAveragedPerceptron, BinaryConfusion, IO, JSONable
 
 from .penn_treebank_tokenizer import word_tokenize
+
 logger = logging.getLogger(__name__)
+try:
+    from nlup import case_feature, isnumberlike, listify, BinaryAveragedPerceptron, BinaryConfusion, IO, JSONable
+except ImportError:
+    logger.error("detector_morse disabled because Kyle Gorman's nlup sentence boundary detector has not been installed.")
 # FIXME(kbg) can surely avoid full-blown tokenization
 
 
