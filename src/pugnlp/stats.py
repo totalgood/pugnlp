@@ -16,12 +16,8 @@ from scipy.optimize import minimize
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from pugnlp.constants import NUMERIC_TYPES
-# watch out for circular import
-from pugnlp.segmentation import stringify
-from pugnlp.util import make_dataframe, listify
-from pugnlp.util import PrettyDict
-from pugnlp.constants import INF
+from .constants import NUMERIC_TYPES, INF
+from .util import make_dataframe, listify, stringify, PrettyDict
 
 # from scipy import stats as scipy_stats
 # import pymc

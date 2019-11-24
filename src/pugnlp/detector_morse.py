@@ -42,9 +42,26 @@ try:
     from nlup import case_feature, isnumberlike, listify, BinaryAveragedPerceptron, BinaryConfusion, IO, JSONable
 except ImportError:
     logger.error("detector_morse disabled because Kyle Gorman's nlup sentence boundary detector has not been installed.")
+
+    def IO(func):
+        def wrapper():
+            logger.warn("Not using nlup.IO decorator.")
+            func()
+        return wrapper
+
+    def listify(func):
+        def wrapper():
+            logger.warn("Not using nlup.listify decorator.")
+            func()
+        return wrapper
+
+    class JSONable:
+        pass
+
+    BinaryAveragedPerceptron = case_feature = isnumberlike = BinaryAveragedPerceptron = BinaryConfusion = None
+
+
 # FIXME(kbg) can surely avoid full-blown tokenization
-
-
 # defaults
 
 NOCASE = False  # disable case-based features?
@@ -77,7 +94,6 @@ QUOTE = r"^['`\"]+$"
 Observation = namedtuple("Observation", ["L", "P", "R", "B", "end"])
 
 
-@IO
 def slurp(filename):
     """
     Given a `filename` string, slurp the whole file into a string
@@ -86,6 +102,7 @@ def slurp(filename):
         return source.read()
 
 
+@IO
 class Detector(JSONable):
     text = None
 
