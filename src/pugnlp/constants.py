@@ -16,6 +16,7 @@ from pytz import timezone
 from collections import Mapping, OrderedDict
 
 import pandas as pd
+import numpy as np
 
 from decimal import Decimal
 
@@ -83,8 +84,6 @@ HIST_CONFIG = {
     },
 }
 
-
-np = pd.np
 
 tld_iana = pd.read_csv(os.path.join(DATA_PATH, 'tlds-from-iana.csv'), encoding='utf8')
 tld_iana = OrderedDict(sorted(zip((tld.strip().lstrip('.') for tld in tld_iana.domain),
@@ -164,8 +163,8 @@ MIN_DATETIME = MIN_TIMESTAMP.to_pydatetime()
 MAX_DATETIME = MAX_TIMESTAMP.to_pydatetime()
 MIN_DATETIME64 = MIN_TIMESTAMP.to_datetime64()
 MAX_DATETIME64 = MAX_TIMESTAMP.to_datetime64()
-INF = pd.np.inf
-NAN = pd.np.nan
+INF = np.inf
+NAN = np.nan
 NAT = pd.NaT
 
 
