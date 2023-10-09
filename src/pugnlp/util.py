@@ -44,7 +44,8 @@ import csv
 import logging
 import warnings
 from traceback import print_exc
-from collections import OrderedDict, Mapping, Counter
+from collections import OrderedDict, Counter
+from collections.abc import Mapping
 from itertools import islice
 from decimal import Decimal, InvalidOperation, InvalidContext
 import math
